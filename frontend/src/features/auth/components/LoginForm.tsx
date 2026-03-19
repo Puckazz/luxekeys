@@ -14,7 +14,6 @@ export default function LoginForm() {
   return (
     <div className="bg-background dark:bg-background flex w-full items-center justify-center p-6 lg:w-1/2 lg:p-12">
       <div className="w-full max-w-md">
-        {/* Welcome Text */}
         <div className="mb-8">
           <h1 className="text-foreground mb-2 text-3xl font-bold">
             Welcome Back
@@ -28,7 +27,7 @@ export default function LoginForm() {
         <form className="space-y-6">
           {/* Email Field */}
           <div className="space-y-2">
-            <label className="text-foreground text-sm font-medium">
+            <label className="text-foreground text-sm font-bold">
               Email or Phone
             </label>
             <div className="relative mt-2">
@@ -44,12 +43,12 @@ export default function LoginForm() {
           {/* Password Field */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-foreground text-sm font-medium">
+              <label className="text-foreground text-sm font-bold">
                 Password
               </label>
               <Link
                 href="/forgot-password"
-                className="text-primary hover:text-primary/80 text-sm transition-colors"
+                className="text-primary hover:text-primary/80 text-xs font-bold transition-colors"
               >
                 Forgot password?
               </Link>
@@ -102,9 +101,9 @@ export default function LoginForm() {
         {/* Divider */}
         <div className="relative mt-8 mb-8">
           <div className="absolute inset-0 flex items-center">
-            <div className="border-border w-full border-t" />
+            <div className="border-input w-full border-t" />
           </div>
-          <div className="relative flex justify-center text-sm">
+          <div className="relative flex justify-center text-sm font-bold">
             <span className="bg-background dark:bg-background text-muted-foreground px-2">
               Or continue with
             </span>
@@ -153,11 +152,11 @@ export default function LoginForm() {
         </div>
 
         {/* Sign Up Link */}
-        <div className="text-muted-foreground mt-8 text-center text-sm">
+        <div className="text-muted-foreground mt-8 text-center text-sm font-medium">
           Don&apos;t have an account?{' '}
           <Link
             href="/register"
-            className="text-primary hover:text-primary/80 font-medium transition-colors"
+            className="text-primary hover:text-primary/80 font-bold transition-colors"
           >
             Start your collection today
           </Link>
