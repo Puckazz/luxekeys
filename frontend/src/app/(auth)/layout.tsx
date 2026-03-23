@@ -2,7 +2,9 @@ import { ReactNode } from 'react';
 import Image from 'next/image';
 import { Keyboard } from 'lucide-react';
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
+export default function AuthLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
     <main className="bg-background dark:bg-background flex min-h-screen">
       {/* Left Section - Image & Branding */}
@@ -27,7 +29,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* Text Content */}
-        <div className="relative z-10 text-white w-2/3">
+        <div className="relative z-10 w-2/3 text-white">
           <h2 className="mb-4 text-4xl font-bold">
             Elevate your typing experience.
           </h2>
