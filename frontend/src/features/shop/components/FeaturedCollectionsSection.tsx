@@ -74,7 +74,8 @@ export default function FeaturedCollectionsSection() {
         setApi={setCarouselApi}
         opts={{
           align: 'start',
-          dragFree: true,
+          dragFree: false,
+          containScroll: 'trimSnaps',
         }}
       >
         <CarouselContent>

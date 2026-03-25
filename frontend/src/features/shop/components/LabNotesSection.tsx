@@ -14,7 +14,7 @@ export default function LabNotesSection() {
             Lab Notes
           </h2>
         </div>
-        <p className="text-muted-foreground text-sm sm:text-right text-center">
+        <p className="text-muted-foreground text-sm sm:text-right text-center max-w-sm justify-self-end">
           Deep dives into switch mechanics, material science, and custom
           programming for the enthusiast community.
         </p>

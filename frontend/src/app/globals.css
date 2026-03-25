@@ -107,7 +107,7 @@
   --font-serif: Georgia, serif;
   --font-mono: Geist Mono, ui-monospace, monospace;
   --radius: 1.5rem;
-  --container-7xl: 1440px;
+  --container-7xl: 1520px;
   --shadow-x: 0px;
   --shadow-y: 2px;
   --shadow-blur: 0px;
@@ -186,7 +186,9 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
 
-  --container-7xl: var(--container-7xl)
+  --container-7xl: var(--container-7xl);
+
+  --breakpoint-xl: 1380px;
 }
 
 body {

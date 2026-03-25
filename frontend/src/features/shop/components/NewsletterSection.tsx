@@ -1,5 +1,5 @@
-import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
+import { PrimaryButtonLink } from '@/shared/components/ui/link-buttons';
 
 export default function NewsletterSection() {
   return (
@@ -16,14 +16,9 @@ export default function NewsletterSection() {
           <Input
             type="email"
             placeholder="Enter your email"
-            className="border-border/80 bg-card h-12 rounded-full"
+            className="border-border/80 bg-card h-12 rounded-md px-4"
           />
-          <Button
-            type="submit"
-            className="h-12 rounded-full px-8 text-sm font-semibold"
-          >
-            Subscribe
-          </Button>
+          <PrimaryButtonLink href={'/'}>Subscribe</PrimaryButtonLink>
         </form>
       </div>
     </section>

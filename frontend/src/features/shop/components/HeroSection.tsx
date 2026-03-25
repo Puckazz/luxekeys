@@ -6,7 +6,7 @@ import {
 export default function HeroSection() {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-      <div className="border-border relative flex items-center overflow-hidden rounded-xl border bg-linear-to-br from-[#041126] via-[#071a37] to-[#03101f] px-6 py-16 sm:px-10 md:rounded-4xl md:px-14 lg:min-h-145 lg:py-24">
+      <div className="border-border relative flex items-center overflow-hidden rounded-xl border bg-linear-to-br from-[#041126] via-[#071a37] to-[#03101f] px-6 py-16 sm:px-10 md:rounded-4xl md:px-14 lg:min-h-160 lg:py-24">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{
