@@ -2,13 +2,13 @@ import Link from 'next/link';
 import {
   Heart,
   Keyboard,
-  Menu,
   Search,
   SearchIcon,
   ShoppingBag,
   UserCircle,
 } from 'lucide-react';
 
+import MobileNavMenu from '@/shared/components/layout/MobileNavMenu';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -21,7 +21,7 @@ import {
 } from '@/shared/components/ui/navigation-menu';
 
 const navLinkClass =
-  'group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent! px-4 py-2 text-base font-bold outline-none transition-[color,background-color] hover:text-accent-foreground hover:bg-transparent! focus:bg-transparent! disabled:pointer-events-none disabled:opacity-50 data-active:bg-transparent data-state-open:bg-transparent';
+  'group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent! min-[1400px]:px-4 px-2 py-2 text-base font-bold outline-none transition-[color,background-color] hover:text-accent-foreground hover:bg-transparent! focus:bg-transparent! disabled:pointer-events-none disabled:opacity-50 data-active:bg-transparent data-state-open:bg-transparent';
 
 const keyboardItems = [
   {
@@ -60,7 +60,6 @@ const accessoryItems = [
 ];
 
 const navLinks = [
-  { label: 'Home', href: '/' },
   { label: 'Switches', href: '/' },
   { label: 'Keycaps', href: '/' },
   { label: 'Group Buy', href: '/' },
@@ -75,18 +74,24 @@ export default function Header() {
   return (
     <header className="border-border bg-background/85 sticky top-0 z-40 border-b backdrop-blur-md">
       <div className="relative mx-auto flex h-20 w-full max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-        <div className="lg:hidden xl:flex">
-          <Button variant="ghost" size="icon-sm" aria-label="Open menu">
-            <Menu className="size-5" />
+        <div className="flex items-center gap-1.5 lg:hidden">
+          <MobileNavMenu navLinks={navLinks} navSections={navSections} />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Search"
+            className="md:hidden"
+          >
+            <SearchIcon className="size-5" />
           </Button>
         </div>
 
         <Link
           href="/"
-          className="flex items-center gap-2"
+          className="absolute right-1/2 flex translate-x-1/2 items-center gap-2 lg:static lg:translate-x-0"
         >
-          <Keyboard className="text-primary" size={28} />
-          <span className="text-foreground text-xl leading-6 font-bold tracking-tighter uppercase">
+          <Keyboard className="text-primary md:size-7" />
+          <span className="text-foreground text-[16px] leading-6 font-bold tracking-tighter uppercase md:text-xl">
             LuxeKeys
           </span>
         </Link>
@@ -156,7 +161,7 @@ export default function Header() {
             variant="ghost"
             size="icon-sm"
             aria-label="Search"
-            className="xl:hidden"
+            className="hidden md:block xl:hidden"
           >
             <SearchIcon className="size-5" />
           </Button>
@@ -166,7 +171,12 @@ export default function Header() {
           <Button variant="ghost" size="icon-sm" aria-label="Account">
             <Heart className="size-5" />
           </Button>
-          <Button variant="ghost" size="icon-sm" aria-label="Account">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Account"
+            className="hidden md:block"
+          >
             <UserCircle className="size-5" />
           </Button>
         </div>

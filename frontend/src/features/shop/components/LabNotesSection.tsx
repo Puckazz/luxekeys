@@ -10,11 +10,11 @@ export default function LabNotesSection() {
           <p className="text-primary mb-2 text-xs font-semibold tracking-widest uppercase">
             TECHNICAL INSIGHTS
           </p>
-          <h2 className="text-foreground text-3xl font-bold tracking-tight">
+          <h2 className="text-foreground text-2xl md:text-3xl font-bold tracking-tight">
             Lab Notes
           </h2>
         </div>
-        <p className="text-muted-foreground text-sm sm:text-right text-center max-w-sm justify-self-end">
+        <p className="text-muted-foreground text-xs md:text-sm sm:text-right text-center max-w-sm justify-self-end sm:block hidden">
           Deep dives into switch mechanics, material science, and custom
           programming for the enthusiast community.
         </p>

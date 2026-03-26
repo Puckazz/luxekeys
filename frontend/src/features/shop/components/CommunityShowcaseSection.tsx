@@ -20,7 +20,7 @@ export default function CommunityShowcaseSection() {
           <p className="text-primary mb-2 text-xs font-semibold tracking-widest uppercase">
             BUILT BY YOU
           </p>
-          <h2 className="text-foreground text-3xl font-bold tracking-tight">
+          <h2 className="text-foreground text-2xl md:text-3xl font-bold tracking-tight">
             Community Showcase
           </h2>
         </div>

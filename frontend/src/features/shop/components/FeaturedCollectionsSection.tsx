@@ -41,10 +41,10 @@ export default function FeaturedCollectionsSection() {
     <section className="mx-auto w-full max-w-7xl px-4 pb-18 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-foreground mb-2 text-3xl font-bold tracking-tight">
+          <h2 className="text-foreground mb-2 text-2xl md:text-3xl font-bold tracking-tight">
             Featured Collections
           </h2>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs md:text-sm">
             The most sought-after boards in the enthusiast community.
           </p>
         </div>
