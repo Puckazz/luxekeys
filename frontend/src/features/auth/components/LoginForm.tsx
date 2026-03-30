@@ -4,22 +4,26 @@ import Link from 'next/link';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Checkbox } from '@/shared/components/ui/checkbox';
+import { PrimaryButton } from '@/shared/components/ui/primary-button';
 import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { AuthApiError, LoginRequest } from '@/features/auth/types';
 import { useLogin } from '@/features/auth/hooks/auth.hooks';
-import { Resolver, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/features/auth/schemas/auth.schema';
+import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm<LoginRequest>({
-    resolver: zodResolver(loginSchema) as Resolver<LoginRequest>,
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -28,8 +32,10 @@ export default function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const { mutate: login, isPending, error, data, reset } = useLogin();
+  const { mutate: login, isPending, error, reset } = useLogin();
+  const isSubmitting = isPending || isRedirecting;
   const [email, password] = watch(['email', 'password']);
   const hasServerError = useRef(false);
   const serverFieldErrors =
@@ -46,7 +52,12 @@ export default function LoginForm() {
   }, [email, password, reset]);
 
   const onSubmit = (formData: LoginRequest) => {
-    login(formData);
+    login(formData, {
+      onSuccess: () => {
+        setIsRedirecting(true);
+        router.replace('/');
+      },
+    });
   };
 
   return (
@@ -64,16 +75,9 @@ export default function LoginForm() {
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* General Error Message */}
-          {!data?.success && error && (
+          {error && (
             <div className="border-destructive/35 bg-destructive/10 text-destructive rounded-md border p-3 text-sm">
               {error.message}
-            </div>
-          )}
-
-          {/* Success Message */}
-          {data?.success && (
-            <div className="rounded border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-              {data.message}
             </div>
           )}
 
@@ -89,7 +93,7 @@ export default function LoginForm() {
                 placeholder="name@example.com"
                 {...register('email')}
                 className="bg-input/20 dark:bg-input/40 border-input pl-10"
-                disabled={isPending}
+                disabled={isSubmitting}
               />
             </div>
             {errors.email && (
@@ -124,13 +128,13 @@ export default function LoginForm() {
                 placeholder="••••••••"
                 {...register('password')}
                 className="bg-input/20 dark:bg-input/40 border-input px-10"
-                disabled={isPending}
+                disabled={isSubmitting}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-                disabled={isPending}
+                disabled={isSubmitting}
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -160,7 +164,7 @@ export default function LoginForm() {
                   setRememberMe(checked);
                 }
               }}
-              disabled={isPending}
+              disabled={isSubmitting}
             />
             <label className="text-muted-foreground cursor-pointer text-sm">
               Remember me for 30 days
@@ -168,13 +172,9 @@ export default function LoginForm() {
           </div>
 
           {/* Sign In Button */}
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="text-primary-foreground h-12 w-full text-base font-bold"
-          >
-            {isPending ? 'Signing in...' : 'Sign in'}
-          </Button>
+          <PrimaryButton type="submit" isLoading={isSubmitting}>
+            Sign in
+          </PrimaryButton>
         </form>
 
         {/* Divider */}

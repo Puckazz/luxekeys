@@ -4,23 +4,26 @@ import Link from 'next/link';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Eye, EyeOff, LockKeyhole, Mail, Shield } from 'lucide-react';
+import { PrimaryButton } from '@/shared/components/ui/primary-button';
+import { Eye, EyeOff, LockKeyhole, Mail, Shield, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Resolver, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UserIcon } from '@heroicons/react/24/outline';
 import { useRegister } from '@/features/auth/hooks/auth.hooks';
 import { AuthApiError, RegisterRequest } from '@/features/auth/types';
 import { registerSchema } from '@/features/auth/schemas/auth.schema';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterForm() {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm<RegisterRequest>({
-    resolver: zodResolver(registerSchema) as Resolver<RegisterRequest>,
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -32,8 +35,10 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [policy, setPolicy] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const { mutate: registerUser, isPending, error, data, reset } = useRegister();
+  const { mutate: registerUser, isPending, error, reset } = useRegister();
+  const isSubmitting = isPending || isRedirecting;
   const [name, email, password, confirmpassword] = watch([
     'name',
     'email',
@@ -56,10 +61,14 @@ export default function RegisterForm() {
 
   const onSubmit = (formData: RegisterRequest) => {
     if (!policy) {
-      alert('Please accept the terms and conditions');
       return;
     }
-    registerUser(formData);
+    registerUser(formData, {
+      onSuccess: () => {
+        setIsRedirecting(true);
+        router.replace('/');
+      },
+    });
   };
 
   return (
@@ -69,7 +78,7 @@ export default function RegisterForm() {
           <h1 className="text-foreground mb-2 text-3xl font-bold">
             Create your account
           </h1>
-          <p className="text-slate-400">
+          <p className="text-muted-foreground">
             Start your journey into the world of custom keyboards.
           </p>
         </div>
@@ -77,17 +86,9 @@ export default function RegisterForm() {
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* General Error Message */}
-          {!data?.success && error && (
+          {error && (
             <div className="border-destructive/35 bg-destructive/10 text-destructive rounded-md border p-3 text-sm">
               {error.message}
-            </div>
-          )}
-
-          {/* Success Message */}
-          {data?.success && (
-            <div className="rounded border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-              {data.message}
-              {data.user && <p className="mt-2">Welcome, {data.user.name}!</p>}
             </div>
           )}
 
@@ -97,13 +98,13 @@ export default function RegisterForm() {
               Full name
             </label>
             <div className="relative mt-2">
-              <UserIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <User className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
                 type="text"
                 placeholder="Enter your full name"
                 {...register('name')}
                 className="bg-input/20 dark:bg-input/40 border-input pl-10"
-                disabled={isPending}
+                disabled={isSubmitting}
               />
             </div>
             {errors.name && (
@@ -130,7 +131,7 @@ export default function RegisterForm() {
                 placeholder="name@example.com"
                 {...register('email')}
                 className="bg-input/20 dark:bg-input/40 border-input pl-10"
-                disabled={isPending}
+                disabled={isSubmitting}
               />
             </div>
             {errors.email && (
@@ -159,13 +160,13 @@ export default function RegisterForm() {
                 placeholder="••••••••"
                 {...register('password')}
                 className="bg-input/20 dark:bg-input/40 border-input px-10"
-                disabled={isPending}
+                disabled={isSubmitting}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-                disabled={isPending}
+                disabled={isSubmitting}
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -200,13 +201,13 @@ export default function RegisterForm() {
                 placeholder="••••••••"
                 {...register('confirmpassword')}
                 className="bg-input/20 dark:bg-input/40 border-input px-10"
-                disabled={isPending}
+                disabled={isSubmitting}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-                disabled={isPending}
+                disabled={isSubmitting}
               >
                 {showConfirmPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -236,7 +237,7 @@ export default function RegisterForm() {
                   setPolicy(checked);
                 }
               }}
-              disabled={isPending}
+              disabled={isSubmitting}
               id="policy"
             />
             <label
@@ -261,13 +262,13 @@ export default function RegisterForm() {
           </div>
 
           {/* Sign Up Button */}
-          <Button
+          <PrimaryButton
             type="submit"
-            disabled={isPending || !policy}
-            className="text-primary-foreground h-12 w-full text-base font-bold"
+            disabled={!policy}
+            isLoading={isSubmitting}
           >
-            {isPending ? 'Creating account...' : 'Register account'}
-          </Button>
+            Register account
+          </PrimaryButton>
         </form>
 
         {/* Divider */}
