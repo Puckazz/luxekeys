@@ -27,17 +27,17 @@ const keyboardItems = [
   {
     label: '65% Keyboards',
     description: 'Compact layout for desk setup and portability.',
-    href: '/',
+    href: '/products',
   },
   {
     label: '75% Keyboards',
     description: 'Balanced layout with function row for daily use.',
-    href: '/',
+    href: '/products',
   },
   {
     label: 'TKL Keyboards',
     description: 'Full nav cluster without numpad for more mouse room.',
-    href: '/',
+    href: '/products',
   },
 ];
 
