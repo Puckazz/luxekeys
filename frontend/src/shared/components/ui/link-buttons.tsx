@@ -32,6 +32,27 @@ function PrimaryButtonLink({
   );
 }
 
+function SecondaryButtonLink({
+  href,
+  children,
+  className,
+  size = 'default',
+  ...props
+}: LinkButtonProps) {
+  return (
+    <Button
+      asChild
+      variant="secondary"
+      size={size}
+      className={cn('h-12 rounded-md px-7 text-sm font-semibold', className)}
+    >
+      <Link href={href} {...props}>
+        {children}
+      </Link>
+    </Button>
+  );
+}
+
 function OutlineButtonLink({
   href,
   children,
@@ -44,7 +65,10 @@ function OutlineButtonLink({
       asChild
       variant="outline"
       size={size}
-      className={cn('h-12 rounded-md px-7 text-sm font-semibold dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700', className)}
+      className={cn(
+        'h-12 rounded-md px-7 text-sm font-semibold dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700',
+        className
+      )}
     >
       <Link href={href} {...props}>
         {children}
@@ -53,4 +77,4 @@ function OutlineButtonLink({
   );
 }
 
-export { PrimaryButtonLink, OutlineButtonLink };
+export { PrimaryButtonLink, SecondaryButtonLink, OutlineButtonLink };

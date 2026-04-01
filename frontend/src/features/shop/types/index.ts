@@ -1,4 +1,5 @@
 export interface FeaturedProduct {
+  slug: string;
   name: string;
   subtitle: string;
   price: string;
@@ -96,4 +97,71 @@ export interface ProductListApiResponse {
     min: number;
     max: number;
   };
+}
+
+export type ProductStockStatus = 'in-stock' | 'low-stock' | 'out-of-stock';
+
+export interface ProductGalleryImage {
+  id: string;
+  src: string;
+  alt: string;
+}
+
+export interface ProductDetailSpec {
+  id: string;
+  title: string;
+  description: string;
+  bullets: string[];
+}
+
+export interface ProductMaterialSample {
+  id: string;
+  name: string;
+  image: string;
+}
+
+export interface ProductMaterialShowcase {
+  eyebrow: string;
+  title: string;
+  description: string;
+  samples: ProductMaterialSample[];
+  architectureImage: string;
+  architectureTitle: string;
+  architectureDescription: string;
+}
+
+export interface ProductVideoTour {
+  title: string;
+  description: string;
+  durationLabel: string;
+  coverImage: string;
+}
+
+export interface ProductReviewItem {
+  id: string;
+  author: string;
+  rating: number;
+  comment: string;
+  createdAtLabel: string;
+  helpfulCount: number;
+}
+
+export interface ProductDetail extends ProductListItem {
+  series: string;
+  stockStatus: ProductStockStatus;
+  stockLabel: string;
+  reviewCount: number;
+  gallery: ProductGalleryImage[];
+  switchOptions: ProductSwitchType[];
+  colorOptions: string[];
+  defaultSwitch: ProductSwitchType;
+  defaultColor: string;
+  quantityLimit: number;
+  specsHeading: string;
+  specsDescription: string;
+  technicalSpecs: ProductDetailSpec[];
+  materialShowcase: ProductMaterialShowcase;
+  videoTour: ProductVideoTour;
+  reviewsHeading: string;
+  reviews: ProductReviewItem[];
 }

@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import {
@@ -21,6 +19,7 @@ import ProductToolbar from '@/features/shop/components/ProductToolbar';
 import MobileProductFiltersDrawer from '@/features/shop/components/MobileProductFiltersDrawer';
 import { useProductListQueryState } from '@/features/shop/hooks/useProductListQueryState';
 import { useProductsQuery } from '@/features/shop/hooks/useProductsQuery';
+import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -98,16 +97,13 @@ export default function ProductListPage() {
     <div className="bg-background pb-10">
       <section className="from-background via-accent/20 to-background bg-linear-to-r">
         <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-          <nav
-            aria-label="Breadcrumb"
-            className="text-muted-foreground mb-4 flex items-center gap-1 text-sm"
-          >
-            <Link href="/" className="hover:text-foreground transition-colors">
-              Home
-            </Link>
-            <ChevronRight className="size-4" />
-            <span className="text-foreground">Mechanical Keyboards</span>
-          </nav>
+          <PageBreadcrumb
+            className="mb-4 text-sm"
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Mechanical Keyboards' },
+            ]}
+          />
 
           <h1 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl">
             Mechanical Keyboards

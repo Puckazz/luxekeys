@@ -1,8 +1,10 @@
 import {
   PRODUCT_LIST_PAGE_SIZE,
+  productDetailsBySlug,
   productsCatalog,
 } from '@/features/shop/mocks/products.data';
 import {
+  ProductDetail,
   ProductListApiResponse,
   ProductListQueryState,
 } from '@/features/shop/types';
@@ -40,5 +42,16 @@ export const productsApi = {
       meta: paginated.meta,
       priceBounds: PRODUCT_PRICE_BOUNDS,
     };
+  },
+  getProductDetailBySlug: async (slug: string): Promise<ProductDetail> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const productDetail = productDetailsBySlug[slug];
+
+    if (!productDetail) {
+      throw new Error('Product not found');
+    }
+
+    return productDetail;
   },
 };

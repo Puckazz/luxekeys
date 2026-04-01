@@ -7,6 +7,7 @@ import {
 
 export const featuredProducts: FeaturedProduct[] = [
   {
+    slug: 'mk-90-pro',
     name: 'Obsidian TKL Pro',
     subtitle: 'Gasket Mount / CNC Aluminum',
     price: '$349.00',
@@ -15,6 +16,7 @@ export const featuredProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    slug: 'mode-sixtyfive',
     name: 'Ghost 65 Edition',
     subtitle: 'Polycarbonate / RGB Underglow',
     price: '$289.00',
@@ -23,6 +25,7 @@ export const featuredProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    slug: 'wuque-zoom75',
     name: 'Nebula Keycap Set',
     subtitle: 'PBT Doubleshot / Cherry Profile',
     price: '$125.00',
@@ -31,6 +34,7 @@ export const featuredProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1613141411244-0e4ac259d217?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    slug: 'tofu60-redux',
     name: 'Cobalt Silent Linears',
     subtitle: 'Lubed & Filmed / 36-pack',
     price: '$42.00',
@@ -39,6 +43,7 @@ export const featuredProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    slug: 'keychron-q1-pro',
     name: 'Aurora 60 Build Kit',
     subtitle: 'Hotswap / CNC Frame',
     price: '$219.00',

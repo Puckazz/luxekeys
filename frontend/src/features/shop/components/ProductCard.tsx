@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
@@ -36,10 +37,16 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
   return (
     <Card
       className={cn(
-        'group hover:border-primary/40 hover:shadow-primary/10 overflow-hidden transition-all duration-200 hover:shadow-lg',
+        'group hover:border-primary/40 hover:shadow-primary/10 relative overflow-hidden transition-all duration-200 hover:shadow-lg',
         isList && 'flex flex-col md:flex-row'
       )}
     >
+      <Link
+        href={`/products/${product.slug}`}
+        className="absolute inset-0 z-10"
+        aria-label={`Open details for ${product.name}`}
+      />
+
       <div
         className={cn(
           'relative overflow-hidden',
@@ -95,13 +102,14 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-3">
-          <p className="text-muted-foreground text-xs">
+          {/* <p className="text-muted-foreground text-xs">
             {product.layout} · {product.switchType} ·{' '}
             {product.rating.toFixed(1)} rating
-          </p>
+          </p> */}
           <Button
             variant="secondary"
-            className="h-10 rounded-full px-5 font-semibold"
+            size="lg"
+            className="relative z-20 w-full rounded-full px-4 py-6 font-semibold"
             aria-label={`Add ${product.name} to cart`}
           >
             Add to Cart

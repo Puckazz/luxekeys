@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -41,7 +42,7 @@ export default function FeaturedCollectionsSection() {
     <section className="mx-auto w-full max-w-7xl px-4 pb-18 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-foreground mb-2 text-2xl md:text-3xl font-bold tracking-tight">
+          <h2 className="text-foreground mb-2 text-2xl font-bold tracking-tight md:text-3xl">
             Featured Collections
           </h2>
           <p className="text-muted-foreground text-xs md:text-sm">
@@ -81,10 +82,10 @@ export default function FeaturedCollectionsSection() {
         <CarouselContent>
           {featuredProducts.map((product) => (
             <CarouselItem
-              key={product.name}
+              key={product.slug}
               className="basis-full sm:basis-1/2 lg:basis-1/4"
             >
-              <article className="group">
+              <Link href={`/products/${product.slug}`} className="group block">
                 <div className="border-border/60 bg-card/35 relative overflow-hidden rounded-xl border">
                   <div className="relative aspect-square overflow-hidden">
                     <Image
@@ -110,7 +111,7 @@ export default function FeaturedCollectionsSection() {
                 <p className="text-primary mt-2 text-lg font-semibold">
                   {product.price}
                 </p>
-              </article>
+              </Link>
             </CarouselItem>
           ))}
         </CarouselContent>
