@@ -2,119 +2,97 @@
 
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   PRODUCT_CASE_MATERIAL_OPTIONS,
   PRODUCT_FEATURE_OPTIONS,
   PRODUCT_LAYOUT_OPTIONS,
-  PRODUCT_LIST_PAGE_SIZE,
   PRODUCT_SORT_OPTIONS,
   PRODUCT_SWITCH_TYPE_OPTIONS,
   productsCatalog,
 } from '@/features/shop/mocks/products.data';
-import {
-  ProductCaseMaterial,
-  ProductFeature,
-  ProductFilterState,
-  ProductLayout,
-  ProductSwitchType,
-} from '@/features/shop/types';
-import {
-  applyProductFilters,
-  paginateProducts,
-} from '@/features/shop/utils/product-list.utils';
+import { ProductListViewMode } from '@/features/shop/types';
+import type { ProductPriceRange } from '@/features/shop/types/product-list.types';
 import ProductCard from '@/features/shop/components/ProductCard';
 import ProductFilters from '@/features/shop/components/ProductFilters';
 import ProductPagination from '@/features/shop/components/ProductPagination';
 import ProductToolbar from '@/features/shop/components/ProductToolbar';
 import MobileProductFiltersDrawer from '@/features/shop/components/MobileProductFiltersDrawer';
+import { useProductListQueryState } from '@/features/shop/hooks/useProductListQueryState';
+import { useProductsQuery } from '@/features/shop/hooks/useProductsQuery';
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const PRODUCT_PRICE_BOUNDS = {
+const PRODUCT_PRICE_BOUNDS_FALLBACK = {
   min: Math.min(...productsCatalog.map((product) => product.price)),
   max: Math.max(...productsCatalog.map((product) => product.price)),
 };
 
-const initialFilterState: ProductFilterState = {
-  layouts: [],
-  switchTypes: [],
-  features: [],
-  caseMaterial: 'All',
-  price: PRODUCT_PRICE_BOUNDS,
-  sort: 'popularity',
-  page: 1,
-  viewMode: 'grid',
-};
-
-const toggleSelection = <T,>(items: T[], value: T): T[] => {
-  return items.includes(value)
-    ? items.filter((item) => item !== value)
-    : [...items, value];
-};
-
 export default function ProductListPage() {
-  const [filterState, setFilterState] =
-    useState<ProductFilterState>(initialFilterState);
+  const [viewMode, setViewMode] = useState<ProductListViewMode>('grid');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-  const filteredProducts = useMemo(() => {
-    return applyProductFilters(productsCatalog, filterState);
-  }, [filterState]);
+  const {
+    queryState,
+    setPage,
+    setSort,
+    setCaseMaterial,
+    setPriceRange,
+    toggleLayouts,
+    toggleSwitchTypes,
+    toggleFeatures,
+    resetFilters,
+  } = useProductListQueryState({
+    priceBounds: PRODUCT_PRICE_BOUNDS_FALLBACK,
+  });
 
-  const paginated = useMemo(() => {
-    return paginateProducts(
-      filteredProducts,
-      filterState.page,
-      PRODUCT_LIST_PAGE_SIZE
-    );
-  }, [filteredProducts, filterState.page]);
+  const productsQuery = useProductsQuery(queryState);
+
+  const products = productsQuery.data?.items ?? [];
+  const totalItems = productsQuery.data?.meta.totalItems ?? 0;
+  const totalPages = productsQuery.data?.meta.totalPages ?? 1;
+  const currentPage = productsQuery.data?.meta.page ?? queryState.page;
+  const priceBounds =
+    productsQuery.data?.priceBounds ?? PRODUCT_PRICE_BOUNDS_FALLBACK;
 
   useEffect(() => {
-    if (filterState.page <= paginated.meta.totalPages) {
+    if (!productsQuery.data) {
       return;
     }
 
-    setFilterState((previous) => ({
-      ...previous,
-      page: paginated.meta.totalPages,
-    }));
-  }, [filterState.page, paginated.meta.totalPages]);
+    if (productsQuery.data.meta.page === queryState.page) {
+      return;
+    }
 
-  const handlePriceChange = (nextPrice: { min: number; max: number }) => {
-    const clampedMin = Math.max(
-      PRODUCT_PRICE_BOUNDS.min,
-      Math.min(nextPrice.min, PRODUCT_PRICE_BOUNDS.max)
-    );
-    const clampedMax = Math.min(
-      PRODUCT_PRICE_BOUNDS.max,
-      Math.max(nextPrice.max, PRODUCT_PRICE_BOUNDS.min)
-    );
-
-    setFilterState((previous) => ({
-      ...previous,
-      price: {
-        min: Math.min(clampedMin, clampedMax),
-        max: Math.max(clampedMin, clampedMax),
-      },
-      page: 1,
-    }));
-  };
-
-  const resetFilters = () => {
-    setFilterState((previous) => ({
-      ...initialFilterState,
-      viewMode: previous.viewMode,
-    }));
-  };
+    setPage(productsQuery.data.meta.page);
+  }, [productsQuery.data, queryState.page, setPage]);
 
   const listClassName = cn(
     'grid gap-5',
-    filterState.viewMode === 'grid'
-      ? 'sm:grid-cols-2 2xl:grid-cols-3'
-      : 'grid-cols-1'
+    viewMode === 'grid' ? 'sm:grid-cols-2 2xl:grid-cols-3' : 'grid-cols-1'
   );
+
+  const sharedFilterProps = {
+    layoutOptions: PRODUCT_LAYOUT_OPTIONS,
+    switchTypeOptions: PRODUCT_SWITCH_TYPE_OPTIONS,
+    featureOptions: PRODUCT_FEATURE_OPTIONS,
+    caseMaterialOptions: PRODUCT_CASE_MATERIAL_OPTIONS,
+    selectedLayouts: queryState.layouts,
+    selectedSwitchTypes: queryState.switchTypes,
+    selectedFeatures: queryState.features,
+    selectedCaseMaterial: queryState.caseMaterial,
+    selectedPrice: queryState.price,
+    priceBounds,
+    onToggleLayout: toggleLayouts,
+    onToggleSwitchType: toggleSwitchTypes,
+    onToggleFeature: toggleFeatures,
+    onCaseMaterialChange: setCaseMaterial,
+    onPriceChange: (nextPrice: ProductPriceRange) => {
+      setPriceRange(nextPrice.min, nextPrice.max);
+    },
+    onReset: resetFilters,
+  };
 
   return (
     <div className="bg-background pb-10">
@@ -145,99 +123,62 @@ export default function ProductListPage() {
         <div className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] xl:gap-8">
           <aside className="hidden lg:block">
             <div className="sticky top-24">
-              <ProductFilters
-                layoutOptions={PRODUCT_LAYOUT_OPTIONS}
-                switchTypeOptions={PRODUCT_SWITCH_TYPE_OPTIONS}
-                featureOptions={PRODUCT_FEATURE_OPTIONS}
-                caseMaterialOptions={PRODUCT_CASE_MATERIAL_OPTIONS}
-                selectedLayouts={filterState.layouts}
-                selectedSwitchTypes={filterState.switchTypes}
-                selectedFeatures={filterState.features}
-                selectedCaseMaterial={filterState.caseMaterial}
-                selectedPrice={filterState.price}
-                priceBounds={PRODUCT_PRICE_BOUNDS}
-                onToggleLayout={(layout: ProductLayout) => {
-                  setFilterState((previous) => ({
-                    ...previous,
-                    layouts: toggleSelection(previous.layouts, layout),
-                    page: 1,
-                  }));
-                }}
-                onToggleSwitchType={(switchType: ProductSwitchType) => {
-                  setFilterState((previous) => ({
-                    ...previous,
-                    switchTypes: toggleSelection(
-                      previous.switchTypes,
-                      switchType
-                    ),
-                    page: 1,
-                  }));
-                }}
-                onToggleFeature={(feature: ProductFeature) => {
-                  setFilterState((previous) => ({
-                    ...previous,
-                    features: toggleSelection(previous.features, feature),
-                    page: 1,
-                  }));
-                }}
-                onCaseMaterialChange={(
-                  material: ProductCaseMaterial | 'All'
-                ) => {
-                  setFilterState((previous) => ({
-                    ...previous,
-                    caseMaterial: material,
-                    page: 1,
-                  }));
-                }}
-                onPriceChange={handlePriceChange}
-                onReset={resetFilters}
-              />
+              <ProductFilters {...sharedFilterProps} />
             </div>
           </aside>
 
           <div>
             <ProductToolbar
-              totalItems={filteredProducts.length}
-              viewMode={filterState.viewMode}
-              sort={filterState.sort}
+              totalItems={totalItems}
+              viewMode={viewMode}
+              sort={queryState.sort}
               sortOptions={PRODUCT_SORT_OPTIONS}
-              onViewModeChange={(mode) => {
-                setFilterState((previous) => ({
-                  ...previous,
-                  viewMode: mode,
-                }));
-              }}
-              onSortChange={(sort) => {
-                setFilterState((previous) => ({
-                  ...previous,
-                  sort,
-                  page: 1,
-                }));
-              }}
+              onViewModeChange={setViewMode}
+              onSortChange={setSort}
               onOpenFilters={() => setIsMobileFiltersOpen(true)}
             />
 
-            {paginated.items.length > 0 ? (
+            {productsQuery.isError ? (
+              <div className="border-border/60 bg-card/30 mt-5 rounded-2xl border p-10 text-center">
+                <h3 className="text-foreground text-lg font-semibold">
+                  Unable to load products
+                </h3>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  Please try again. If the issue persists, check your backend
+                  products API.
+                </p>
+                <Button
+                  className="mt-5"
+                  onClick={() => productsQuery.refetch()}
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : productsQuery.isPending ? (
+              <div className="border-border/60 bg-card/30 mt-5 rounded-2xl border p-10 text-center">
+                <h3 className="text-foreground text-lg font-semibold">
+                  Loading products...
+                </h3>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  Applying filters and preparing results.
+                </p>
+              </div>
+            ) : products.length > 0 ? (
               <div className="mt-5">
                 <div className={listClassName}>
-                  {paginated.items.map((product) => (
+                  {products.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
-                      viewMode={filterState.viewMode}
+                      viewMode={viewMode}
                     />
                   ))}
                 </div>
 
                 <ProductPagination
-                  currentPage={paginated.meta.page}
-                  totalPages={paginated.meta.totalPages}
-                  onPageChange={(nextPage) => {
-                    setFilterState((previous) => ({
-                      ...previous,
-                      page: nextPage,
-                    }));
-                  }}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
                 />
               </div>
             ) : (
@@ -262,46 +203,7 @@ export default function ProductListPage() {
         onClose={() => setIsMobileFiltersOpen(false)}
       >
         <ProductFilters
-          layoutOptions={PRODUCT_LAYOUT_OPTIONS}
-          switchTypeOptions={PRODUCT_SWITCH_TYPE_OPTIONS}
-          featureOptions={PRODUCT_FEATURE_OPTIONS}
-          caseMaterialOptions={PRODUCT_CASE_MATERIAL_OPTIONS}
-          selectedLayouts={filterState.layouts}
-          selectedSwitchTypes={filterState.switchTypes}
-          selectedFeatures={filterState.features}
-          selectedCaseMaterial={filterState.caseMaterial}
-          selectedPrice={filterState.price}
-          priceBounds={PRODUCT_PRICE_BOUNDS}
-          onToggleLayout={(layout: ProductLayout) => {
-            setFilterState((previous) => ({
-              ...previous,
-              layouts: toggleSelection(previous.layouts, layout),
-              page: 1,
-            }));
-          }}
-          onToggleSwitchType={(switchType: ProductSwitchType) => {
-            setFilterState((previous) => ({
-              ...previous,
-              switchTypes: toggleSelection(previous.switchTypes, switchType),
-              page: 1,
-            }));
-          }}
-          onToggleFeature={(feature: ProductFeature) => {
-            setFilterState((previous) => ({
-              ...previous,
-              features: toggleSelection(previous.features, feature),
-              page: 1,
-            }));
-          }}
-          onCaseMaterialChange={(material: ProductCaseMaterial | 'All') => {
-            setFilterState((previous) => ({
-              ...previous,
-              caseMaterial: material,
-              page: 1,
-            }));
-          }}
-          onPriceChange={handlePriceChange}
-          onReset={resetFilters}
+          {...sharedFilterProps}
           className="border-border/70 bg-card/20 p-0"
         />
       </MobileProductFiltersDrawer>

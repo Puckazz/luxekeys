@@ -1,18 +1,12 @@
 'use client';
 
-import { ReactNode } from 'react';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from '@/shared/components/ui/sheet';
-
-type MobileProductFiltersDrawerProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  children: ReactNode;
-};
+import type { MobileProductFiltersDrawerProps } from '@/features/shop/types/product-list.types';
 
 export default function MobileProductFiltersDrawer({
   isOpen,

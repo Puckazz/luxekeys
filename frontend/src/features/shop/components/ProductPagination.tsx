@@ -7,12 +7,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/shared/components/ui/pagination';
-
-type ProductPaginationProps = {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-};
+import type { ProductPaginationProps } from '@/features/shop/types/product-list.types';
 
 const buildPages = (
   currentPage: number,

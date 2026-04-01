@@ -12,37 +12,8 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Slider } from '@/shared/components/ui/slider';
-import {
-  ProductCaseMaterial,
-  ProductFeature,
-  ProductLayout,
-  ProductSwitchType,
-} from '@/features/shop/types';
-
-type PriceRange = {
-  min: number;
-  max: number;
-};
-
-type ProductFiltersProps = {
-  layoutOptions: ProductLayout[];
-  switchTypeOptions: ProductSwitchType[];
-  featureOptions: ProductFeature[];
-  caseMaterialOptions: ProductCaseMaterial[];
-  selectedLayouts: ProductLayout[];
-  selectedSwitchTypes: ProductSwitchType[];
-  selectedFeatures: ProductFeature[];
-  selectedCaseMaterial: ProductCaseMaterial | 'All';
-  selectedPrice: PriceRange;
-  priceBounds: PriceRange;
-  onToggleLayout: (layout: ProductLayout) => void;
-  onToggleSwitchType: (switchType: ProductSwitchType) => void;
-  onToggleFeature: (feature: ProductFeature) => void;
-  onCaseMaterialChange: (material: ProductCaseMaterial | 'All') => void;
-  onPriceChange: (next: PriceRange) => void;
-  onReset: () => void;
-  className?: string;
-};
+import { ProductCaseMaterial } from '@/features/shop/types';
+import type { ProductFiltersProps } from '@/features/shop/types/product-list.types';
 
 const formatCurrency = (value: number): string => {
   return `$${value}`;

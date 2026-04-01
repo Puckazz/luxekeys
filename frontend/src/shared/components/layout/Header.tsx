@@ -177,7 +177,9 @@ export default function Header() {
             aria-label="Account"
             className="hidden md:block"
           >
-            <UserCircle className="size-5" />
+            <Link href="/login">
+              <UserCircle className="size-5" />
+            </Link>
           </Button>
         </div>
       </div>

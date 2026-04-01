@@ -1,7 +1,6 @@
 import { Grid2X2, List, SlidersHorizontal } from 'lucide-react';
 
 import { Button } from '@/shared/components/ui/button';
-import { ProductListViewMode, ProductSortOption } from '@/features/shop/types';
 import {
   Select,
   SelectContent,
@@ -9,21 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-
-type SortOption = {
-  value: ProductSortOption;
-  label: string;
-};
-
-type ProductToolbarProps = {
-  totalItems: number;
-  viewMode: ProductListViewMode;
-  sort: ProductSortOption;
-  sortOptions: SortOption[];
-  onViewModeChange: (mode: ProductListViewMode) => void;
-  onSortChange: (sort: ProductSortOption) => void;
-  onOpenFilters: () => void;
-};
+import type { ProductToolbarProps } from '@/features/shop/types/product-list.types';
 
 export default function ProductToolbar({
   totalItems,
@@ -34,7 +19,9 @@ export default function ProductToolbar({
   onSortChange,
   onOpenFilters,
 }: ProductToolbarProps) {
-  const isSortOption = (value: string): value is ProductSortOption => {
+  const isSortOption = (
+    value: string
+  ): value is ProductToolbarProps['sort'] => {
     return sortOptions.some((option) => option.value === value);
   };
 

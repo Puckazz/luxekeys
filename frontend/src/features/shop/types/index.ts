@@ -69,7 +69,7 @@ export interface ProductListItem {
   createdAt: string;
 }
 
-export interface ProductFilterState {
+export interface ProductListQueryState {
   layouts: ProductLayout[];
   switchTypes: ProductSwitchType[];
   features: ProductFeature[];
@@ -80,7 +80,6 @@ export interface ProductFilterState {
   };
   sort: ProductSortOption;
   page: number;
-  viewMode: ProductListViewMode;
 }
 
 export interface ProductPaginationMeta {
@@ -88,4 +87,13 @@ export interface ProductPaginationMeta {
   pageSize: number;
   totalItems: number;
   totalPages: number;
+}
+
+export interface ProductListApiResponse {
+  items: ProductListItem[];
+  meta: ProductPaginationMeta;
+  priceBounds: {
+    min: number;
+    max: number;
+  };
 }

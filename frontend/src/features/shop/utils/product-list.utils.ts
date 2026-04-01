@@ -1,12 +1,12 @@
 import {
-  ProductFilterState,
   ProductListItem,
+  ProductListQueryState,
   ProductPaginationMeta,
 } from '@/features/shop/types';
 
 const sortProducts = (
   products: ProductListItem[],
-  sortOption: ProductFilterState['sort']
+  sortOption: ProductListQueryState['sort']
 ): ProductListItem[] => {
   const copied = [...products];
 
@@ -29,7 +29,7 @@ const sortProducts = (
 
 export const applyProductFilters = (
   products: ProductListItem[],
-  filterState: ProductFilterState
+  filterState: ProductListQueryState
 ): ProductListItem[] => {
   const filtered = products.filter((product) => {
     if (

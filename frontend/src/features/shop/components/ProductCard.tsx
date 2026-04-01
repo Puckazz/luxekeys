@@ -4,11 +4,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import {
-  ProductCardBadge,
-  ProductListItem,
-  ProductListViewMode,
-} from '@/features/shop/types';
+import { ProductCardBadge } from '@/features/shop/types';
+import type { ProductCardProps } from '@/features/shop/types/product-list.types';
 
 const badgeVariants: Record<
   ProductCardBadge,
@@ -23,11 +20,6 @@ const badgeLabel: Record<ProductCardBadge, string> = {
   new: 'New',
   'in-stock': 'In Stock',
   limited: 'Limited',
-};
-
-type ProductCardProps = {
-  product: ProductListItem;
-  viewMode: ProductListViewMode;
 };
 
 const toCurrency = (value: number): string => {
