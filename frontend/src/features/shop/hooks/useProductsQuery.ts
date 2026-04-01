@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { productsApi } from '@/api/products.api';
-import { ProductListQueryState } from '@/features/shop/types';
+import {
+  ProductListApiResponse,
+  ProductListQueryState,
+} from '@/features/shop/types';
 
 const createProductsQueryKey = (queryState: ProductListQueryState) => {
   return [
@@ -17,10 +20,18 @@ const createProductsQueryKey = (queryState: ProductListQueryState) => {
   ] as const;
 };
 
-export const useProductsQuery = (queryState: ProductListQueryState) => {
+type UseProductsQueryOptions = {
+  initialData?: ProductListApiResponse;
+};
+
+export const useProductsQuery = (
+  queryState: ProductListQueryState,
+  options: UseProductsQueryOptions = {}
+) => {
   return useQuery({
     queryKey: createProductsQueryKey(queryState),
     queryFn: () => productsApi.getProducts(queryState),
     staleTime: 30_000,
+    initialData: options.initialData,
   });
 };

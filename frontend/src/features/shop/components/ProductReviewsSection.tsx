@@ -7,12 +7,10 @@ import type { ProductReviewsSectionProps } from '@/features/shop/types/product-d
 export default function ProductReviewsSection({
   heading,
   reviews,
-  visibleCount,
+  canLoadMore,
+  isLoading = false,
   onLoadMore,
 }: ProductReviewsSectionProps) {
-  const visibleReviews = reviews.slice(0, visibleCount);
-  const canLoadMore = visibleCount < reviews.length;
-
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
       <div className="flex items-end justify-between gap-4">
@@ -29,7 +27,13 @@ export default function ProductReviewsSection({
       </div>
 
       <div className="mt-8">
-        {visibleReviews.map((review, index) => (
+        {isLoading && reviews.length === 0 ? (
+          <p className="text-muted-foreground py-8 text-center text-sm">
+            Loading reviews...
+          </p>
+        ) : null}
+
+        {reviews.map((review, index) => (
           <article key={review.id} className="py-6 sm:py-7">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -65,7 +69,7 @@ export default function ProductReviewsSection({
               {review.helpfulCount} people found this helpful
             </p>
 
-            {index !== visibleReviews.length - 1 ? (
+            {index !== reviews.length - 1 ? (
               <Separator className="mt-6" />
             ) : null}
           </article>

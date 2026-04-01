@@ -102,10 +102,6 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-3">
-          {/* <p className="text-muted-foreground text-xs">
-            {product.layout} · {product.switchType} ·{' '}
-            {product.rating.toFixed(1)} rating
-          </p> */}
           <Button
             variant="secondary"
             size="lg"

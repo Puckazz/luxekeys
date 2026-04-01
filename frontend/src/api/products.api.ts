@@ -7,6 +7,7 @@ import {
   ProductDetail,
   ProductListApiResponse,
   ProductListQueryState,
+  ProductReviewItem,
 } from '@/features/shop/types';
 import {
   applyProductFilters,
@@ -53,5 +54,19 @@ export const productsApi = {
     }
 
     return productDetail;
+  },
+  getProductReviews: async (
+    slug: string,
+    limit: number
+  ): Promise<ProductReviewItem[]> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const productDetail = productDetailsBySlug[slug];
+
+    if (!productDetail) {
+      throw new Error('Product not found');
+    }
+
+    return productDetail.reviews.slice(0, limit);
   },
 };

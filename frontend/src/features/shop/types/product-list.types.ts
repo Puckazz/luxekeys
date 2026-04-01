@@ -3,8 +3,10 @@ import type { ReactNode } from 'react';
 import type {
   ProductCaseMaterial,
   ProductFeature,
+  ProductListApiResponse,
   ProductLayout,
   ProductListItem,
+  ProductListQueryState,
   ProductListViewMode,
   ProductSortOption,
   ProductSwitchType,
@@ -23,6 +25,12 @@ export type ProductSortOptionItem = {
 export type ProductCardProps = {
   product: ProductListItem;
   viewMode: ProductListViewMode;
+};
+
+export type ProductListPageProps = {
+  initialData: ProductListApiResponse;
+  initialQueryState: ProductListQueryState;
+  initialPriceBounds: ProductPriceRange;
 };
 
 export type ProductFiltersProps = {

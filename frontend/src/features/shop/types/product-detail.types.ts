@@ -9,7 +9,7 @@ import type {
 } from '@/features/shop/types';
 
 export type ProductDetailPageProps = {
-  slug: string;
+  product: ProductDetail;
 };
 
 export type ProductDetailHeroProps = {
@@ -47,6 +47,7 @@ export type ProductVideoTourSectionProps = {
 export type ProductReviewsSectionProps = {
   heading: string;
   reviews: ProductReviewItem[];
-  visibleCount: number;
+  canLoadMore: boolean;
+  isLoading?: boolean;
   onLoadMore: () => void;
 };

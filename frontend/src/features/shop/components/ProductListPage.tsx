@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   PRODUCT_CASE_MATERIAL_OPTIONS,
@@ -8,10 +8,12 @@ import {
   PRODUCT_LAYOUT_OPTIONS,
   PRODUCT_SORT_OPTIONS,
   PRODUCT_SWITCH_TYPE_OPTIONS,
-  productsCatalog,
 } from '@/features/shop/mocks/products.data';
 import { ProductListViewMode } from '@/features/shop/types';
-import type { ProductPriceRange } from '@/features/shop/types/product-list.types';
+import type {
+  ProductListPageProps,
+  ProductPriceRange,
+} from '@/features/shop/types/product-list.types';
 import ProductCard from '@/features/shop/components/ProductCard';
 import ProductFilters from '@/features/shop/components/ProductFilters';
 import ProductPagination from '@/features/shop/components/ProductPagination';
@@ -23,12 +25,24 @@ import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const PRODUCT_PRICE_BOUNDS_FALLBACK = {
-  min: Math.min(...productsCatalog.map((product) => product.price)),
-  max: Math.max(...productsCatalog.map((product) => product.price)),
+const getQueryStateKey = (query: ProductListPageProps['initialQueryState']) => {
+  return [
+    query.layouts.join(','),
+    query.switchTypes.join(','),
+    query.features.join(','),
+    query.caseMaterial,
+    query.price.min,
+    query.price.max,
+    query.sort,
+    query.page,
+  ].join('|');
 };
 
-export default function ProductListPage() {
+export default function ProductListPage({
+  initialData,
+  initialQueryState,
+  initialPriceBounds,
+}: ProductListPageProps) {
   const [viewMode, setViewMode] = useState<ProductListViewMode>('grid');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
@@ -43,17 +57,22 @@ export default function ProductListPage() {
     toggleFeatures,
     resetFilters,
   } = useProductListQueryState({
-    priceBounds: PRODUCT_PRICE_BOUNDS_FALLBACK,
+    priceBounds: initialPriceBounds,
   });
 
-  const productsQuery = useProductsQuery(queryState);
+  const isInitialQuery = useMemo(() => {
+    return getQueryStateKey(queryState) === getQueryStateKey(initialQueryState);
+  }, [queryState, initialQueryState]);
+
+  const productsQuery = useProductsQuery(queryState, {
+    initialData: isInitialQuery ? initialData : undefined,
+  });
 
   const products = productsQuery.data?.items ?? [];
   const totalItems = productsQuery.data?.meta.totalItems ?? 0;
   const totalPages = productsQuery.data?.meta.totalPages ?? 1;
   const currentPage = productsQuery.data?.meta.page ?? queryState.page;
-  const priceBounds =
-    productsQuery.data?.priceBounds ?? PRODUCT_PRICE_BOUNDS_FALLBACK;
+  const priceBounds = productsQuery.data?.priceBounds ?? initialPriceBounds;
 
   useEffect(() => {
     if (!productsQuery.data) {
