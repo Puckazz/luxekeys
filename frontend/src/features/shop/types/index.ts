@@ -165,3 +165,19 @@ export interface ProductDetail extends ProductListItem {
   reviewsHeading: string;
   reviews: ProductReviewItem[];
 }
+
+export type {
+  CheckoutConfirmationData,
+  CheckoutDraft,
+  CheckoutFormValues,
+  CheckoutOrderSummaryCardProps,
+  CheckoutPaymentMethodOption,
+  CheckoutPricingBreakdown,
+  CheckoutReviewData,
+  CheckoutShippingOption,
+  CheckoutStepKey,
+  CheckoutStepperProps,
+  PaymentMethodId,
+  ShippingAddress,
+  ShippingMethodId,
+} from '@/features/shop/types/checkout.types';

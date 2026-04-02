@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from '@/shared/components/ui/card';
 import { PrimaryButton } from '@/shared/components/ui/primary-button';
+import { cn } from '@/lib/utils';
 
 const toCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
@@ -63,7 +64,13 @@ export default function CartPage() {
           Shopping Cart
         </h1>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] xl:grid-cols-[minmax(0,1fr)_30rem]">
+        <div
+          className={cn(
+            'mt-8 grid gap-8',
+            items.length > 0 &&
+              'lg:grid-cols-[minmax(0,1fr)_24rem] xl:grid-cols-[minmax(0,1fr)_30rem]'
+          )}
+        >
           <div>
             {items.length === 0 ? (
               <div className="border-border/70 bg-card/30 rounded-2xl border p-10 text-center">
@@ -161,47 +168,51 @@ export default function CartPage() {
             )}
           </div>
 
-          <Card className="border-border/70 bg-card/40 h-fit lg:sticky lg:top-24">
-            <CardHeader>
-              <CardTitle className="text-xl">Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="gap-3">
-              <div className="text-muted-foreground flex items-center justify-between text-sm">
-                <span>Subtotal</span>
-                <span className="text-foreground font-semibold">
-                  {toCurrency(subtotal)}
-                </span>
-              </div>
-              <div className="text-muted-foreground flex items-center justify-between text-sm">
-                <span>Shipping estimate</span>
-                <span className="text-foreground font-semibold">
-                  {toCurrency(shippingEstimate)}
-                </span>
-              </div>
-              <div className="text-muted-foreground flex items-center justify-between text-sm">
-                <span>Tax estimate</span>
-                <span className="text-foreground font-semibold">
-                  {toCurrency(taxEstimate)}
-                </span>
-              </div>
-
-              <div className="border-border/70 mt-1 border-t py-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-foreground text-base font-semibold">
-                    Order total
-                  </p>
-                  <p className="text-foreground text-xl font-black">
-                    {toCurrency(orderTotal)}
-                  </p>
+          {items.length > 0 ? (
+            <Card className="border-border/70 bg-card/40 h-fit lg:sticky lg:top-24">
+              <CardHeader>
+                <CardTitle className="text-xl">Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="gap-3">
+                <div className="text-muted-foreground flex items-center justify-between text-sm">
+                  <span>Subtotal</span>
+                  <span className="text-foreground font-semibold">
+                    {toCurrency(subtotal)}
+                  </span>
                 </div>
-              </div>
+                <div className="text-muted-foreground flex items-center justify-between text-sm">
+                  <span>Shipping estimate</span>
+                  <span className="text-foreground font-semibold">
+                    {toCurrency(shippingEstimate)}
+                  </span>
+                </div>
+                <div className="text-muted-foreground flex items-center justify-between text-sm">
+                  <span>Tax estimate</span>
+                  <span className="text-foreground font-semibold">
+                    {toCurrency(taxEstimate)}
+                  </span>
+                </div>
 
-              <PrimaryButton>
-                Proceed to Checkout
-                <ArrowRight className="size-4" />
-              </PrimaryButton>
-            </CardContent>
-          </Card>
+                <div className="border-border/70 mt-1 border-t py-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-foreground text-base font-semibold">
+                      Order total
+                    </p>
+                    <p className="text-foreground text-xl font-black">
+                      {toCurrency(orderTotal)}
+                    </p>
+                  </div>
+                </div>
+
+                <PrimaryButton asChild>
+                  <Link href="/checkout">
+                    Proceed to Checkout
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </PrimaryButton>
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </section>
 
