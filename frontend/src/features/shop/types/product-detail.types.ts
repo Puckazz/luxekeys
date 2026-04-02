@@ -23,6 +23,7 @@ export type ProductDetailHeroProps = {
   onColorSelect: (color: string) => void;
   onQuantityDecrease: () => void;
   onQuantityIncrease: () => void;
+  onAddToCart: () => void;
 };
 
 export type ProductStockBadgeProps = {

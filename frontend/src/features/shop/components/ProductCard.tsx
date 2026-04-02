@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
+import { useCartStore } from '@/features/shop/hooks/useCartStore';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -33,6 +34,7 @@ const toCurrency = (value: number): string => {
 
 export default function ProductCard({ product, viewMode }: ProductCardProps) {
   const isList = viewMode === 'list';
+  const addItem = useCartStore((state) => state.addItem);
 
   return (
     <Card
@@ -107,6 +109,19 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
             size="lg"
             className="relative z-20 w-full rounded-full px-4 py-6 font-semibold"
             aria-label={`Add ${product.name} to cart`}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+
+              addItem({
+                slug: product.slug,
+                name: product.name,
+                variantLabel: `${product.layout} / ${product.switchType}`,
+                unitPrice: product.price,
+                image: product.image,
+                quantity: 1,
+              });
+            }}
           >
             Add to Cart
           </Button>

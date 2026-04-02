@@ -60,8 +60,10 @@ export default function ProductDetailHeroSection({
   onColorSelect,
   onQuantityDecrease,
   onQuantityIncrease,
+  onAddToCart,
 }: ProductDetailHeroProps) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const thumbnailScrollerRef = useRef<HTMLDivElement | null>(null);
   const thumbnailButtonRefs = useRef<Record<string, HTMLButtonElement | null>>(
     {}
   );
@@ -112,22 +114,35 @@ export default function ProductDetailHeroSection({
   }, [carouselApi, onImageSelect, product.gallery, selectedImageId]);
 
   useEffect(() => {
+    const scroller = thumbnailScrollerRef.current;
     const activeThumbnail = thumbnailButtonRefs.current[selectedImageId];
 
-    if (!activeThumbnail) {
+    if (!scroller || !activeThumbnail) {
       return;
     }
 
-    activeThumbnail.scrollIntoView({
-      behavior: 'smooth',
-      inline: 'nearest',
-      block: 'nearest',
-    });
+    const leftEdge = scroller.scrollLeft;
+    const rightEdge = leftEdge + scroller.clientWidth;
+    const thumbLeft = activeThumbnail.offsetLeft;
+    const thumbRight = thumbLeft + activeThumbnail.offsetWidth;
+
+    if (thumbLeft < leftEdge) {
+      scroller.scrollTo({ left: thumbLeft - 8, behavior: 'smooth' });
+      return;
+    }
+
+    if (thumbRight > rightEdge) {
+      scroller.scrollTo({
+        left: thumbRight - scroller.clientWidth + 8,
+        behavior: 'smooth',
+      });
+    }
   }, [selectedImageId]);
 
   return (
     <section className="from-background via-background to-accent/10 bg-linear-to-b">
       <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+        {/* Top breadcrumb */}
         <PageBreadcrumb
           className="mb-4 text-xs font-medium tracking-wide sm:text-sm"
           items={[
@@ -136,7 +151,9 @@ export default function ProductDetailHeroSection({
           ]}
         />
 
+        {/* Main 2-column hero layout */}
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-10">
+          {/* Left column: gallery + thumbnails */}
           <div>
             <Carousel setApi={setCarouselApi} className="relative">
               <CarouselContent>
@@ -173,7 +190,11 @@ export default function ProductDetailHeroSection({
               />
             </Carousel>
 
-            <div className="mt-5 overflow-x-auto px-0.5 pb-1">
+            {/* Horizontal thumbnail scroller (5 visible per view) */}
+            <div
+              ref={thumbnailScrollerRef}
+              className="mt-5 overflow-x-auto px-0.5 pb-1"
+            >
               <div className="flex min-w-max gap-2">
                 {product.gallery.map((image) => {
                   const isActive = image.id === selectedImageId;
@@ -190,7 +211,7 @@ export default function ProductDetailHeroSection({
                       className={
                         isActive
                           ? 'border-primary/90 focus-visible:ring-ring relative aspect-square shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset'
-                          : 'hover:border-primary/90 focus-visible:ring-ring relative aspect-square shrink-0 overflow-hidden rounded-xl border-2 border-transparent transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset'
+                          : 'hover:border-muted-foreground/80 focus-visible:ring-ring relative aspect-square shrink-0 overflow-hidden rounded-xl border-2 border-transparent transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset'
                       }
                       aria-label={`Show image ${image.alt}`}
                       aria-pressed={isActive}
@@ -209,8 +230,9 @@ export default function ProductDetailHeroSection({
             </div>
           </div>
 
+          {/* Right column: product info + purchase actions */}
           <div>
-            <h1 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+            <h1 className="text-foreground text-2xl font-black tracking-normal sm:text-3xl lg:text-4xl">
               {product.name}
             </h1>
 
@@ -241,7 +263,7 @@ export default function ProductDetailHeroSection({
               />
             </div>
 
-            <p className="text-foreground mt-5 text-4xl font-extrabold tracking-tight lg:text-[2.65rem]">
+            <p className="text-foreground mt-5 text-2xl font-bold lg:text-3xl">
               {toCurrency(product.price)}
             </p>
 
@@ -328,7 +350,10 @@ export default function ProductDetailHeroSection({
             </div>
 
             <div className="mt-9 flex gap-3">
-              <Button className="h-12 flex-1 rounded-full text-sm font-semibold sm:text-base">
+              <Button
+                className="h-12 flex-1 rounded-full text-sm font-semibold sm:text-base"
+                onClick={onAddToCart}
+              >
                 <ShoppingCart className="mr-2 size-4" />
                 Add to Cart
               </Button>
@@ -343,7 +368,8 @@ export default function ProductDetailHeroSection({
               </Button>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {/* Delivery and return policy cards */}
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="border-border/70 bg-card/35 flex min-h-28 flex-col items-center justify-center rounded-2xl border px-4 py-5 text-center">
                 <Truck className="text-foreground size-5" />
                 <p className="text-foreground mt-3 text-sm leading-relaxed">
@@ -364,7 +390,8 @@ export default function ProductDetailHeroSection({
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2.5">
+            {/* Safe checkout row */}
+            <div className="mt-6 flex flex-wrap items-center gap-2.5">
               <div className="mr-2 flex items-center gap-2">
                 <ShieldCheck className="text-foreground size-4" />
                 <p className="text-foreground text-sm leading-tight font-semibold">

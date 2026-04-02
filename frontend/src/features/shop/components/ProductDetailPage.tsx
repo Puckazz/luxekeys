@@ -7,12 +7,15 @@ import ProductMaterialsSection from '@/features/shop/components/ProductMaterials
 import ProductReviewsSection from '@/features/shop/components/ProductReviewsSection';
 import ProductTechnicalSpecsSection from '@/features/shop/components/ProductTechnicalSpecsSection';
 import ProductVideoTourSection from '@/features/shop/components/ProductVideoTourSection';
+import { useCartStore } from '@/features/shop/hooks/useCartStore';
 import { useProductReviewsQuery } from '@/features/shop/hooks/useProductReviewsQuery';
 import { ProductSwitchType } from '@/features/shop/types';
 import type { ProductDetailPageProps } from '@/features/shop/types/product-detail.types';
 import { Separator } from '@/shared/components/ui/separator';
 
 export default function ProductDetailPage({ product }: ProductDetailPageProps) {
+  const addItem = useCartStore((state) => state.addItem);
+
   const [selectedImageId, setSelectedImageId] = useState(
     product.gallery[0]?.id ?? ''
   );
@@ -47,6 +50,19 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     setQuantity((previous) => Math.max(previous - 1, 1));
   };
 
+  const handleAddToCart = () => {
+    addItem({
+      slug: product.slug,
+      name: product.name,
+      variantLabel: `${selectedColor} / ${selectedSwitch}`,
+      unitPrice: product.price,
+      image: product.image,
+      quantity,
+    });
+
+    setQuantity(1);
+  };
+
   const reviews = productReviewsQuery.data ?? [];
   const canLoadMore = visibleReviews < product.reviews.length;
 
@@ -63,6 +79,7 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
         onColorSelect={setSelectedColor}
         onQuantityDecrease={decreaseQuantity}
         onQuantityIncrease={increaseQuantity}
+        onAddToCart={handleAddToCart}
       />
 
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react';
+import { Star, ThumbsUp } from 'lucide-react';
 
 import { Button } from '@/shared/components/ui/button';
 import { Separator } from '@/shared/components/ui/separator';
@@ -65,9 +65,13 @@ export default function ProductReviewsSection({
             <p className="text-muted-foreground mt-3.5 max-w-5xl text-sm leading-7">
               {review.comment}
             </p>
-            <p className="text-primary mt-3 text-xs font-medium tracking-wide">
-              {review.helpfulCount} people found this helpful
-            </p>
+
+            <div className="mt-3 flex items-center gap-2">
+              <ThumbsUp size={14} />
+              <p className="text-muted-foreground text-xs leading-6 font-medium tracking-wide">
+                Helpful ({review.helpfulCount})
+              </p>
+            </div>
 
             {index !== reviews.length - 1 ? (
               <Separator className="mt-6" />

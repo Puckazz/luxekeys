@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Heart,
@@ -19,6 +21,10 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/shared/components/ui/navigation-menu';
+import {
+  selectCartTotalQuantity,
+  useCartStore,
+} from '@/features/shop/hooks/useCartStore';
 
 const navLinkClass =
   'group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent! min-[1400px]:px-4 px-2 py-2 text-base font-bold outline-none transition-[color,background-color] hover:text-accent-foreground hover:bg-transparent! focus:bg-transparent! disabled:pointer-events-none disabled:opacity-50 data-active:bg-transparent data-state-open:bg-transparent';
@@ -71,6 +77,8 @@ const navSections = [
 ];
 
 export default function Header() {
+  const cartCount = useCartStore(selectCartTotalQuantity);
+
   return (
     <header className="border-border bg-background/85 sticky top-0 z-40 border-b backdrop-blur-md">
       <div className="relative mx-auto flex h-20 w-full max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
@@ -165,8 +173,15 @@ export default function Header() {
           >
             <SearchIcon className="size-5" />
           </Button>
-          <Button variant="ghost" size="icon-sm" aria-label="Cart">
-            <ShoppingBag className="size-5" />
+          <Button variant="ghost" size="icon-sm" asChild>
+            <Link href="/cart" aria-label="Cart" className="relative">
+              <ShoppingBag className="size-5" />
+              {cartCount > 0 ? (
+                <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              ) : null}
+            </Link>
           </Button>
           <Button variant="ghost" size="icon-sm" aria-label="Account">
             <Heart className="size-5" />
