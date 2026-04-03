@@ -3,6 +3,7 @@ export interface FeaturedProduct {
   name: string;
   subtitle: string;
   price: string;
+  discountPercentage?: number;
   badge: string | null;
   image: string;
 }
@@ -58,6 +59,7 @@ export interface ProductListItem {
   brand: string;
   description: string;
   price: number;
+  discountPercentage?: number;
   image: string;
   badge?: ProductCardBadge;
   layout: ProductLayout;

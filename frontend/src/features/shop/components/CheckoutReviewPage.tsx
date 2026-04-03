@@ -50,10 +50,6 @@ export default function CheckoutReviewPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <h1 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl">
-        Checkout
-      </h1>
-
       <div className="mt-6">
         <CheckoutStepper currentStep="review" />
       </div>
@@ -123,7 +119,7 @@ export default function CheckoutReviewPage() {
                 <p className="text-muted-foreground text-sm">
                   {review.paymentMethod.description}
                 </p>
-                <Badge variant="secondary" className="w-fit text-xs">
+                <Badge variant="tag" className="w-fit text-xs">
                   {review.shippingMethod.label}
                 </Badge>
               </CardContent>

@@ -12,7 +12,8 @@ const badgeVariants = cva(
         secondary: 'bg-accent/70 text-accent-foreground',
         success: 'bg-emerald-500/90 text-white',
         warning: 'bg-amber-400/90 text-black',
-        tag: 'bg-slate-700 text-white'
+        destructive: 'bg-destructive text-destructive-foreground',
+        tag: 'bg-slate-700 text-white',
       },
     },
     defaultVariants: {

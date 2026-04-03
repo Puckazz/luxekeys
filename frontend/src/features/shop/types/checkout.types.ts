@@ -93,6 +93,7 @@ export type CheckoutOrderSummaryCardProps = {
   promoInputValue?: string;
   onPromoInputChange?: (value: string) => void;
   onApplyPromo?: () => void;
+  onClearPromo?: () => void;
   legalText?: string;
   sticky?: boolean;
 };

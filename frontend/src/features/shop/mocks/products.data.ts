@@ -60,6 +60,7 @@ export const productsCatalog: ProductListItem[] = [
     description:
       'Premium 75% gasket-mounted keyboard engineered for deep acoustics and fast response.',
     price: 349,
+    discountPercentage: 15,
     image:
       'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1400&q=80',
     badge: 'in-stock',
@@ -80,6 +81,7 @@ export const productsCatalog: ProductListItem[] = [
     description:
       '75% aluminum wireless mechanical keyboard with QMK/VIA support.',
     price: 199,
+    discountPercentage: 10,
     image:
       'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1200&q=80',
     badge: 'new',
@@ -119,6 +121,7 @@ export const productsCatalog: ProductListItem[] = [
     brand: 'NuPhy',
     description: 'Ultra-slim 75% wireless keyboard with low profile switches.',
     price: 129,
+    discountPercentage: 20,
     image:
       'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1200&q=80',
     badge: 'limited',
@@ -175,6 +178,7 @@ export const productsCatalog: ProductListItem[] = [
     brand: 'Wuque Studio',
     description: 'Modular 75% keyboard with optional screen and knob modules.',
     price: 179,
+    discountPercentage: 12,
     image:
       'https://images.unsplash.com/photo-1611078489935-0cb964de46d6?auto=format&fit=crop&w=1200&q=80',
     layout: '75%',
@@ -303,6 +307,7 @@ export const productsCatalog: ProductListItem[] = [
     brand: 'Wooting',
     description: 'Hall effect analog keyboard with rapid trigger performance.',
     price: 174,
+    discountPercentage: 8,
     image:
       'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=1200&q=80',
     badge: 'in-stock',

@@ -48,12 +48,6 @@ export const checkoutPaymentOptions: CheckoutPaymentMethodOption[] = [
     shortLabel: 'MO',
   },
   {
-    id: 'zalopay',
-    label: 'ZaloPay',
-    description: 'Safe and fast',
-    shortLabel: 'ZA',
-  },
-  {
     id: 'card',
     label: 'Credit Card',
     description: 'Visa, Mastercard, JCB',

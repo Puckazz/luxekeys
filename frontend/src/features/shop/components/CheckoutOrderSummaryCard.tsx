@@ -1,9 +1,13 @@
 'use client';
 
 import Image from 'next/image';
+import { X } from 'lucide-react';
 
 import type { CheckoutOrderSummaryCardProps } from '@/features/shop/types/checkout.types';
-import { formatCurrency } from '@/features/shop/utils/checkout.utils';
+import {
+  formatCurrency,
+  normalizePromoCode,
+} from '@/features/shop/utils/checkout.utils';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -28,9 +32,16 @@ export default function CheckoutOrderSummaryCard({
   promoInputValue,
   onPromoInputChange,
   onApplyPromo,
+  onClearPromo,
   legalText,
   sticky = true,
 }: CheckoutOrderSummaryCardProps) {
+  const normalizedDiscountInput = normalizePromoCode(promoInputValue);
+  const hasAppliedDiscount =
+    Boolean(promoCode) &&
+    pricing.discount > 0 &&
+    promoCode === normalizedDiscountInput;
+
   return (
     <Card
       className={cn(
@@ -46,7 +57,7 @@ export default function CheckoutOrderSummaryCard({
         <div className="space-y-3">
           {items.map((item) => (
             <div key={item.id} className="flex items-center gap-3">
-              <div className="border-border/70 bg-card/70 relative size-14 shrink-0 overflow-hidden rounded-sm border">
+              <div className="border-border/70 bg-card/70 relative size-14 shrink-0 overflow-hidden rounded-[12px] border">
                 <Image
                   src={item.image}
                   alt={item.name}
@@ -106,8 +117,8 @@ export default function CheckoutOrderSummaryCard({
 
         <div className="border-border/70 border-t pt-4">
           <div className="flex items-center justify-between">
-            <p className="text-foreground text-xl font-bold">Total</p>
-            <p className="text-primary text-3xl font-black">
+            <p className="text-foreground text-lg font-bold">Total</p>
+            <p className="text-primary text-2xl font-black">
               {formatCurrency(pricing.total)}
             </p>
           </div>
@@ -116,23 +127,36 @@ export default function CheckoutOrderSummaryCard({
         {onPromoInputChange && onApplyPromo ? (
           <div className="border-border/70 bg-card/40 rounded-xl border p-3">
             <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              Have a promo code?
+              Have a discount code?
             </p>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 flex items-center gap-2">
               <Input
                 value={promoInputValue}
                 onChange={(event) => onPromoInputChange(event.target.value)}
-                placeholder="Enter code"
+                placeholder="Enter discount code"
                 className="h-10"
               />
               <Button
                 type="button"
-                variant="outline"
-                size="sm"
+                variant="secondary"
+                size="lg"
                 onClick={onApplyPromo}
+                className="px-4"
+                disabled={!normalizedDiscountInput || hasAppliedDiscount}
               >
                 Apply
               </Button>
+              {hasAppliedDiscount && onClearPromo ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Clear discount code"
+                  onClick={onClearPromo}
+                >
+                  <X className="size-4" />
+                </Button>
+              ) : null}
             </div>
           </div>
         ) : null}

@@ -11,6 +11,7 @@ export const featuredProducts: FeaturedProduct[] = [
     name: 'Obsidian TKL Pro',
     subtitle: 'Gasket Mount / CNC Aluminum',
     price: '$349.00',
+    discountPercentage: 15,
     badge: 'In Stock',
     image:
       'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1200&q=80',
@@ -20,6 +21,7 @@ export const featuredProducts: FeaturedProduct[] = [
     name: 'Ghost 65 Edition',
     subtitle: 'Polycarbonate / RGB Underglow',
     price: '$289.00',
+    discountPercentage: 10,
     badge: 'Limited',
     image:
       'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=1200&q=80',
@@ -47,6 +49,7 @@ export const featuredProducts: FeaturedProduct[] = [
     name: 'Aurora 60 Build Kit',
     subtitle: 'Hotswap / CNC Frame',
     price: '$219.00',
+    discountPercentage: 20,
     badge: null,
     image:
       'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1200&q=80',

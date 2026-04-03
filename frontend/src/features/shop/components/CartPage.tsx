@@ -4,16 +4,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Minus, Plus, Trash2 } from 'lucide-react';
 
-import FeaturedCollectionsSection from '@/features/shop/components/FeaturedCollectionsSection';
-import {
-  cartPricing,
-  youMightAlsoLikeProducts,
-} from '@/features/shop/mocks/cart.data';
+import ProductCollectionSection from '@/features/shop/components/ProductCollectionSection';
+import { youMightAlsoLikeProducts } from '@/features/shop/mocks/cart.data';
 import {
   selectCartItems,
   selectCartSubtotal,
   useCartStore,
 } from '@/features/shop/hooks/useCartStore';
+import { buildOrderPricing } from '@/features/shop/utils/checkout.utils';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -44,9 +42,11 @@ export default function CartPage() {
     return null;
   }
 
-  const shippingEstimate = items.length > 0 ? cartPricing.shippingEstimate : 0;
-  const taxEstimate = subtotal * cartPricing.taxRate;
-  const orderTotal = subtotal + shippingEstimate + taxEstimate;
+  const pricing = buildOrderPricing({
+    subtotal,
+    shippingFee: 0,
+    discountRate: 0,
+  });
 
   const updateQuantity = (id: string, nextQuantity: number) => {
     setQuantity(id, nextQuantity);
@@ -177,19 +177,19 @@ export default function CartPage() {
                 <div className="text-muted-foreground flex items-center justify-between text-sm">
                   <span>Subtotal</span>
                   <span className="text-foreground font-semibold">
-                    {toCurrency(subtotal)}
+                    {toCurrency(pricing.subtotal)}
                   </span>
                 </div>
                 <div className="text-muted-foreground flex items-center justify-between text-sm">
                   <span>Shipping estimate</span>
                   <span className="text-foreground font-semibold">
-                    {toCurrency(shippingEstimate)}
+                    {toCurrency(pricing.shipping)}
                   </span>
                 </div>
                 <div className="text-muted-foreground flex items-center justify-between text-sm">
                   <span>Tax estimate</span>
                   <span className="text-foreground font-semibold">
-                    {toCurrency(taxEstimate)}
+                    {toCurrency(pricing.estimatedTax)}
                   </span>
                 </div>
 
@@ -199,7 +199,7 @@ export default function CartPage() {
                       Order total
                     </p>
                     <p className="text-foreground text-xl font-black">
-                      {toCurrency(orderTotal)}
+                      {toCurrency(pricing.total)}
                     </p>
                   </div>
                 </div>
@@ -216,13 +216,13 @@ export default function CartPage() {
         </div>
       </section>
 
-      <FeaturedCollectionsSection
+      <ProductCollectionSection
         title="You might also like"
-        products={youMightAlsoLikeProducts}
         description={undefined}
-        variant="compact"
+        products={youMightAlsoLikeProducts}
         showControls={false}
         viewAllHref="/products"
+        viewAllLabel="View all"
         className="pb-14"
       />
     </div>

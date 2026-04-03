@@ -90,10 +90,6 @@ const renderPaymentBadgeLabel = (
     return 'MoMo';
   }
 
-  if (paymentMethod === 'zalopay') {
-    return 'ZaloPay';
-  }
-
   if (paymentMethod === 'card') {
     return <CreditCard className="size-5" />;
   }
@@ -136,7 +132,7 @@ const getDefaultValues = (
       cardNumber: '',
       expiry: '',
       cvc: '',
-      promoCode: 'SUMMER24',
+      promoCode: '',
       notes: '',
     };
   }
@@ -255,9 +251,6 @@ export default function CheckoutPage() {
   if (cartItems.length === 0) {
     return (
       <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <h1 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl">
-          Checkout
-        </h1>
         <div className="border-border/70 bg-card/40 mt-8 rounded-2xl border p-10 text-center">
           <p className="text-foreground text-lg font-semibold">
             Your cart is empty.
@@ -276,10 +269,6 @@ export default function CheckoutPage() {
   return (
     <div className="bg-background">
       <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <h1 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl">
-          Checkout
-        </h1>
-
         <div className="mt-6">
           <CheckoutStepper currentStep={checkoutStep} />
         </div>
@@ -308,7 +297,9 @@ export default function CheckoutPage() {
                   <label className="text-foreground text-sm font-semibold">
                     Full Name
                   </label>
-                  <Input {...register('fullName')} />
+                  <div className="relative mt-2">
+                    <Input {...register('fullName')} />
+                  </div>
                   {errors.fullName ? (
                     <p className="text-destructive text-xs font-medium">
                       {errors.fullName.message}
@@ -321,7 +312,7 @@ export default function CheckoutPage() {
                     <label className="text-foreground text-sm font-semibold">
                       Email Address
                     </label>
-                    <div className="relative">
+                    <div className="relative mt-2">
                       <Mail className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                       <Input {...register('email')} className="pl-9" />
                     </div>
@@ -336,7 +327,7 @@ export default function CheckoutPage() {
                     <label className="text-foreground text-sm font-semibold">
                       Phone Number
                     </label>
-                    <div className="relative">
+                    <div className="relative mt-2">
                       <Phone className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                       <Input {...register('phone')} className="pl-9" />
                     </div>
@@ -352,7 +343,9 @@ export default function CheckoutPage() {
                   <label className="text-foreground text-sm font-semibold">
                     Street Address
                   </label>
-                  <Input {...register('streetAddress')} />
+                  <div className="relative mt-2">
+                    <Input {...register('streetAddress')} />
+                  </div>
                   {hasValidatedAddress ? (
                     <p className="flex items-center gap-1 text-xs font-medium text-emerald-400">
                       <CheckCircle2 className="size-3.5" />
@@ -371,6 +364,7 @@ export default function CheckoutPage() {
                     <label className="text-foreground text-sm font-semibold">
                       City
                     </label>
+                    <div className="mt-1"></div>
                     <Controller
                       control={control}
                       name="city"
@@ -410,6 +404,7 @@ export default function CheckoutPage() {
                     <label className="text-foreground text-sm font-semibold">
                       District
                     </label>
+                    <div className="mt-1"></div>
                     <Controller
                       control={control}
                       name="district"
@@ -418,7 +413,7 @@ export default function CheckoutPage() {
                           value={field.value}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger className="bg-input/30 h-12 w-full rounded-md">
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -457,7 +452,7 @@ export default function CheckoutPage() {
                             key={option.id}
                             htmlFor={`shipping-${option.id}`}
                             className={cn(
-                              'border-border/80 bg-input/30 flex min-h-20 cursor-pointer items-start justify-between rounded-2xl border p-5 transition-colors',
+                              'border-border/80 bg-input/30 flex min-h-20 cursor-pointer items-start justify-between rounded-2xl border-2 p-5 transition-colors',
                               field.value === option.id &&
                                 'border-primary bg-primary/12 shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.35)]'
                             )}
@@ -515,7 +510,7 @@ export default function CheckoutPage() {
                           key={option.id}
                           htmlFor={`payment-${option.id}`}
                           className={cn(
-                            'border-border/80 bg-input/30 flex min-h-42 cursor-pointer flex-col justify-between rounded-3xl border p-5 transition-colors',
+                            'border-border/80 bg-input/30 flex min-h-42 cursor-pointer flex-col justify-between rounded-3xl border-2 p-5 transition-colors',
                             field.value === option.id &&
                               'border-primary bg-primary/10 shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.35)]'
                           )}
@@ -654,6 +649,10 @@ export default function CheckoutPage() {
               setValue('promoCode', promoInputValue.trim().toUpperCase(), {
                 shouldValidate: true,
               });
+            }}
+            onClearPromo={() => {
+              setValue('promoCode', '', { shouldValidate: true });
+              setPromoInputValue('');
             }}
             legalText="By clicking 'Continue to Review', you agree to our Terms of Service and Privacy Policy."
           />

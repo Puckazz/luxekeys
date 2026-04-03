@@ -1,16 +1,9 @@
-import Footer from '@/shared/components/layout/Footer';
-import Header from '@/shared/components/layout/Header';
+import ShopLayoutShell from '../../shared/components/layout/ShopLayoutShell';
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
-  );
+  return <ShopLayoutShell>{children}</ShopLayoutShell>;
 }

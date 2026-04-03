@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import MobileNavMenu from '@/shared/components/layout/MobileNavMenu';
+import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -25,6 +26,10 @@ import {
   selectCartTotalQuantity,
   useCartStore,
 } from '@/features/shop/hooks/useCartStore';
+import {
+  selectWishlistCount,
+  useWishlistStore,
+} from '@/features/shop/hooks/useWishlistStore';
 
 const navLinkClass =
   'group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent! min-[1400px]:px-4 px-2 py-2 text-base font-bold outline-none transition-[color,background-color] hover:text-accent-foreground hover:bg-transparent! focus:bg-transparent! disabled:pointer-events-none disabled:opacity-50 data-active:bg-transparent data-state-open:bg-transparent';
@@ -76,8 +81,12 @@ const navSections = [
   { trigger: 'Accessories', items: accessoryItems },
 ];
 
+const countBadgeClass =
+  'absolute top-0 right-0 inline-flex h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full px-1 py-0 text-[10px] leading-none font-bold normal-case tracking-normal';
+
 export default function Header() {
   const cartCount = useCartStore(selectCartTotalQuantity);
+  const wishlistCount = useWishlistStore(selectWishlistCount);
 
   return (
     <header className="border-border bg-background/85 sticky top-0 z-40 border-b backdrop-blur-md">
@@ -177,14 +186,21 @@ export default function Header() {
             <Link href="/cart" aria-label="Cart" className="relative">
               <ShoppingBag className="size-5" />
               {cartCount > 0 ? (
-                <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold">
+                <Badge className={countBadgeClass}>
                   {cartCount > 99 ? '99+' : cartCount}
-                </span>
+                </Badge>
               ) : null}
             </Link>
           </Button>
-          <Button variant="ghost" size="icon-sm" aria-label="Account">
-            <Heart className="size-5" />
+          <Button variant="ghost" size="icon-sm" asChild>
+            <Link href="/wishlist" aria-label="Wishlist" className="relative">
+              <Heart className="size-5" />
+              {wishlistCount > 0 ? (
+                <Badge className={countBadgeClass}>
+                  {wishlistCount > 99 ? '99+' : wishlistCount}
+                </Badge>
+              ) : null}
+            </Link>
           </Button>
           <Button
             variant="ghost"

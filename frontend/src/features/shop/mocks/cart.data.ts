@@ -35,6 +35,7 @@ export const youMightAlsoLikeProducts: FeaturedProduct[] = [
     name: 'Fast Wireless Charging Pad',
     subtitle: '15W Qi-Certified',
     price: '$39.99',
+    discountPercentage: 12,
     badge: null,
     image:
       'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=1200&q=80',
@@ -44,6 +45,7 @@ export const youMightAlsoLikeProducts: FeaturedProduct[] = [
     name: 'Ergonomic Wireless Mouse',
     subtitle: 'Dark Grey',
     price: '$89.00',
+    discountPercentage: 18,
     badge: null,
     image:
       'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=1200&q=80',

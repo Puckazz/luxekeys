@@ -43,7 +43,7 @@ export default function ProductToolbar({
         products
       </p>
 
-      <div className="bg-background/70 border-border/70 inline-flex items-center rounded-full border p-1">
+      <div className="bg-input/30 border-border/70 inline-flex items-center rounded-full border p-1 gap-1">
         <Button
           size="sm"
           variant={viewMode === 'grid' ? 'default' : 'ghost'}
