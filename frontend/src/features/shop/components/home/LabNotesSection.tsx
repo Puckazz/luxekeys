@@ -1,8 +1,8 @@
 import Image from 'next/image';
 
-import { labNotes } from '@/features/shop/mocks/homepage.data';
+import type { LabNotesSectionProps } from '@/features/shop/types/homepage-sections.types';
 
-export default function LabNotesSection() {
+export default function LabNotesSection({ labNotes }: LabNotesSectionProps) {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pb-18 sm:px-6 lg:px-8">
       <div className="mb-6 grid gap-3 sm:grid-cols-2 sm:items-end">

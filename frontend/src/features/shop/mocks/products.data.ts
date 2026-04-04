@@ -1,53 +1,5 @@
-import {
-  ProductCaseMaterial,
-  ProductDetail,
-  ProductFeature,
-  ProductLayout,
-  ProductListItem,
-  ProductSortOption,
-  ProductSwitchType,
-} from '@/features/shop/types';
-
-export const PRODUCT_LAYOUT_OPTIONS: ProductLayout[] = [
-  '60%',
-  '65%',
-  '75%',
-  'TKL',
-  '100%',
-  'Split',
-];
-
-export const PRODUCT_SWITCH_TYPE_OPTIONS: ProductSwitchType[] = [
-  'Linear',
-  'Tactile',
-  'Clicky',
-];
-
-export const PRODUCT_FEATURE_OPTIONS: ProductFeature[] = [
-  'Hotswap PCB',
-  'RGB Lighting',
-  'QMK/VIA Support',
-  'Wireless',
-  'Low Profile',
-  'LCD Screen',
-];
-
-export const PRODUCT_CASE_MATERIAL_OPTIONS: ProductCaseMaterial[] = [
-  'Aluminum',
-  'Polycarbonate',
-  'ABS Plastic',
-  'Carbon Fiber',
-];
-
-export const PRODUCT_SORT_OPTIONS: Array<{
-  value: ProductSortOption;
-  label: string;
-}> = [
-  { value: 'popularity', label: 'Popularity' },
-  { value: 'newest', label: 'Newest Arrivals' },
-  { value: 'rating', label: 'Top Rated' },
-  { value: 'price', label: 'Price: Low to High' },
-];
+import { ProductDetail, ProductListItem } from '@/features/shop/types';
+import { PRODUCT_SWITCH_TYPE_OPTIONS } from '@/features/shop/utils/product-list-options.utils';
 
 export const PRODUCT_LIST_PAGE_SIZE = 6;
 

@@ -1,24 +1,18 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-
-import {
-  PRODUCT_CASE_MATERIAL_OPTIONS,
-  PRODUCT_FEATURE_OPTIONS,
-  PRODUCT_LAYOUT_OPTIONS,
-  PRODUCT_SORT_OPTIONS,
-  PRODUCT_SWITCH_TYPE_OPTIONS,
-} from '@/features/shop/mocks/products.data';
 import { ProductListViewMode } from '@/features/shop/types';
 import type {
   ProductListPageProps,
   ProductPriceRange,
 } from '@/features/shop/types/product-list.types';
-import ProductCard from '@/features/shop/components/ProductCard';
-import ProductFilters from '@/features/shop/components/ProductFilters';
-import ProductPagination from '@/features/shop/components/ProductPagination';
-import ProductToolbar from '@/features/shop/components/ProductToolbar';
-import MobileProductFiltersDrawer from '@/features/shop/components/MobileProductFiltersDrawer';
+import {
+  MobileProductFiltersDrawer,
+  ProductCard,
+  ProductFilters,
+  ProductPagination,
+  ProductToolbar,
+} from '@/features/shop/components/product-list';
 import { useProductListQueryState } from '@/features/shop/hooks/useProductListQueryState';
 import { useProductsQuery } from '@/features/shop/hooks/useProductsQuery';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
@@ -48,6 +42,8 @@ export default function ProductListPage({
 
   const {
     queryState,
+    filterOptions,
+    sortOptions,
     setPage,
     setSort,
     setCaseMaterial,
@@ -92,10 +88,10 @@ export default function ProductListPage({
   );
 
   const sharedFilterProps = {
-    layoutOptions: PRODUCT_LAYOUT_OPTIONS,
-    switchTypeOptions: PRODUCT_SWITCH_TYPE_OPTIONS,
-    featureOptions: PRODUCT_FEATURE_OPTIONS,
-    caseMaterialOptions: PRODUCT_CASE_MATERIAL_OPTIONS,
+    layoutOptions: filterOptions.layoutOptions,
+    switchTypeOptions: filterOptions.switchTypeOptions,
+    featureOptions: filterOptions.featureOptions,
+    caseMaterialOptions: filterOptions.caseMaterialOptions,
     selectedLayouts: queryState.layouts,
     selectedSwitchTypes: queryState.switchTypes,
     selectedFeatures: queryState.features,
@@ -147,7 +143,7 @@ export default function ProductListPage({
               totalItems={totalItems}
               viewMode={viewMode}
               sort={queryState.sort}
-              sortOptions={PRODUCT_SORT_OPTIONS}
+              sortOptions={sortOptions}
               onViewModeChange={setViewMode}
               onSortChange={setSort}
               onOpenFilters={() => setIsMobileFiltersOpen(true)}

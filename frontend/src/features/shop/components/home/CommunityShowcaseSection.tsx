@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { communityShowcaseImages } from '@/features/shop/mocks/homepage.data';
+import type { CommunityShowcaseSectionProps } from '@/features/shop/types/homepage-sections.types';
 
 const desktopMosaicClasses = [
   'lg:col-start-1 lg:row-start-1 lg:row-span-2',
@@ -12,7 +12,9 @@ const desktopMosaicClasses = [
   'lg:col-start-4 lg:row-start-2',
 ];
 
-export default function CommunityShowcaseSection() {
+export default function CommunityShowcaseSection({
+  images,
+}: CommunityShowcaseSectionProps) {
   return (
     <section className="mx-auto w-full pb-18">
       <div className="mx-auto mb-4 flex max-w-7xl items-end justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -33,7 +35,7 @@ export default function CommunityShowcaseSection() {
       </div>
 
       <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:aspect-2/1 lg:grid-cols-4 lg:grid-rows-2">
-        {communityShowcaseImages.map((item, index) => (
+        {images.map((item, index) => (
           <article
             key={`${item.alt}-${index}`}
             className={[

@@ -1,4 +1,8 @@
-import { initialCartItems } from '@/features/shop/mocks/cart.data';
+import {
+  initialCartItems,
+  youMightAlsoLikeProducts,
+} from '@/features/shop/mocks/cart.data';
+import type { FeaturedProduct } from '@/features/shop/types';
 import type {
   CartLineItem,
   CartSnapshot,
@@ -10,6 +14,10 @@ const delay = (ms: number) => {
 };
 
 const cloneItems = (items: CartLineItem[]) => {
+  return items.map((item) => ({ ...item }));
+};
+
+const cloneFeaturedProducts = (items: FeaturedProduct[]) => {
   return items.map((item) => ({ ...item }));
 };
 
@@ -42,5 +50,11 @@ export const cartApi = {
       items: cloneItems(serverCartState.items),
       updatedAt: serverCartState.updatedAt,
     };
+  },
+
+  getCartRecommendations: async (): Promise<FeaturedProduct[]> => {
+    await delay(MOCK_DELAY);
+
+    return cloneFeaturedProducts(youMightAlsoLikeProducts);
   },
 };

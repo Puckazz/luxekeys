@@ -8,10 +8,6 @@ export type CartLineItem = {
   image: string;
 };
 
-export type CartPageProps = {
-  initialItems?: CartLineItem[];
-};
-
 export type AddCartItemInput = {
   slug: string;
   name: string;

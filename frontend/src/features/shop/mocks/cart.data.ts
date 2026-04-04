@@ -24,11 +24,6 @@ export const initialCartItems: CartLineItem[] = [
   },
 ];
 
-export const cartPricing = {
-  shippingEstimate: 15,
-  taxRate: 0.08,
-};
-
 export const youMightAlsoLikeProducts: FeaturedProduct[] = [
   {
     slug: 'charging-pad-x1',

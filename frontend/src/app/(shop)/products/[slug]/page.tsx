@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { productsApi } from '@/api/products.api';
-import ProductDetailPage from '@/features/shop/components/ProductDetailPage';
+import { ProductDetailPage } from '@/features/shop/components/pages';
 
 type ProductDetailRoutePageProps = {
   params: Promise<{

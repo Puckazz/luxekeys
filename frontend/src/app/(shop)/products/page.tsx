@@ -1,5 +1,5 @@
 import { productsApi } from '@/api/products.api';
-import ProductListPage from '@/features/shop/components/ProductListPage';
+import { ProductListPage } from '@/features/shop/components/pages';
 import { productsCatalog } from '@/features/shop/mocks/products.data';
 import { parseProductListQueryState } from '@/features/shop/utils/product-list-query.utils';
 

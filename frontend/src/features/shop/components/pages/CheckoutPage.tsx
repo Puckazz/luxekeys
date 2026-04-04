@@ -15,11 +15,9 @@ import {
 import { useRouter } from 'next/navigation';
 
 import {
-  checkoutPaymentOptions,
-  checkoutShippingOptions,
-} from '@/api/checkout.api';
-import CheckoutOrderSummaryCard from '@/features/shop/components/CheckoutOrderSummaryCard';
-import CheckoutStepper from '@/features/shop/components/CheckoutStepper';
+  CheckoutOrderSummaryCard,
+  CheckoutStepper,
+} from '@/features/shop/components/checkout';
 import { checkoutSchema } from '@/features/shop/schemas/checkout.schema';
 import { useCheckoutFlow } from '@/features/shop/hooks/useCheckoutFlow';
 import { useCheckoutStore } from '@/features/shop/hooks/useCheckoutStore';
@@ -163,8 +161,13 @@ export default function CheckoutPage() {
   const cartItems = useCartStore((state) => state.items);
   const draft = useCheckoutStore((state) => state.draft);
 
-  const { submitCheckout, isSubmittingCheckout, checkoutSubmitError } =
-    useCheckoutFlow();
+  const {
+    submitCheckout,
+    shippingOptions,
+    paymentOptions,
+    isSubmittingCheckout,
+    checkoutSubmitError,
+  } = useCheckoutFlow();
 
   const {
     register,
@@ -211,9 +214,8 @@ export default function CheckoutPage() {
   const previewPricing = useMemo(() => {
     const subtotal = calculateSubtotal(cartItems);
     const shippingFee =
-      checkoutShippingOptions.find(
-        (option) => option.id === selectedShippingMethod
-      )?.fee ?? 0;
+      shippingOptions.find((option) => option.id === selectedShippingMethod)
+        ?.fee ?? 0;
     const normalizedPromo = normalizePromoCode(selectedPromoCode);
 
     return buildOrderPricing({
@@ -221,7 +223,7 @@ export default function CheckoutPage() {
       shippingFee,
       discountRate: resolveDiscountRate(normalizedPromo),
     });
-  }, [cartItems, selectedPromoCode, selectedShippingMethod]);
+  }, [cartItems, selectedPromoCode, selectedShippingMethod, shippingOptions]);
 
   const hasValidatedAddress =
     streetAddress.trim().length > 5 && !errors.streetAddress;
@@ -447,7 +449,7 @@ export default function CheckoutPage() {
                         onValueChange={field.onChange}
                         className="grid gap-3 sm:grid-cols-2"
                       >
-                        {checkoutShippingOptions.map((option) => (
+                        {shippingOptions.map((option) => (
                           <label
                             key={option.id}
                             htmlFor={`shipping-${option.id}`}
@@ -505,7 +507,7 @@ export default function CheckoutPage() {
                       }}
                       className="grid gap-4 sm:grid-cols-2"
                     >
-                      {checkoutPaymentOptions.map((option) => (
+                      {paymentOptions.map((option) => (
                         <label
                           key={option.id}
                           htmlFor={`payment-${option.id}`}

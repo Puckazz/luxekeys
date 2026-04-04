@@ -14,6 +14,13 @@ import {
   parseProductListQueryState,
   productListQueryKeys,
 } from '@/features/shop/utils/product-list-query.utils';
+import {
+  PRODUCT_CASE_MATERIAL_OPTIONS,
+  PRODUCT_FEATURE_OPTIONS,
+  PRODUCT_LAYOUT_OPTIONS,
+  PRODUCT_SORT_OPTIONS,
+  PRODUCT_SWITCH_TYPE_OPTIONS,
+} from '@/features/shop/utils/product-list-options.utils';
 
 type PriceRange = {
   min: number;
@@ -144,6 +151,13 @@ export const useProductListQueryState = ({
 
   return {
     queryState,
+    filterOptions: {
+      layoutOptions: PRODUCT_LAYOUT_OPTIONS,
+      switchTypeOptions: PRODUCT_SWITCH_TYPE_OPTIONS,
+      featureOptions: PRODUCT_FEATURE_OPTIONS,
+      caseMaterialOptions: PRODUCT_CASE_MATERIAL_OPTIONS,
+    },
+    sortOptions: PRODUCT_SORT_OPTIONS,
     setPage,
     setSort,
     setCaseMaterial,

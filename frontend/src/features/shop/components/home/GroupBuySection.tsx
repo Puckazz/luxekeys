@@ -1,12 +1,12 @@
 import Image from 'next/image';
 
-import { countdownItems } from '@/features/shop/mocks/homepage.data';
+import type { GroupBuySectionProps } from '@/features/shop/types/homepage-sections.types';
 import {
   OutlineButtonLink,
   PrimaryButtonLink,
 } from '@/shared/components/ui/link-buttons';
 
-export default function GroupBuySection() {
+export default function GroupBuySection({ countdownItems }: GroupBuySectionProps) {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pb-18 sm:px-6 lg:px-8">
       <div className="border-border/65 relative overflow-hidden rounded-xl border bg-[#041327] p-6 sm:p-10 md:rounded-4xl lg:p-16">

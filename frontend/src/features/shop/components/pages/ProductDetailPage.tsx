@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
-import ProductDetailHeroSection from '@/features/shop/components/ProductDetailHeroSection';
-import ProductMaterialsSection from '@/features/shop/components/ProductMaterialsSection';
-import ProductReviewsSection from '@/features/shop/components/ProductReviewsSection';
-import ProductTechnicalSpecsSection from '@/features/shop/components/ProductTechnicalSpecsSection';
-import ProductVideoTourSection from '@/features/shop/components/ProductVideoTourSection';
+import {
+  ProductDetailHeroSection,
+  ProductMaterialsSection,
+  ProductReviewsSection,
+  ProductTechnicalSpecsSection,
+  ProductVideoTourSection,
+} from '@/features/shop/components/product-detail';
 import { useCartStore } from '@/features/shop/hooks/useCartStore';
 import { useProductReviewsQuery } from '@/features/shop/hooks/useProductReviewsQuery';
 import { ProductSwitchType } from '@/features/shop/types';

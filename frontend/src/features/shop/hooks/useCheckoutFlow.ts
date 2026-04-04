@@ -2,7 +2,11 @@
 
 import { useMutation } from '@tanstack/react-query';
 
-import { checkoutApi } from '@/api/checkout.api';
+import {
+  checkoutApi,
+  checkoutPaymentOptions,
+  checkoutShippingOptions,
+} from '@/api/checkout.api';
 import { useCartStore } from '@/features/shop/hooks/useCartStore';
 import { useCheckoutStore } from '@/features/shop/hooks/useCheckoutStore';
 import type {
@@ -80,6 +84,8 @@ export const useCheckoutFlow = () => {
   return {
     draft,
     review,
+    shippingOptions: checkoutShippingOptions,
+    paymentOptions: checkoutPaymentOptions,
     isSubmittingCheckout: previewMutation.isPending,
     checkoutSubmitError: previewMutation.error,
     isConfirmingCheckout: confirmMutation.isPending,

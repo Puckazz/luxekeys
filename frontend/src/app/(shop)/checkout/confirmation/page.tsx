@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import CheckoutConfirmationPage from '@/features/shop/components/CheckoutConfirmationPage';
+import { CheckoutConfirmationPage } from '@/features/shop/components/pages';
 
 export const metadata: Metadata = {
   title: 'Order Confirmation | LuxeKeys',

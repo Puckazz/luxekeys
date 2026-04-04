@@ -4,8 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Minus, Plus, Trash2 } from 'lucide-react';
 
-import ProductCollectionSection from '@/features/shop/components/ProductCollectionSection';
-import { youMightAlsoLikeProducts } from '@/features/shop/mocks/cart.data';
+import { ProductCollectionSection } from '@/features/shop/components/home';
+import { useCartRecommendationsQuery } from '@/features/shop/hooks/useCartRecommendationsQuery';
 import {
   selectCartItems,
   selectCartSubtotal,
@@ -37,6 +37,7 @@ export default function CartPage() {
   const subtotal = useCartStore(selectCartSubtotal);
   const setQuantity = useCartStore((state) => state.setQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const cartRecommendationsQuery = useCartRecommendationsQuery();
 
   if (!hydrated) {
     return null;
@@ -47,6 +48,7 @@ export default function CartPage() {
     shippingFee: 0,
     discountRate: 0,
   });
+  const recommendationProducts = cartRecommendationsQuery.data ?? [];
 
   const updateQuantity = (id: string, nextQuantity: number) => {
     setQuantity(id, nextQuantity);
@@ -219,7 +221,7 @@ export default function CartPage() {
       <ProductCollectionSection
         title="You might also like"
         description={undefined}
-        products={youMightAlsoLikeProducts}
+        products={recommendationProducts}
         showControls={false}
         viewAllHref="/products"
         viewAllLabel="View all"

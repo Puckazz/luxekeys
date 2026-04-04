@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import CheckoutPage from '@/features/shop/components/CheckoutPage';
+import { CheckoutPage } from '@/features/shop/components/pages';
 
 export const metadata: Metadata = {
   title: 'Checkout | LuxeKeys',

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import WishlistPage from '@/features/shop/components/WishlistPage';
+import { WishlistPage } from '@/features/shop/components/pages';
 
 export const metadata: Metadata = {
   title: 'Wishlist | LuxeKeys',

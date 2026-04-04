@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 
-import ProductPagination from '@/features/shop/components/ProductPagination';
-import ShopProductCard from '@/features/shop/components/ShopProductCard';
+import {
+  ProductPagination,
+  ShopProductCard,
+} from '@/features/shop/components/product-list';
 import { useCartStore } from '@/features/shop/hooks/useCartStore';
 import { useWishlistPaginationState } from '@/features/shop/hooks/useWishlistPaginationState';
 import {
@@ -112,7 +114,7 @@ export default function WishlistPage() {
 
       {wishlistItems.length > 0 ? (
         <section className="mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
-          <div className="grid gap-5 grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
             {paginatedItems.map((item) => {
               const discountedPrice = getDiscountedPrice(
                 item.price,

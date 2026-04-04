@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import CheckoutReviewPage from '@/features/shop/components/CheckoutReviewPage';
+import { CheckoutReviewPage } from '@/features/shop/components/pages';
 
 export const metadata: Metadata = {
   title: 'Review Checkout | LuxeKeys',

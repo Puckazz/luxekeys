@@ -1,4 +1,4 @@
-import ShopProductCard from '@/features/shop/components/ShopProductCard';
+import ShopProductCard from '@/features/shop/components/product-list/ShopProductCard';
 import { useCartStore } from '@/features/shop/hooks/useCartStore';
 import { useWishlistStore } from '@/features/shop/hooks/useWishlistStore';
 import { ProductCardBadge } from '@/features/shop/types';

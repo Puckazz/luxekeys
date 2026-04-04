@@ -4,9 +4,9 @@ import {
   PRODUCT_CASE_MATERIAL_OPTIONS,
   PRODUCT_FEATURE_OPTIONS,
   PRODUCT_LAYOUT_OPTIONS,
-  PRODUCT_SORT_OPTIONS,
+  PRODUCT_SORT_VALUES,
   PRODUCT_SWITCH_TYPE_OPTIONS,
-} from '@/features/shop/mocks/products.data';
+} from '@/features/shop/utils/product-list-options.utils';
 import {
   ProductCaseMaterial,
   ProductFeature,
@@ -35,12 +35,7 @@ type PriceBounds = {
 };
 
 const sortSchema = z
-  .enum(
-    PRODUCT_SORT_OPTIONS.map((option) => option.value) as [
-      ProductSortOption,
-      ...ProductSortOption[],
-    ]
-  )
+  .enum(PRODUCT_SORT_VALUES as [ProductSortOption, ...ProductSortOption[]])
   .catch('popularity');
 
 const pageSchema = z.coerce.number().int().positive().catch(1);

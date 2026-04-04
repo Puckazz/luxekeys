@@ -6,8 +6,10 @@ import { useEffect } from 'react';
 import { CreditCard, MapPin, PencilLine } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import CheckoutOrderSummaryCard from '@/features/shop/components/CheckoutOrderSummaryCard';
-import CheckoutStepper from '@/features/shop/components/CheckoutStepper';
+import {
+  CheckoutOrderSummaryCard,
+  CheckoutStepper,
+} from '@/features/shop/components/checkout';
 import { useCheckoutFlow } from '@/features/shop/hooks/useCheckoutFlow';
 import { useCheckoutStore } from '@/features/shop/hooks/useCheckoutStore';
 import { formatCurrency } from '@/features/shop/utils/checkout.utils';
