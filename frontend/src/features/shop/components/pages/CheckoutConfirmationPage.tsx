@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { CheckCircle2, PackageCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+import { CheckoutStepper } from '@/features/shop/components/checkout';
 import { useCheckoutStore } from '@/stores/shop/checkout.store';
 import { formatCurrency } from '@/features/shop/utils/checkout.utils';
 import { Button } from '@/shared/components/ui/button';
@@ -38,6 +39,10 @@ export default function CheckoutConfirmationPage() {
 
   return (
     <section className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <div className="mb-6">
+        <CheckoutStepper currentStep="confirmation" />
+      </div>
+
       <Card className="border-border/70 bg-card/40 overflow-hidden border">
         <CardHeader className="border-border/70 from-primary/18 to-card/10 border-b bg-linear-to-br">
           <div className="mx-auto flex max-w-xl flex-col items-center text-center">

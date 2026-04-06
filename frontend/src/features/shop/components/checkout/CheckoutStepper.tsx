@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, ShieldCheck, Truck } from 'lucide-react';
+import { CheckCircle2, CreditCard, Truck } from 'lucide-react';
 
 import type {
   CheckoutStepKey,
@@ -15,7 +15,7 @@ const steps: Array<{
 }> = [
   { key: 'shipping', label: 'Shipping', icon: Truck },
   { key: 'payment', label: 'Payment', icon: CreditCard },
-  { key: 'review', label: 'Review', icon: ShieldCheck },
+  { key: 'confirmation', label: 'Confirmation', icon: CheckCircle2 },
 ];
 
 export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {

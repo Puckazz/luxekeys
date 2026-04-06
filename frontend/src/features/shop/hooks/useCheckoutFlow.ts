@@ -65,19 +65,19 @@ export const useCheckoutFlow = () => {
   const submitCheckout = async (values: CheckoutFormValues) => {
     const draftData = toCheckoutDraft(values);
 
-    await previewMutation.mutateAsync({
+    return previewMutation.mutateAsync({
       items,
       draft: draftData,
     });
   };
 
-  const confirmCheckout = async () => {
-    if (!review) {
+  const confirmCheckout = async (reviewOverride = review) => {
+    if (!reviewOverride) {
       throw new Error('No review data found.');
     }
 
     return confirmMutation.mutateAsync({
-      review,
+      review: reviewOverride,
     });
   };
 

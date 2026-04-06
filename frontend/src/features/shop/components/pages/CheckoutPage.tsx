@@ -163,10 +163,13 @@ export default function CheckoutPage() {
 
   const {
     submitCheckout,
+    confirmCheckout,
     shippingOptions,
     paymentOptions,
     isSubmittingCheckout,
     checkoutSubmitError,
+    isConfirmingCheckout,
+    checkoutConfirmError,
   } = useCheckoutFlow();
 
   const {
@@ -242,8 +245,9 @@ export default function CheckoutPage() {
     hasPaymentInteraction && isShippingReady ? 'payment' : 'shipping';
 
   const onSubmit = async (values: CheckoutFormValues) => {
-    await submitCheckout(values);
-    router.push('/checkout/review');
+    const reviewData = await submitCheckout(values);
+    await confirmCheckout(reviewData);
+    router.push('/checkout/confirmation');
   };
 
   if (!cartHydrated || !checkoutHydrated) {
@@ -284,6 +288,12 @@ export default function CheckoutPage() {
             {checkoutSubmitError ? (
               <div className="border-destructive/35 bg-destructive/10 text-destructive rounded-lg border p-3 text-sm">
                 {checkoutSubmitError.message}
+              </div>
+            ) : null}
+
+            {checkoutConfirmError ? (
+              <div className="border-destructive/35 bg-destructive/10 text-destructive rounded-lg border p-3 text-sm">
+                {checkoutConfirmError.message}
               </div>
             ) : null}
 
@@ -642,8 +652,10 @@ export default function CheckoutPage() {
             pricing={previewPricing}
             actionType="submit"
             actionForm="checkout-form"
-            actionLabel="Continue to Review"
-            isActionLoading={isSubmittingCheckout || isSyncing}
+            actionLabel="Place Order"
+            isActionLoading={
+              isSubmittingCheckout || isConfirmingCheckout || isSyncing
+            }
             promoCode={normalizePromoCode(selectedPromoCode) ?? undefined}
             promoInputValue={promoInputValue}
             onPromoInputChange={setPromoInputValue}
@@ -656,7 +668,7 @@ export default function CheckoutPage() {
               setValue('promoCode', '', { shouldValidate: true });
               setPromoInputValue('');
             }}
-            legalText="By clicking 'Continue to Review', you agree to our Terms of Service and Privacy Policy."
+            legalText="By clicking 'Place Order', you authorize LuxeKeys to charge your selected payment method and agree to our Terms of Service and Privacy Policy."
           />
         </div>
       </section>
