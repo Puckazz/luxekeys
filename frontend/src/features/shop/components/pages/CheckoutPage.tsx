@@ -4,14 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  CheckCircle2,
-  CreditCard,
-  Mail,
-  MapPin,
-  Phone,
-  Wallet,
-} from 'lucide-react';
+import { CreditCard, MapPin, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -38,15 +31,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
+import AddressFormFields from '@/shared/components/forms/AddressFormFields';
 import { Input } from '@/shared/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 
 const cityOptions = ['Ho Chi Minh City', 'Ha Noi', 'Da Nang'];
@@ -305,146 +292,46 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-foreground text-sm font-semibold">
-                    Full Name
-                  </label>
-                  <div className="relative mt-2">
-                    <Input {...register('fullName')} />
-                  </div>
-                  {errors.fullName ? (
-                    <p className="text-destructive text-xs font-medium">
-                      {errors.fullName.message}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-foreground text-sm font-semibold">
-                      Email Address
-                    </label>
-                    <div className="relative mt-2">
-                      <Mail className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-                      <Input {...register('email')} className="pl-9" />
-                    </div>
-                    {errors.email ? (
-                      <p className="text-destructive text-xs font-medium">
-                        {errors.email.message}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-foreground text-sm font-semibold">
-                      Phone Number
-                    </label>
-                    <div className="relative mt-2">
-                      <Phone className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-                      <Input {...register('phone')} className="pl-9" />
-                    </div>
-                    {errors.phone ? (
-                      <p className="text-destructive text-xs font-medium">
-                        {errors.phone.message}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-foreground text-sm font-semibold">
-                    Street Address
-                  </label>
-                  <div className="relative mt-2">
-                    <Input {...register('streetAddress')} />
-                  </div>
-                  {hasValidatedAddress ? (
-                    <p className="flex items-center gap-1 text-xs font-medium text-emerald-400">
-                      <CheckCircle2 className="size-3.5" />
-                      Validated address
-                    </p>
-                  ) : null}
-                  {errors.streetAddress ? (
-                    <p className="text-destructive text-xs font-medium">
-                      {errors.streetAddress.message}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-foreground text-sm font-semibold">
-                      City
-                    </label>
-                    <div className="mt-1"></div>
-                    <Controller
-                      control={control}
-                      name="city"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={(nextCity) => {
-                            field.onChange(nextCity);
-                            setValue(
-                              'district',
-                              districtOptionsByCity[nextCity]?.[0] ??
-                                'District 1'
-                            );
-                          }}
-                        >
-                          <SelectTrigger className="bg-input/30 h-12 w-full rounded-md">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {cityOptions.map((city) => (
-                              <SelectItem key={city} value={city}>
-                                {city}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.city ? (
-                      <p className="text-destructive text-xs font-medium">
-                        {errors.city.message}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-foreground text-sm font-semibold">
-                      District
-                    </label>
-                    <div className="mt-1"></div>
-                    <Controller
-                      control={control}
-                      name="district"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableDistricts.map((district) => (
-                              <SelectItem key={district} value={district}>
-                                {district}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.district ? (
-                      <p className="text-destructive text-xs font-medium">
-                        {errors.district.message}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
+                <AddressFormFields
+                  fullNameField={register('fullName')}
+                  emailField={register('email')}
+                  phoneField={register('phone')}
+                  streetAddressField={register('streetAddress')}
+                  citySelect={{
+                    value: selectedCity,
+                    options: cityOptions,
+                    onValueChange: (nextCity) => {
+                      setValue('city', nextCity, { shouldValidate: true });
+                      setValue(
+                        'district',
+                        districtOptionsByCity[nextCity]?.[0] ?? 'District 1',
+                        { shouldValidate: true }
+                      );
+                    },
+                    triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
+                  }}
+                  districtSelect={{
+                    value: district,
+                    options: availableDistricts,
+                    onValueChange: (nextDistrict) => {
+                      setValue('district', nextDistrict, {
+                        shouldValidate: true,
+                      });
+                    },
+                  }}
+                  messages={{
+                    fullName: errors.fullName?.message,
+                    email: errors.email?.message,
+                    phone: errors.phone?.message,
+                    streetAddress: errors.streetAddress?.message,
+                    city: errors.city?.message,
+                    district: errors.district?.message,
+                  }}
+                  showEmail
+                  showEmailIcon
+                  showPhoneIcon
+                  showValidatedAddress={hasValidatedAddress}
+                />
 
                 <div className="space-y-2">
                   <p className="text-foreground text-sm font-semibold">
