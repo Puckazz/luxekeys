@@ -9,11 +9,48 @@ import {
   ProductTechnicalSpecsSection,
   ProductVideoTourSection,
 } from '@/features/shop/components/product-detail';
-import { useCartStore } from '@/features/shop/hooks/useCartStore';
+import { useCartStore } from '@/stores/shop/cart.store';
 import { useProductReviewsQuery } from '@/features/shop/hooks/useProductReviewsQuery';
 import { ProductSwitchType } from '@/features/shop/types';
 import type { ProductDetailPageProps } from '@/features/shop/types/product-detail.types';
 import { Separator } from '@/shared/components/ui/separator';
+
+const calculateDiscountedPrice = (
+  price: number,
+  discountPercentage?: number
+) => {
+  if (!discountPercentage || discountPercentage <= 0) {
+    return price;
+  }
+
+  return Number((price * (1 - discountPercentage / 100)).toFixed(2));
+};
+
+const buildVariantLabel = ({
+  category,
+  selectedColor,
+  selectedSwitch,
+  keycapProfile,
+}: {
+  category: ProductDetailPageProps['product']['category'];
+  selectedColor: string;
+  selectedSwitch: ProductSwitchType;
+  keycapProfile?: ProductDetailPageProps['product']['keycapProfile'];
+}) => {
+  if (category === 'keyboards') {
+    return `${selectedColor} / ${selectedSwitch}`;
+  }
+
+  if (category === 'keycaps' && keycapProfile) {
+    return `${keycapProfile} Profile`;
+  }
+
+  if (category === 'switches') {
+    return selectedSwitch;
+  }
+
+  return 'Default';
+};
 
 export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   const addItem = useCartStore((state) => state.addItem);
@@ -53,11 +90,21 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   };
 
   const handleAddToCart = () => {
+    const discountedUnitPrice = calculateDiscountedPrice(
+      product.price,
+      product.discountPercentage
+    );
+
     addItem({
       slug: product.slug,
       name: product.name,
-      variantLabel: `${selectedColor} / ${selectedSwitch}`,
-      unitPrice: product.price,
+      variantLabel: buildVariantLabel({
+        category: product.category,
+        selectedColor,
+        selectedSwitch,
+        keycapProfile: product.keycapProfile,
+      }),
+      unitPrice: discountedUnitPrice,
       image: product.image,
       quantity,
     });

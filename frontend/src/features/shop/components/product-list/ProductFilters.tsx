@@ -12,8 +12,13 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Slider } from '@/shared/components/ui/slider';
-import { ProductCaseMaterial } from '@/features/shop/types';
+import {
+  KeycapProfile,
+  ProductCaseMaterial,
+  ProductCategory,
+} from '@/features/shop/types';
 import type { ProductFiltersProps } from '@/features/shop/types/product-list.types';
+import { useProductFiltersStore } from '@/stores/shop/productFilters.store';
 
 const formatCurrency = (value: number): string => {
   return `$${value}`;
@@ -23,25 +28,42 @@ const toInputId = (prefix: string, value: string): string => {
   return `${prefix}-${value.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 };
 
-export default function ProductFilters({
-  layoutOptions,
-  switchTypeOptions,
-  featureOptions,
-  caseMaterialOptions,
-  selectedLayouts,
-  selectedSwitchTypes,
-  selectedFeatures,
-  selectedCaseMaterial,
-  selectedPrice,
-  priceBounds,
-  onToggleLayout,
-  onToggleSwitchType,
-  onToggleFeature,
-  onCaseMaterialChange,
-  onPriceChange,
-  onReset,
-  className,
-}: ProductFiltersProps) {
+export default function ProductFilters({ className }: ProductFiltersProps) {
+  const controller = useProductFiltersStore((state) => state.controller);
+
+  if (!controller) {
+    return null;
+  }
+
+  const {
+    categoryOptions,
+    selectedCategory,
+    capabilities,
+    brandOptions,
+    keycapProfileOptions,
+    layoutOptions,
+    switchTypeOptions,
+    featureOptions,
+    caseMaterialOptions,
+    selectedBrands,
+    selectedKeycapProfiles,
+    selectedLayouts,
+    selectedSwitchTypes,
+    selectedFeatures,
+    selectedCaseMaterial,
+    selectedPrice,
+    priceBounds,
+    onCategoryChange,
+    onToggleBrand,
+    onToggleKeycapProfile,
+    onToggleLayout,
+    onToggleSwitchType,
+    onToggleFeature,
+    onCaseMaterialChange,
+    onPriceChange,
+    onReset,
+  } = controller;
+
   const isCaseMaterialValue = (
     value: string
   ): value is ProductCaseMaterial | 'All' => {
@@ -49,6 +71,14 @@ export default function ProductFilters({
       value === 'All' ||
       caseMaterialOptions.some((material) => material === value)
     );
+  };
+
+  const isKeycapProfileValue = (value: string): value is KeycapProfile => {
+    return keycapProfileOptions.some((profile) => profile === value);
+  };
+
+  const isCategoryValue = (value: string): value is ProductCategory => {
+    return categoryOptions.some((option) => option.value === value);
   };
 
   const handlePriceMinInput = (value: string) => {
@@ -95,108 +125,230 @@ export default function ProductFilters({
       <div className="space-y-6">
         <section>
           <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-            Layout
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {layoutOptions.map((layout) => {
-              const active = selectedLayouts.includes(layout);
-              return (
-                <Button
-                  key={layout}
-                  variant={active ? 'default' : 'outline'}
-                  size="sm"
-                  className="justify-center rounded-full"
-                  onClick={() => onToggleLayout(layout)}
-                >
-                  {layout}
-                </Button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="border-border/50 border-t pt-5">
-          <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-            Switch Type
-          </h3>
-          <div className="space-y-3">
-            {switchTypeOptions.map((switchType) => {
-              const id = toInputId('switch', switchType);
-              return (
-                <label
-                  key={switchType}
-                  htmlFor={id}
-                  className="flex cursor-pointer items-center gap-2"
-                >
-                  <Checkbox
-                    id={id}
-                    checked={selectedSwitchTypes.includes(switchType)}
-                    onCheckedChange={() => onToggleSwitchType(switchType)}
-                  />
-                  <span className="text-muted-foreground text-sm">
-                    {switchType}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="border-border/50 border-t pt-5">
-          <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-            Features
-          </h3>
-          <div className="space-y-3">
-            {featureOptions.map((feature) => {
-              const id = toInputId('feature', feature);
-              return (
-                <label
-                  key={feature}
-                  htmlFor={id}
-                  className="flex cursor-pointer items-center gap-2"
-                >
-                  <Checkbox
-                    id={id}
-                    checked={selectedFeatures.includes(feature)}
-                    onCheckedChange={() => onToggleFeature(feature)}
-                  />
-                  <span className="text-muted-foreground text-sm">
-                    {feature}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="border-border/50 border-t pt-5">
-          <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-            Case Material
+            Category
           </h3>
           <Select
-            value={selectedCaseMaterial}
+            value={selectedCategory}
             onValueChange={(value) => {
-              if (isCaseMaterialValue(value)) {
-                onCaseMaterialChange(value);
+              if (isCategoryValue(value)) {
+                onCategoryChange(value);
               }
             }}
           >
             <SelectTrigger
-              id="case-material"
+              id="category"
               className="w-full min-w-full rounded-full"
             >
-              <SelectValue placeholder="All Materials" />
+              <SelectValue placeholder="Choose category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Materials</SelectItem>
-              {caseMaterialOptions.map((material) => (
-                <SelectItem key={material} value={material}>
-                  {material}
+              {categoryOptions.map((categoryOption) => (
+                <SelectItem
+                  key={categoryOption.value}
+                  value={categoryOption.value}
+                >
+                  {categoryOption.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </section>
+
+        {capabilities.showBrandFilter ? (
+          <section className="border-border/50 border-t pt-5">
+            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
+              Brand
+            </h3>
+            <div className="space-y-3">
+              {brandOptions.map((brand) => {
+                const id = toInputId('brand', brand);
+                return (
+                  <label
+                    key={brand}
+                    htmlFor={id}
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <Checkbox
+                      id={id}
+                      checked={selectedBrands.includes(brand)}
+                      onCheckedChange={() => onToggleBrand(brand)}
+                    />
+                    <span className="text-muted-foreground text-sm">
+                      {brand}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {capabilities.showProfileFilter ? (
+          <section className="border-border/50 border-t pt-5">
+            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
+              Profile
+            </h3>
+            <Select
+              value={selectedKeycapProfiles[0] ?? 'All'}
+              onValueChange={(value) => {
+                if (value === 'All') {
+                  selectedKeycapProfiles.forEach((profile) => {
+                    onToggleKeycapProfile(profile);
+                  });
+                  return;
+                }
+
+                if (!isKeycapProfileValue(value)) {
+                  return;
+                }
+
+                selectedKeycapProfiles
+                  .filter((profile) => profile !== value)
+                  .forEach((profile) => {
+                    onToggleKeycapProfile(profile);
+                  });
+
+                if (!selectedKeycapProfiles.includes(value)) {
+                  onToggleKeycapProfile(value);
+                }
+              }}
+            >
+              <SelectTrigger
+                id="keycap-profile"
+                className="w-full min-w-full rounded-full"
+              >
+                <SelectValue placeholder="All Profiles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Profiles</SelectItem>
+                {keycapProfileOptions.map((profile) => (
+                  <SelectItem key={profile} value={profile}>
+                    {profile}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </section>
+        ) : null}
+
+        {capabilities.showLayoutFilter ? (
+          <section
+            className={
+              capabilities.showBrandFilter
+                ? 'border-border/50 border-t pt-5'
+                : ''
+            }
+          >
+            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
+              Layout
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {layoutOptions.map((layout) => {
+                const active = selectedLayouts.includes(layout);
+                return (
+                  <Button
+                    key={layout}
+                    variant={active ? 'default' : 'outline'}
+                    size="sm"
+                    className="justify-center rounded-full"
+                    onClick={() => onToggleLayout(layout)}
+                  >
+                    {layout}
+                  </Button>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {capabilities.showSwitchTypeFilter ? (
+          <section className="border-border/50 border-t pt-5">
+            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
+              Switch Type
+            </h3>
+            <div className="space-y-3">
+              {switchTypeOptions.map((switchType) => {
+                const id = toInputId('switch', switchType);
+                return (
+                  <label
+                    key={switchType}
+                    htmlFor={id}
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <Checkbox
+                      id={id}
+                      checked={selectedSwitchTypes.includes(switchType)}
+                      onCheckedChange={() => onToggleSwitchType(switchType)}
+                    />
+                    <span className="text-muted-foreground text-sm">
+                      {switchType}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {capabilities.showFeaturesFilter ? (
+          <section className="border-border/50 border-t pt-5">
+            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
+              Features
+            </h3>
+            <div className="space-y-3">
+              {featureOptions.map((feature) => {
+                const id = toInputId('feature', feature);
+                return (
+                  <label
+                    key={feature}
+                    htmlFor={id}
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <Checkbox
+                      id={id}
+                      checked={selectedFeatures.includes(feature)}
+                      onCheckedChange={() => onToggleFeature(feature)}
+                    />
+                    <span className="text-muted-foreground text-sm">
+                      {feature}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {capabilities.showCaseMaterialFilter ? (
+          <section className="border-border/50 border-t pt-5">
+            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
+              Case Material
+            </h3>
+            <Select
+              value={selectedCaseMaterial}
+              onValueChange={(value) => {
+                if (isCaseMaterialValue(value)) {
+                  onCaseMaterialChange(value);
+                }
+              }}
+            >
+              <SelectTrigger
+                id="case-material"
+                className="w-full min-w-full rounded-full"
+              >
+                <SelectValue placeholder="All Materials" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Materials</SelectItem>
+                {caseMaterialOptions.map((material) => (
+                  <SelectItem key={material} value={material}>
+                    {material}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </section>
+        ) : null}
 
         <section className="border-border/50 border-t pt-5">
           <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">

@@ -25,11 +25,11 @@ import {
 import {
   selectCartTotalQuantity,
   useCartStore,
-} from '@/features/shop/hooks/useCartStore';
+} from '@/stores/shop/cart.store';
 import {
   selectWishlistCount,
   useWishlistStore,
-} from '@/features/shop/hooks/useWishlistStore';
+} from '@/stores/shop/wishlist.store';
 
 const navLinkClass =
   'group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent! min-[1400px]:px-4 px-2 py-2 text-base font-bold outline-none transition-[color,background-color] hover:text-accent-foreground hover:bg-transparent! focus:bg-transparent! disabled:pointer-events-none disabled:opacity-50 data-active:bg-transparent data-state-open:bg-transparent';
@@ -38,17 +38,17 @@ const keyboardItems = [
   {
     label: '65% Keyboards',
     description: 'Compact layout for desk setup and portability.',
-    href: '/products',
+    href: '/products/keyboards',
   },
   {
     label: '75% Keyboards',
     description: 'Balanced layout with function row for daily use.',
-    href: '/products',
+    href: '/products/keyboards',
   },
   {
     label: 'TKL Keyboards',
     description: 'Full nav cluster without numpad for more mouse room.',
-    href: '/products',
+    href: '/products/keyboards',
   },
 ];
 
@@ -56,24 +56,24 @@ const accessoryItems = [
   {
     label: 'Desk Mats',
     description: 'Premium mats with stitched edges and unique artwork.',
-    href: '/',
+    href: '/products/accessories',
   },
   {
     label: 'Wrist Rests',
     description: 'Wood and resin rests for long typing sessions.',
-    href: '/',
+    href: '/products/accessories',
   },
   {
     label: 'Cables',
     description: 'Coiled and straight cables for custom keyboard builds.',
-    href: '/',
+    href: '/products/accessories',
   },
 ];
 
 const navLinks = [
-  { label: 'Switches', href: '/' },
-  { label: 'Keycaps', href: '/' },
-  { label: 'Group Buy', href: '/' },
+  { label: 'Switches', href: '/products/switches' },
+  { label: 'Keycaps', href: '/products/keycaps' },
+  { label: 'About', href: '/' },
 ];
 
 const navSections = [
@@ -151,7 +151,7 @@ export default function Header() {
                 </NavigationMenuItem>
               ))}
 
-              {navLinks.slice(1).map((item) => (
+              {navLinks.map((item) => (
                 <NavigationMenuItem key={item.label}>
                   <NavigationMenuLink asChild className={navLinkClass}>
                     <Link href={item.href}>{item.label}</Link>

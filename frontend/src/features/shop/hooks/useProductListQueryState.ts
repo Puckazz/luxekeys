@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import {
+  KeycapProfile,
+  ProductCategory,
   ProductCaseMaterial,
   ProductFeature,
   ProductLayout,
@@ -15,7 +17,10 @@ import {
   productListQueryKeys,
 } from '@/features/shop/utils/product-list-query.utils';
 import {
+  KEYCAP_PROFILE_OPTIONS,
+  PRODUCT_BRAND_OPTIONS_BY_CATEGORY,
   PRODUCT_CASE_MATERIAL_OPTIONS,
+  PRODUCT_CATEGORY_FILTER_CAPABILITIES,
   PRODUCT_FEATURE_OPTIONS,
   PRODUCT_LAYOUT_OPTIONS,
   PRODUCT_SORT_OPTIONS,
@@ -28,6 +33,7 @@ type PriceRange = {
 };
 
 type UseProductListQueryStateOptions = {
+  category: ProductCategory;
   priceBounds: PriceRange;
 };
 
@@ -42,6 +48,7 @@ const toggleListItem = <T extends string>(items: T[], value: T): T[] => {
 };
 
 export const useProductListQueryState = ({
+  category,
   priceBounds,
 }: UseProductListQueryStateOptions) => {
   const pathname = usePathname();
@@ -49,8 +56,10 @@ export const useProductListQueryState = ({
   const searchParams = useSearchParams();
 
   const queryState = useMemo(() => {
-    return parseProductListQueryState(searchParams, priceBounds);
-  }, [searchParams, priceBounds]);
+    return parseProductListQueryState(category, searchParams, priceBounds);
+  }, [category, searchParams, priceBounds]);
+
+  const capabilities = PRODUCT_CATEGORY_FILTER_CAPABILITIES[category];
 
   const updateSearchParams = (updater: (params: URLSearchParams) => void) => {
     const next = new URLSearchParams(searchParams.toString());
@@ -100,6 +109,30 @@ export const useProductListQueryState = ({
     });
   };
 
+  const toggleBrands = (brand: string) => {
+    updateSearchParams((params) => {
+      const next = toggleListItem(queryState.brands, brand);
+      if (next.length === 0) {
+        params.delete(productListQueryKeys.brands);
+      } else {
+        params.set(productListQueryKeys.brands, serializeList(next));
+      }
+      resetPage(params);
+    });
+  };
+
+  const toggleKeycapProfiles = (profile: KeycapProfile) => {
+    updateSearchParams((params) => {
+      const next = toggleListItem(queryState.keycapProfiles, profile);
+      if (next.length === 0) {
+        params.delete(productListQueryKeys.keycapProfiles);
+      } else {
+        params.set(productListQueryKeys.keycapProfiles, serializeList(next));
+      }
+      resetPage(params);
+    });
+  };
+
   const toggleLayouts = (layout: ProductLayout) => {
     updateSearchParams((params) => {
       const next = toggleListItem(queryState.layouts, layout);
@@ -138,10 +171,30 @@ export const useProductListQueryState = ({
 
   const resetFilters = () => {
     updateSearchParams((params) => {
-      params.delete(productListQueryKeys.layouts);
-      params.delete(productListQueryKeys.switchTypes);
-      params.delete(productListQueryKeys.features);
-      params.delete(productListQueryKeys.caseMaterial);
+      if (capabilities.showBrandFilter) {
+        params.delete(productListQueryKeys.brands);
+      }
+
+      if (capabilities.showProfileFilter) {
+        params.delete(productListQueryKeys.keycapProfiles);
+      }
+
+      if (capabilities.showLayoutFilter) {
+        params.delete(productListQueryKeys.layouts);
+      }
+
+      if (capabilities.showSwitchTypeFilter) {
+        params.delete(productListQueryKeys.switchTypes);
+      }
+
+      if (capabilities.showFeaturesFilter) {
+        params.delete(productListQueryKeys.features);
+      }
+
+      if (capabilities.showCaseMaterialFilter) {
+        params.delete(productListQueryKeys.caseMaterial);
+      }
+
       params.delete(productListQueryKeys.priceMin);
       params.delete(productListQueryKeys.priceMax);
       params.delete(productListQueryKeys.sort);
@@ -152,6 +205,9 @@ export const useProductListQueryState = ({
   return {
     queryState,
     filterOptions: {
+      capabilities,
+      brandOptions: PRODUCT_BRAND_OPTIONS_BY_CATEGORY[category],
+      keycapProfileOptions: KEYCAP_PROFILE_OPTIONS,
       layoutOptions: PRODUCT_LAYOUT_OPTIONS,
       switchTypeOptions: PRODUCT_SWITCH_TYPE_OPTIONS,
       featureOptions: PRODUCT_FEATURE_OPTIONS,
@@ -162,6 +218,8 @@ export const useProductListQueryState = ({
     setSort,
     setCaseMaterial,
     setPriceRange,
+    toggleBrands,
+    toggleKeycapProfiles,
     toggleLayouts,
     toggleSwitchTypes,
     toggleFeatures,

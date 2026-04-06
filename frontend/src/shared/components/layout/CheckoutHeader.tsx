@@ -6,7 +6,7 @@ import { Keyboard, ShoppingBag } from 'lucide-react';
 import {
   selectCartTotalQuantity,
   useCartStore,
-} from '@/features/shop/hooks/useCartStore';
+} from '@/stores/shop/cart.store';
 import { Badge } from '@/shared/components/ui/badge';
 
 const countBadgeClass =

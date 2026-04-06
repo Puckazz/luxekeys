@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ProductListViewMode } from '@/features/shop/types';
+import { useRouter } from 'next/navigation';
 import type {
+  ProductFiltersController,
   ProductListPageProps,
   ProductPriceRange,
 } from '@/features/shop/types/product-list.types';
@@ -13,14 +15,22 @@ import {
   ProductPagination,
   ProductToolbar,
 } from '@/features/shop/components/product-list';
+import { useProductFiltersStore } from '@/stores/shop/productFilters.store';
 import { useProductListQueryState } from '@/features/shop/hooks/useProductListQueryState';
 import { useProductsQuery } from '@/features/shop/hooks/useProductsQuery';
+import {
+  PRODUCT_CATEGORY_PAGE_META,
+  PRODUCT_CATEGORY_SLUGS,
+} from '@/features/shop/utils/product-list-options.utils';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const getQueryStateKey = (query: ProductListPageProps['initialQueryState']) => {
   return [
+    query.category,
+    query.brands.join(','),
+    query.keycapProfiles.join(','),
     query.layouts.join(','),
     query.switchTypes.join(','),
     query.features.join(','),
@@ -31,14 +41,21 @@ const getQueryStateKey = (query: ProductListPageProps['initialQueryState']) => {
     query.page,
   ].join('|');
 };
-
 export default function ProductListPage({
+  category,
   initialData,
   initialQueryState,
   initialPriceBounds,
 }: ProductListPageProps) {
   const [viewMode, setViewMode] = useState<ProductListViewMode>('grid');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const router = useRouter();
+  const setFilterController = useProductFiltersStore(
+    (state) => state.setController
+  );
+  const clearFilterController = useProductFiltersStore(
+    (state) => state.clearController
+  );
 
   const {
     queryState,
@@ -48,12 +65,23 @@ export default function ProductListPage({
     setSort,
     setCaseMaterial,
     setPriceRange,
+    toggleBrands,
+    toggleKeycapProfiles,
     toggleLayouts,
     toggleSwitchTypes,
     toggleFeatures,
     resetFilters,
   } = useProductListQueryState({
+    category,
     priceBounds: initialPriceBounds,
+  });
+
+  const categoryMeta = PRODUCT_CATEGORY_PAGE_META[category];
+  const categoryOptions = PRODUCT_CATEGORY_SLUGS.map((categorySlug) => {
+    return {
+      value: categorySlug,
+      label: PRODUCT_CATEGORY_PAGE_META[categorySlug].label,
+    };
   });
 
   const isInitialQuery = useMemo(() => {
@@ -87,26 +115,80 @@ export default function ProductListPage({
     viewMode === 'grid' ? 'sm:grid-cols-2 2xl:grid-cols-3' : 'grid-cols-1'
   );
 
-  const sharedFilterProps = {
-    layoutOptions: filterOptions.layoutOptions,
-    switchTypeOptions: filterOptions.switchTypeOptions,
-    featureOptions: filterOptions.featureOptions,
-    caseMaterialOptions: filterOptions.caseMaterialOptions,
-    selectedLayouts: queryState.layouts,
-    selectedSwitchTypes: queryState.switchTypes,
-    selectedFeatures: queryState.features,
-    selectedCaseMaterial: queryState.caseMaterial,
-    selectedPrice: queryState.price,
-    priceBounds,
-    onToggleLayout: toggleLayouts,
-    onToggleSwitchType: toggleSwitchTypes,
-    onToggleFeature: toggleFeatures,
-    onCaseMaterialChange: setCaseMaterial,
-    onPriceChange: (nextPrice: ProductPriceRange) => {
-      setPriceRange(nextPrice.min, nextPrice.max);
-    },
-    onReset: resetFilters,
-  };
+  const filterController: ProductFiltersController = useMemo(
+    () => ({
+      capabilities: filterOptions.capabilities,
+      brandOptions: filterOptions.brandOptions,
+      keycapProfileOptions: filterOptions.keycapProfileOptions,
+      layoutOptions: filterOptions.layoutOptions,
+      switchTypeOptions: filterOptions.switchTypeOptions,
+      featureOptions: filterOptions.featureOptions,
+      caseMaterialOptions: filterOptions.caseMaterialOptions,
+      selectedBrands: queryState.brands,
+      selectedKeycapProfiles: queryState.keycapProfiles,
+      selectedLayouts: queryState.layouts,
+      selectedSwitchTypes: queryState.switchTypes,
+      selectedFeatures: queryState.features,
+      selectedCaseMaterial: queryState.caseMaterial,
+      selectedPrice: queryState.price,
+      priceBounds,
+      categoryOptions,
+      selectedCategory: category,
+      onToggleBrand: toggleBrands,
+      onToggleKeycapProfile: toggleKeycapProfiles,
+      onToggleLayout: toggleLayouts,
+      onToggleSwitchType: toggleSwitchTypes,
+      onToggleFeature: toggleFeatures,
+      onCaseMaterialChange: setCaseMaterial,
+      onPriceChange: (nextPrice: ProductPriceRange) => {
+        setPriceRange(nextPrice.min, nextPrice.max);
+      },
+      onReset: resetFilters,
+      onCategoryChange: (nextCategory: ProductListPageProps['category']) => {
+        if (nextCategory === category) {
+          return;
+        }
+
+        router.push(`/products/${nextCategory}`);
+      },
+    }),
+    [
+      filterOptions.capabilities,
+      filterOptions.brandOptions,
+      filterOptions.keycapProfileOptions,
+      filterOptions.layoutOptions,
+      filterOptions.switchTypeOptions,
+      filterOptions.featureOptions,
+      filterOptions.caseMaterialOptions,
+      queryState.brands,
+      queryState.keycapProfiles,
+      queryState.layouts,
+      queryState.switchTypes,
+      queryState.features,
+      queryState.caseMaterial,
+      queryState.price,
+      priceBounds,
+      categoryOptions,
+      category,
+      toggleBrands,
+      toggleKeycapProfiles,
+      toggleLayouts,
+      toggleSwitchTypes,
+      toggleFeatures,
+      setCaseMaterial,
+      setPriceRange,
+      resetFilters,
+      router,
+    ]
+  );
+
+  useEffect(() => {
+    setFilterController(filterController);
+
+    return () => {
+      clearFilterController();
+    };
+  }, [filterController, setFilterController, clearFilterController]);
 
   return (
     <div className="bg-background pb-10">
@@ -116,16 +198,15 @@ export default function ProductListPage({
             className="mb-4 text-sm"
             items={[
               { label: 'Home', href: '/' },
-              { label: 'Mechanical Keyboards' },
+              { label: categoryMeta.label },
             ]}
           />
 
           <h1 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl">
-            Mechanical Keyboards
+            {categoryMeta.heading}
           </h1>
           <p className="text-muted-foreground mt-3 max-w-2xl text-sm leading-relaxed sm:text-base">
-            Find your perfect typing experience from our curated collection of
-            enthusiast-grade boards.
+            {categoryMeta.description}
           </p>
         </div>
       </section>
@@ -134,7 +215,7 @@ export default function ProductListPage({
         <div className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] xl:gap-8">
           <aside className="hidden lg:block">
             <div className="sticky top-24">
-              <ProductFilters {...sharedFilterProps} />
+              <ProductFilters />
             </div>
           </aside>
 
@@ -213,10 +294,7 @@ export default function ProductListPage({
         isOpen={isMobileFiltersOpen}
         onClose={() => setIsMobileFiltersOpen(false)}
       >
-        <ProductFilters
-          {...sharedFilterProps}
-          className="border-border/70 bg-card/20 p-0"
-        />
+        <ProductFilters className="border-border/70 bg-card/20 p-0" />
       </MobileProductFiltersDrawer>
     </div>
   );

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { cartApi } from '@/api/cart.api';
-import { useCartStore } from '@/features/shop/hooks/useCartStore';
+import { useCartStore } from '@/stores/shop/cart.store';
 
 const cartQueryKey = ['cart'] as const;
 

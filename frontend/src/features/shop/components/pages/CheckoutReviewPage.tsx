@@ -11,7 +11,7 @@ import {
   CheckoutStepper,
 } from '@/features/shop/components/checkout';
 import { useCheckoutFlow } from '@/features/shop/hooks/useCheckoutFlow';
-import { useCheckoutStore } from '@/features/shop/hooks/useCheckoutStore';
+import { useCheckoutStore } from '@/stores/shop/checkout.store';
 import { formatCurrency } from '@/features/shop/utils/checkout.utils';
 import { Button } from '@/shared/components/ui/button';
 import {

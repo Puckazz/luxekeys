@@ -43,6 +43,17 @@ const toCurrency = (value: number): string => {
   }).format(value);
 };
 
+const calculateDiscountedPrice = (
+  price: number,
+  discountPercentage?: number
+) => {
+  if (!discountPercentage || discountPercentage <= 0) {
+    return price;
+  }
+
+  return Number((price * (1 - discountPercentage / 100)).toFixed(2));
+};
+
 function ProductStockBadge({ status, label }: ProductStockBadgeProps) {
   return <Badge variant={stockBadgeVariantMap[status]}>{label}</Badge>;
 }
@@ -62,6 +73,14 @@ export default function ProductDetailHeroSection({
   onQuantityIncrease,
   onAddToCart,
 }: ProductDetailHeroProps) {
+  const hasDiscount =
+    typeof product.discountPercentage === 'number' &&
+    product.discountPercentage > 0;
+  const showsKeyboardSelectors = product.category === 'keyboards';
+  const discountedPrice = calculateDiscountedPrice(
+    product.price,
+    product.discountPercentage
+  );
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const thumbnailScrollerRef = useRef<HTMLDivElement | null>(null);
   const thumbnailButtonRefs = useRef<Record<string, HTMLButtonElement | null>>(
@@ -232,9 +251,11 @@ export default function ProductDetailHeroSection({
 
           {/* Right column: product info + purchase actions */}
           <div>
-            <h1 className="text-foreground text-2xl font-black tracking-normal sm:text-3xl lg:text-4xl">
-              {product.name}
-            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-foreground text-2xl font-black tracking-normal sm:text-3xl lg:text-4xl">
+                {product.name}
+              </h1>
+            </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1">
@@ -263,58 +284,69 @@ export default function ProductDetailHeroSection({
               />
             </div>
 
-            <p className="text-foreground mt-5 text-2xl font-bold lg:text-3xl">
-              {toCurrency(product.price)}
-            </p>
+            <div className="mt-5 flex flex-wrap items-end gap-2">
+              <p className="text-foreground text-2xl font-bold lg:text-3xl">
+                {toCurrency(discountedPrice)}
+              </p>
+              {hasDiscount ? (
+                <p className="text-muted-foreground text-lg line-through">
+                  {toCurrency(product.price)}
+                </p>
+              ) : null}
+            </div>
 
             <div className="mt-8 space-y-6">
-              <div>
-                <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
-                  Switch Type
-                </p>
-                <div className="mt-3.5 flex flex-wrap gap-2.5">
-                  {product.switchOptions.map((switchType) => {
-                    const isActive = switchType === selectedSwitch;
+              {showsKeyboardSelectors ? (
+                <>
+                  <div>
+                    <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
+                      Switch Type
+                    </p>
+                    <div className="mt-3.5 flex flex-wrap gap-2.5">
+                      {product.switchOptions.map((switchType) => {
+                        const isActive = switchType === selectedSwitch;
 
-                    return (
-                      <Button
-                        key={`${product.slug}-switch-${switchType}`}
-                        type="button"
-                        variant={isActive ? 'default' : 'outline'}
-                        size="sm"
-                        className="rounded-full px-4"
-                        onClick={() => onSwitchSelect(switchType)}
-                      >
-                        {switchType}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
+                        return (
+                          <Button
+                            key={`${product.slug}-switch-${switchType}`}
+                            type="button"
+                            variant={isActive ? 'default' : 'outline'}
+                            size="sm"
+                            className="rounded-full px-4"
+                            onClick={() => onSwitchSelect(switchType)}
+                          >
+                            {switchType}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-              <div>
-                <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
-                  Color
-                </p>
-                <div className="mt-3.5 flex flex-wrap gap-2.5">
-                  {product.colorOptions.map((color) => {
-                    const isActive = color === selectedColor;
+                  <div>
+                    <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
+                      Color
+                    </p>
+                    <div className="mt-3.5 flex flex-wrap gap-2.5">
+                      {product.colorOptions.map((color) => {
+                        const isActive = color === selectedColor;
 
-                    return (
-                      <Button
-                        key={`${product.slug}-color-${color}`}
-                        type="button"
-                        variant={isActive ? 'default' : 'outline'}
-                        size="sm"
-                        className="rounded-full px-4"
-                        onClick={() => onColorSelect(color)}
-                      >
-                        {color}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
+                        return (
+                          <Button
+                            key={`${product.slug}-color-${color}`}
+                            type="button"
+                            variant={isActive ? 'default' : 'outline'}
+                            size="sm"
+                            className="rounded-full px-4"
+                            onClick={() => onColorSelect(color)}
+                          >
+                            {color}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              ) : null}
 
               <div>
                 <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">

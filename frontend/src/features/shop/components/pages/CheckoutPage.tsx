@@ -20,8 +20,8 @@ import {
 } from '@/features/shop/components/checkout';
 import { checkoutSchema } from '@/features/shop/schemas/checkout.schema';
 import { useCheckoutFlow } from '@/features/shop/hooks/useCheckoutFlow';
-import { useCheckoutStore } from '@/features/shop/hooks/useCheckoutStore';
-import { useCartStore } from '@/features/shop/hooks/useCartStore';
+import { useCheckoutStore } from '@/stores/shop/checkout.store';
+import { useCartStore } from '@/stores/shop/cart.store';
 import { useCartSync } from '@/features/shop/hooks/useCartSync';
 import type { CheckoutFormValues } from '@/features/shop/types/checkout.types';
 import {

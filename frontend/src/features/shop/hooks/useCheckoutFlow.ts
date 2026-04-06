@@ -7,8 +7,8 @@ import {
   checkoutPaymentOptions,
   checkoutShippingOptions,
 } from '@/api/checkout.api';
-import { useCartStore } from '@/features/shop/hooks/useCartStore';
-import { useCheckoutStore } from '@/features/shop/hooks/useCheckoutStore';
+import { useCartStore } from '@/stores/shop/cart.store';
+import { useCheckoutStore } from '@/stores/shop/checkout.store';
 import type {
   CheckoutDraft,
   CheckoutFormValues,

@@ -8,12 +8,12 @@ import {
   ProductPagination,
   ShopProductCard,
 } from '@/features/shop/components/product-list';
-import { useCartStore } from '@/features/shop/hooks/useCartStore';
+import { useCartStore } from '@/stores/shop/cart.store';
 import { useWishlistPaginationState } from '@/features/shop/hooks/useWishlistPaginationState';
 import {
   selectWishlistItems,
   useWishlistStore,
-} from '@/features/shop/hooks/useWishlistStore';
+} from '@/stores/shop/wishlist.store';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';
 

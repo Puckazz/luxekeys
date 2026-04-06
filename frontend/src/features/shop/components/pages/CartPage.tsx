@@ -10,7 +10,7 @@ import {
   selectCartItems,
   selectCartSubtotal,
   useCartStore,
-} from '@/features/shop/hooks/useCartStore';
+} from '@/stores/shop/cart.store';
 import { buildOrderPricing } from '@/features/shop/utils/checkout.utils';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';

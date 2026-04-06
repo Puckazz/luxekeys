@@ -52,9 +52,18 @@ export type ProductSortOption = 'popularity' | 'newest' | 'rating' | 'price';
 
 export type ProductListViewMode = 'grid' | 'list';
 
+export type ProductCategory =
+  | 'keyboards'
+  | 'accessories'
+  | 'switches'
+  | 'keycaps';
+
+export type KeycapProfile = 'Cherry' | 'OEM' | 'SA' | 'XDA' | 'DSA' | 'KAT';
+
 export interface ProductListItem {
   id: string;
   slug: string;
+  category: ProductCategory;
   name: string;
   brand: string;
   description: string;
@@ -67,12 +76,16 @@ export interface ProductListItem {
   features: ProductFeature[];
   caseMaterial: ProductCaseMaterial;
   tags: string[];
+  keycapProfile?: KeycapProfile;
   rating: number;
   popularity: number;
   createdAt: string;
 }
 
 export interface ProductListQueryState {
+  category: ProductCategory;
+  brands: string[];
+  keycapProfiles: KeycapProfile[];
   layouts: ProductLayout[];
   switchTypes: ProductSwitchType[];
   features: ProductFeature[];

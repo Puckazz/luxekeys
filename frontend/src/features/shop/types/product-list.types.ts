@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 
 import type {
+  KeycapProfile,
+  ProductCategory,
   ProductCaseMaterial,
   ProductFeature,
   ProductListApiResponse,
@@ -22,34 +24,69 @@ export type ProductSortOptionItem = {
   label: string;
 };
 
+export type ProductCategoryOptionItem = {
+  value: ProductCategory;
+  label: string;
+};
+
 export type ProductCardProps = {
   product: ProductListItem;
   viewMode: ProductListViewMode;
 };
 
 export type ProductListPageProps = {
+  category: ProductCategory;
   initialData: ProductListApiResponse;
   initialQueryState: ProductListQueryState;
   initialPriceBounds: ProductPriceRange;
 };
 
-export type ProductFiltersProps = {
+export type ProductCategoryFilterCapabilities = {
+  showBrandFilter: boolean;
+  showProfileFilter: boolean;
+  showLayoutFilter: boolean;
+  showSwitchTypeFilter: boolean;
+  showFeaturesFilter: boolean;
+  showCaseMaterialFilter: boolean;
+};
+
+export type ProductCategoryPageMeta = {
+  category: ProductCategory;
+  label: string;
+  heading: string;
+  description: string;
+};
+
+export type ProductFiltersController = {
+  categoryOptions: ProductCategoryOptionItem[];
+  selectedCategory: ProductCategory;
+  capabilities: ProductCategoryFilterCapabilities;
+  brandOptions: string[];
+  keycapProfileOptions: KeycapProfile[];
   layoutOptions: ProductLayout[];
   switchTypeOptions: ProductSwitchType[];
   featureOptions: ProductFeature[];
   caseMaterialOptions: ProductCaseMaterial[];
+  selectedBrands: string[];
+  selectedKeycapProfiles: KeycapProfile[];
   selectedLayouts: ProductLayout[];
   selectedSwitchTypes: ProductSwitchType[];
   selectedFeatures: ProductFeature[];
   selectedCaseMaterial: ProductCaseMaterial | 'All';
   selectedPrice: ProductPriceRange;
   priceBounds: ProductPriceRange;
+  onToggleBrand: (brand: string) => void;
+  onCategoryChange: (category: ProductCategory) => void;
+  onToggleKeycapProfile: (profile: KeycapProfile) => void;
   onToggleLayout: (layout: ProductLayout) => void;
   onToggleSwitchType: (switchType: ProductSwitchType) => void;
   onToggleFeature: (feature: ProductFeature) => void;
   onCaseMaterialChange: (material: ProductCaseMaterial | 'All') => void;
   onPriceChange: (next: ProductPriceRange) => void;
   onReset: () => void;
+};
+
+export type ProductFiltersProps = {
   className?: string;
 };
 

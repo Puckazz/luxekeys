@@ -32,6 +32,25 @@ export const applyProductFilters = (
   filterState: ProductListQueryState
 ): ProductListItem[] => {
   const filtered = products.filter((product) => {
+    if (product.category !== filterState.category) {
+      return false;
+    }
+
+    if (
+      filterState.brands.length > 0 &&
+      !filterState.brands.includes(product.brand)
+    ) {
+      return false;
+    }
+
+    if (
+      filterState.keycapProfiles.length > 0 &&
+      (!product.keycapProfile ||
+        !filterState.keycapProfiles.includes(product.keycapProfile))
+    ) {
+      return false;
+    }
+
     if (
       filterState.layouts.length > 0 &&
       !filterState.layouts.includes(product.layout)

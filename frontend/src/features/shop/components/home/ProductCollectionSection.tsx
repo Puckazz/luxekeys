@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Heart, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { useCartStore } from '@/features/shop/hooks/useCartStore';
+import { useCartStore } from '@/stores/shop/cart.store';
 import {
   selectWishlistItems,
   useWishlistStore,
-} from '@/features/shop/hooks/useWishlistStore';
+} from '@/stores/shop/wishlist.store';
 import type { ProductCollectionSectionProps } from '@/features/shop/types/product-collection-section.types';
 import {
   Carousel,

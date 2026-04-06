@@ -1,6 +1,6 @@
 import ShopProductCard from '@/features/shop/components/product-list/ShopProductCard';
-import { useCartStore } from '@/features/shop/hooks/useCartStore';
-import { useWishlistStore } from '@/features/shop/hooks/useWishlistStore';
+import { useCartStore } from '@/stores/shop/cart.store';
+import { useWishlistStore } from '@/stores/shop/wishlist.store';
 import { ProductCardBadge } from '@/features/shop/types';
 import type { ProductCardProps } from '@/features/shop/types/product-list.types';
 
