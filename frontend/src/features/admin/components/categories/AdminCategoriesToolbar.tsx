@@ -3,15 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Filter, Plus, Search } from 'lucide-react';
 
-import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
+import { ADMIN_CATEGORY_STATUSES } from '@/features/admin/types';
+import type { AdminCategoryListQueryState } from '@/features/admin/types/admin-categories.types';
 import {
-  ADMIN_PRODUCT_STATUS_FILTER_OPTIONS,
-  type AdminProductListQueryState,
-} from '@/features/admin/types/admin-products.types';
-import {
-  adminProductSortLabelByValue,
-  adminProductStatusLabelByValue,
-} from '@/features/admin/utils/admin-products.utils';
+  adminCategorySortLabelByValue,
+  adminCategoryStatusLabelByValue,
+} from '@/features/admin/utils/admin-categories.utils';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -22,33 +19,21 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 
-const categoryLabelByValue: Record<
-  (typeof ADMIN_PRODUCT_CATEGORIES)[number],
-  string
-> = {
-  keyboards: 'Keyboards',
-  switches: 'Switches',
-  keycaps: 'Keycaps',
-  accessories: 'Accessories',
-};
-
-type AdminProductsToolbarProps = {
-  queryState: AdminProductListQueryState;
+type AdminCategoriesToolbarProps = {
+  queryState: AdminCategoryListQueryState;
   onSearchChange: (search: string) => void;
-  onCategoryChange: (category: AdminProductListQueryState['category']) => void;
-  onStatusChange: (status: AdminProductListQueryState['status']) => void;
-  onSortChange: (sort: AdminProductListQueryState['sort']) => void;
+  onStatusChange: (status: AdminCategoryListQueryState['status']) => void;
+  onSortChange: (sort: AdminCategoryListQueryState['sort']) => void;
   onCreateClick: () => void;
 };
 
-export function AdminProductsToolbar({
+export function AdminCategoriesToolbar({
   queryState,
   onSearchChange,
-  onCategoryChange,
   onStatusChange,
   onSortChange,
   onCreateClick,
-}: AdminProductsToolbarProps) {
+}: AdminCategoriesToolbarProps) {
   const [searchDraft, setSearchDraft] = useState(queryState.search);
 
   useEffect(() => {
@@ -72,22 +57,17 @@ export function AdminProductsToolbar({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-foreground text-2xl font-bold tracking-tight">
-            Products
+            Categories
           </h1>
           <p className="text-muted-foreground text-sm">
-            Manage catalog products and their variant combinations.
+            Organize catalog groups and control category visibility.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="lg">
-            Import
-          </Button>
-          <Button type="button" size="lg" onClick={onCreateClick}>
-            <Plus className="size-4" />
-            Add Product
-          </Button>
-        </div>
+        <Button type="button" size="sm" onClick={onCreateClick}>
+          <Plus className="size-4" />
+          Add Category
+        </Button>
       </div>
 
       <div className="bg-card/35 border-border/70 rounded-2xl border p-3">
@@ -98,7 +78,7 @@ export function AdminProductsToolbar({
               <Input
                 value={searchDraft}
                 onChange={(event) => setSearchDraft(event.target.value)}
-                placeholder="Search product or SKU"
+                placeholder="Search category name or slug"
                 className="h-11 pl-9"
               />
             </div>
@@ -106,30 +86,9 @@ export function AdminProductsToolbar({
 
           <div className="flex flex-1 flex-wrap items-center gap-2 lg:justify-end">
             <Select
-              value={queryState.category}
-              onValueChange={(value) =>
-                onCategoryChange(
-                  value as AdminProductListQueryState['category']
-                )
-              }
-            >
-              <SelectTrigger size="sm" className="h-11 min-w-36">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {ADMIN_PRODUCT_CATEGORIES.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {categoryLabelByValue[category]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
               value={queryState.status}
               onValueChange={(value) =>
-                onStatusChange(value as AdminProductListQueryState['status'])
+                onStatusChange(value as AdminCategoryListQueryState['status'])
               }
             >
               <SelectTrigger size="sm" className="h-11 min-w-36">
@@ -138,9 +97,9 @@ export function AdminProductsToolbar({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
-                {ADMIN_PRODUCT_STATUS_FILTER_OPTIONS.map((status) => (
+                {ADMIN_CATEGORY_STATUSES.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {adminProductStatusLabelByValue[status]}
+                    {adminCategoryStatusLabelByValue[status]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -149,14 +108,14 @@ export function AdminProductsToolbar({
             <Select
               value={queryState.sort}
               onValueChange={(value) =>
-                onSortChange(value as AdminProductListQueryState['sort'])
+                onSortChange(value as AdminCategoryListQueryState['sort'])
               }
             >
               <SelectTrigger size="sm" className="h-11 min-w-40">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(adminProductSortLabelByValue).map(
+                {Object.entries(adminCategorySortLabelByValue).map(
                   ([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}

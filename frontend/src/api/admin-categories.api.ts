@@ -1,0 +1,292 @@
+import type {
+  AdminCategory,
+  AdminCategoryListApiResponse,
+  AdminCategoryStatus,
+} from '@/features/admin/types';
+import type {
+  AdminCategoryListQueryState,
+  UpsertAdminCategoryInput,
+} from '@/features/admin/types/admin-categories.types';
+
+const MOCK_NETWORK_DELAY = 160;
+
+const delay = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+const createId = (prefix: string) => {
+  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const nowIso = () => {
+  return new Date().toISOString();
+};
+
+const toSlug = (value: string) => {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+};
+
+const sortCategories = (
+  categories: AdminCategory[],
+  sort: AdminCategoryListQueryState['sort']
+) => {
+  const next = [...categories];
+
+  if (sort === 'name-asc') {
+    next.sort((left, right) => left.name.localeCompare(right.name));
+    return next;
+  }
+
+  if (sort === 'products-desc') {
+    next.sort((left, right) => right.productCount - left.productCount);
+    return next;
+  }
+
+  next.sort(
+    (left, right) =>
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+  );
+
+  return next;
+};
+
+const createSeedCategories = (): AdminCategory[] => {
+  const createdAt = nowIso();
+
+  return [
+    {
+      id: 'cat_keyboards',
+      name: 'Keyboards',
+      slug: 'keyboards',
+      description:
+        'Mechanical keyboards with multiple layouts and mounting styles.',
+      productCount: 42,
+      status: 'active',
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: 'cat_switches',
+      name: 'Switches',
+      slug: 'switches',
+      description:
+        'Linear, tactile, and clicky switches with various spring weights.',
+      productCount: 58,
+      status: 'active',
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: 'cat_keycaps',
+      name: 'Keycaps',
+      slug: 'keycaps',
+      description:
+        'PBT and ABS keycap sets with multiple profiles and legends.',
+      productCount: 35,
+      status: 'active',
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      id: 'cat_accessories',
+      name: 'Accessories',
+      slug: 'accessories',
+      description:
+        'Cases, coiled cables, wrist rests, and keyboard maintenance tools.',
+      productCount: 19,
+      status: 'draft',
+      createdAt,
+      updatedAt: createdAt,
+    },
+    ...Array.from({ length: 8 }, (_, index) => ({
+      id: `cat_custom_${index + 1}`,
+      name: `Custom Category ${index + 1}`,
+      slug: `custom-category-${index + 1}`,
+      description:
+        'Temporary mock category for admin pagination and filtering tests.',
+      productCount: Math.max(0, 12 - index),
+      status: index % 5 === 0 ? ('draft' as const) : ('active' as const),
+      createdAt,
+      updatedAt: createdAt,
+    })),
+  ];
+};
+
+let categoriesStore: AdminCategory[] = createSeedCategories();
+
+const filterByStatus = (
+  categories: AdminCategory[],
+  status: AdminCategoryStatus | 'all'
+) => {
+  if (status === 'all') {
+    return categories;
+  }
+
+  return categories.filter((category) => category.status === status);
+};
+
+const filterBySearch = (categories: AdminCategory[], search: string) => {
+  const normalizedSearch = search.trim().toLowerCase();
+
+  if (!normalizedSearch) {
+    return categories;
+  }
+
+  return categories.filter((category) => {
+    return (
+      category.name.toLowerCase().includes(normalizedSearch) ||
+      category.slug.toLowerCase().includes(normalizedSearch) ||
+      category.description.toLowerCase().includes(normalizedSearch)
+    );
+  });
+};
+
+const paginate = (
+  categories: AdminCategory[],
+  page: number,
+  pageSize: number
+): AdminCategoryListApiResponse => {
+  const totalItems = categories.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const start = (currentPage - 1) * pageSize;
+  const end = start + pageSize;
+
+  return {
+    items: categories.slice(start, end),
+    meta: {
+      page: currentPage,
+      pageSize,
+      totalItems,
+      totalPages,
+    },
+  };
+};
+
+export const adminCategoriesApi = {
+  getCategories: async (
+    queryState: AdminCategoryListQueryState
+  ): Promise<AdminCategoryListApiResponse> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const withoutArchived = categoriesStore.filter(
+      (category) =>
+        queryState.status === 'archived' || category.status !== 'archived'
+    );
+
+    const withStatus = filterByStatus(withoutArchived, queryState.status);
+    const withSearch = filterBySearch(withStatus, queryState.search);
+    const sorted = sortCategories(withSearch, queryState.sort);
+
+    return paginate(sorted, queryState.page, queryState.pageSize);
+  },
+
+  createCategory: async (
+    input: UpsertAdminCategoryInput
+  ): Promise<AdminCategory> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const timestamp = nowIso();
+
+    const category: AdminCategory = {
+      id: createId('category'),
+      name: input.name,
+      slug: toSlug(input.name),
+      description: input.description,
+      productCount: 0,
+      status: input.status,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+
+    categoriesStore = [category, ...categoriesStore];
+
+    return category;
+  },
+
+  updateCategory: async (
+    input: UpsertAdminCategoryInput
+  ): Promise<AdminCategory> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    if (!input.id) {
+      throw new Error('Category id is required for update.');
+    }
+
+    const existingCategory = categoriesStore.find(
+      (category) => category.id === input.id
+    );
+
+    if (!existingCategory) {
+      throw new Error('Category not found.');
+    }
+
+    const updatedCategory: AdminCategory = {
+      ...existingCategory,
+      name: input.name,
+      slug: toSlug(input.name),
+      description: input.description,
+      status: input.status,
+      updatedAt: nowIso(),
+    };
+
+    categoriesStore = categoriesStore.map((category) => {
+      return category.id === updatedCategory.id ? updatedCategory : category;
+    });
+
+    return updatedCategory;
+  },
+
+  softDeleteCategory: async (categoryId: string): Promise<AdminCategory> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const existingCategory = categoriesStore.find(
+      (category) => category.id === categoryId
+    );
+
+    if (!existingCategory) {
+      throw new Error('Category not found.');
+    }
+
+    const archivedCategory: AdminCategory = {
+      ...existingCategory,
+      status: 'archived',
+      updatedAt: nowIso(),
+    };
+
+    categoriesStore = categoriesStore.map((category) => {
+      return category.id === categoryId ? archivedCategory : category;
+    });
+
+    return archivedCategory;
+  },
+
+  restoreCategory: async (categoryId: string): Promise<AdminCategory> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const existingCategory = categoriesStore.find(
+      (category) => category.id === categoryId
+    );
+
+    if (!existingCategory) {
+      throw new Error('Category not found.');
+    }
+
+    const restoredCategory: AdminCategory = {
+      ...existingCategory,
+      status: 'draft',
+      updatedAt: nowIso(),
+    };
+
+    categoriesStore = categoriesStore.map((category) => {
+      return category.id === categoryId ? restoredCategory : category;
+    });
+
+    return restoredCategory;
+  },
+};

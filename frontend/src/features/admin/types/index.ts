@@ -11,6 +11,10 @@ export const ADMIN_PRODUCT_STATUSES = ['active', 'draft', 'archived'] as const;
 
 export type AdminProductStatus = (typeof ADMIN_PRODUCT_STATUSES)[number];
 
+export const ADMIN_CATEGORY_STATUSES = ['active', 'draft', 'archived'] as const;
+
+export type AdminCategoryStatus = (typeof ADMIN_CATEGORY_STATUSES)[number];
+
 export const ADMIN_VARIANT_STATUSES = ['active', 'draft'] as const;
 
 export type AdminVariantStatus = (typeof ADMIN_VARIANT_STATUSES)[number];
@@ -47,4 +51,27 @@ export interface AdminProductPaginationMeta {
 export interface AdminProductListApiResponse {
   items: AdminProduct[];
   meta: AdminProductPaginationMeta;
+}
+
+export interface AdminCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  productCount: number;
+  status: AdminCategoryStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminCategoryPaginationMeta {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface AdminCategoryListApiResponse {
+  items: AdminCategory[];
+  meta: AdminCategoryPaginationMeta;
 }

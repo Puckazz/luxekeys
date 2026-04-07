@@ -18,7 +18,18 @@ export const ADMIN_PRODUCT_SORT_OPTIONS = [
 export type AdminProductSortOption =
   (typeof ADMIN_PRODUCT_SORT_OPTIONS)[number];
 
-export type AdminProductStatusFilter = AdminProductStatus | 'all';
+export type AdminComputedProductStatus = AdminProductStatus | 'out-of-stock';
+
+export const ADMIN_PRODUCT_STATUS_FILTER_OPTIONS = [
+  'active',
+  'draft',
+  'archived',
+  'out-of-stock',
+] as const;
+
+export type AdminProductStatusFilter =
+  | (typeof ADMIN_PRODUCT_STATUS_FILTER_OPTIONS)[number]
+  | 'all';
 
 export interface AdminProductListQueryState {
   search: string;

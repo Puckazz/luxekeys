@@ -166,6 +166,16 @@ function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+function SidebarFooter({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="sidebar-footer"
+      className={cn('border-sidebar-border border-t p-3', className)}
+      {...props}
+    />
+  );
+}
+
 function SidebarInset({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -180,7 +190,7 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<'ul'>) {
   return (
     <ul
       data-slot="sidebar-menu"
-      className={cn('space-y-1.5', className)}
+      className={cn('space-y-2', className)}
       {...props}
     />
   );
@@ -212,10 +222,10 @@ function SidebarMenuButton({
       data-slot="sidebar-menu-button"
       data-active={isActive}
       className={cn(
-        'hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors',
+        'flex w-full items-center gap-2 rounded-xl border px-3 py-3 text-sm transition-colors font-semibold',
         isActive
           ? 'bg-sidebar-primary text-sidebar-primary-foreground border-sidebar-primary/80'
-          : 'border-sidebar-border text-sidebar-foreground/80',
+          : 'border-sidebar-border text-sidebar-foreground/80 hover:bg-card/70 hover:text-sidebar-accent-foreground',
         className
       )}
       {...props}
@@ -229,6 +239,7 @@ export {
   SidebarTrigger,
   SidebarHeader,
   SidebarContent,
+  SidebarFooter,
   SidebarInset,
   SidebarMenu,
   SidebarMenuItem,

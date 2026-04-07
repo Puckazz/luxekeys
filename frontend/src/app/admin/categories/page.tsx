@@ -1,7 +1,5 @@
-import React from 'react'
+import { AdminCategoriesPage } from '@/features/admin/components/pages';
 
-export default function page() {
-  return (
-    <div>page</div>
-  )
+export default function AdminCategoriesRoutePage() {
+  return <AdminCategoriesPage />;
 }

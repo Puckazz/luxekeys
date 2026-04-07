@@ -2,11 +2,29 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Boxes, LayoutGrid, Package, Tag } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+  Boxes,
+  ChevronUp,
+  LayoutGrid,
+  LogOut,
+  Package,
+  Tag,
+  User,
+} from 'lucide-react';
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -57,12 +75,13 @@ const isActiveItem = (
 
 export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <SidebarProvider>
       <section className="w-full">
         <div className="flex min-h-screen items-start gap-0">
-          <Sidebar className="sticky top-0 h-screen rounded-none border-y-0 border-l-0">
+          <Sidebar className="bg-card/35 sticky top-0 h-screen rounded-none border-y-0 border-l-0">
             <SidebarHeader>
               <div className="flex items-center gap-2 px-1">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex size-8 items-center justify-center rounded-lg">
@@ -85,7 +104,11 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
 
                   return (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        className="rounded-[14px] border-0"
+                      >
                         <Link href={item.href}>
                           <ItemIcon className="size-4" />
                           {item.label}
@@ -96,6 +119,62 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
                 })}
               </SidebarMenu>
             </SidebarContent>
+
+            <SidebarFooter>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="bg-sidebar-accent/35 border-sidebar-border/80 hover:bg-sidebar-accent/55 flex w-full items-center gap-2 rounded-md border p-3 text-left transition-colors"
+                  >
+                    <div className="bg-sidebar-primary text-sidebar-primary-foreground flex size-9 items-center justify-center rounded-full text-xs font-semibold">
+                      AK
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">
+                        Admin Keys
+                      </p>
+                      <p className="text-sidebar-foreground/70 truncate text-xs">
+                        admin@luxekeys.io
+                      </p>
+                    </div>
+                    <ChevronUp className="text-sidebar-foreground/70 size-4" />
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent side="right" align="end" className="w-64 rounded-md">
+                  <DropdownMenuLabel>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold">
+                        AK
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          Admin Keys
+                        </p>
+                        <p className="text-muted-foreground truncate text-xs">
+                          admin@luxekeys.io
+                        </p>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem disabled>
+                    <User className="size-4" />
+                    Admin Profile
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem onClick={() => router.push('/login')}>
+                    <LogOut className="size-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarFooter>
           </Sidebar>
 
           <SidebarInset>

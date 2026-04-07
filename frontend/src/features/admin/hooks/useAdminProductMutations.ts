@@ -48,3 +48,18 @@ export const useSoftDeleteAdminProductMutation = () => {
     },
   });
 };
+
+export const useRestoreAdminProductMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (productId: string) => {
+      return adminProductsApi.restoreProduct(productId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_PRODUCTS_QUERY_KEYS.all,
+      });
+    },
+  });
+};

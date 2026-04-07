@@ -2,10 +2,10 @@ import type {
   AdminProduct,
   AdminProductCategory,
   AdminProductListApiResponse,
-  AdminProductStatus,
   AdminProductVariant,
 } from '@/features/admin/types';
 import type {
+  AdminProductStatusFilter,
   AdminProductListQueryState,
   UpsertAdminProductInput,
 } from '@/features/admin/types/admin-products.types';
@@ -93,6 +93,28 @@ const buildVariant = (
 
 const createSeedProducts = (): AdminProduct[] => {
   const createdAt = nowIso();
+  const pulseProducts = Array.from({ length: 11 }, (_, index) => ({
+    id: `prod_pulse_switch_${index + 1}`,
+    name: `Pulse Switch Pack ${index + 1}`,
+    category: 'switches' as const,
+    description: 'Factory-lubed switch pack for smooth typing feel.',
+    thumbnail:
+      'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=1200&q=80',
+    status: 'active' as const,
+    createdAt,
+    updatedAt: createdAt,
+    variants: [
+      {
+        id: `var_pulse_smoke_linear_${index + 1}`,
+        color: 'Smoke Gray',
+        switchType: 'Linear',
+        sku: `PULSE-SMK-LIN-${index + 1}`,
+        price: 34,
+        stock: 240,
+        status: 'active' as const,
+      },
+    ],
+  }));
 
   return [
     {
@@ -159,29 +181,7 @@ const createSeedProducts = (): AdminProduct[] => {
         },
       ],
     },
-    {
-      id: 'prod_pulse_switch',
-      name: 'Pulse Switch Pack',
-      category: 'switches',
-      description:
-        'Factory-lubed switch pack tuned for smooth travel and low wobble typing feel.',
-      thumbnail:
-        'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=1200&q=80',
-      status: 'active',
-      createdAt,
-      updatedAt: createdAt,
-      variants: [
-        {
-          id: 'var_pulse_smoke_linear',
-          color: 'Smoke Gray',
-          switchType: 'Linear',
-          sku: 'PULSE-SMK-LIN',
-          price: 34,
-          stock: 240,
-          status: 'active',
-        },
-      ],
-    },
+    ...pulseProducts,
   ];
 };
 
@@ -204,10 +204,18 @@ const filterByCategory = (
 
 const filterByStatus = (
   products: AdminProduct[],
-  status: AdminProductStatus | 'all'
+  status: AdminProductStatusFilter
 ) => {
   if (status === 'all') {
     return products;
+  }
+
+  if (status === 'out-of-stock') {
+    return products.filter((product) => {
+      return (
+        product.status !== 'archived' && sumVariantStock(product.variants) <= 0
+      );
+    });
   }
 
   return products.filter((product) => product.status === status);
@@ -261,10 +269,10 @@ export const adminProductsApi = {
   ): Promise<AdminProductListApiResponse> => {
     await delay(MOCK_NETWORK_DELAY);
 
-    const withoutArchived = productsStore.filter(
-      (product) =>
-        queryState.status === 'archived' || product.status !== 'archived'
-    );
+    const withoutArchived =
+      queryState.status === 'archived'
+        ? productsStore
+        : productsStore.filter((product) => product.status !== 'archived');
 
     const withCategory = filterByCategory(withoutArchived, queryState.category);
     const withStatus = filterByStatus(withCategory, queryState.status);
@@ -355,5 +363,29 @@ export const adminProductsApi = {
     });
 
     return archivedProduct;
+  },
+
+  restoreProduct: async (productId: string): Promise<AdminProduct> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const existingProduct = productsStore.find(
+      (product) => product.id === productId
+    );
+
+    if (!existingProduct) {
+      throw new Error('Product not found.');
+    }
+
+    const restoredProduct: AdminProduct = {
+      ...existingProduct,
+      status: 'draft',
+      updatedAt: nowIso(),
+    };
+
+    productsStore = productsStore.map((product) => {
+      return product.id === productId ? restoredProduct : product;
+    });
+
+    return restoredProduct;
   },
 };

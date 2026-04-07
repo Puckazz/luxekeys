@@ -182,7 +182,7 @@ export default function Header() {
           >
             <SearchIcon className="size-5" />
           </Button>
-          <Button variant="ghost" size="icon-sm" asChild>
+          <Button variant="ghost" size="icon-sm" asChild className='hover:bg-transparent! focus:bg-transparent!'>
             <Link href="/cart" aria-label="Cart" className="relative">
               <ShoppingBag className="size-5" />
               {cartCount > 0 ? (
@@ -192,7 +192,7 @@ export default function Header() {
               ) : null}
             </Link>
           </Button>
-          <Button variant="ghost" size="icon-sm" asChild>
+          <Button variant="ghost" size="icon-sm" asChild className='hover:bg-transparent! focus:bg-transparent!'>
             <Link href="/wishlist" aria-label="Wishlist" className="relative">
               <Heart className="size-5" />
               {wishlistCount > 0 ? (
@@ -206,7 +206,7 @@ export default function Header() {
             variant="ghost"
             size="icon-sm"
             aria-label="Account"
-            className="hidden md:block"
+            className="hidden md:block hover:bg-transparent! focus:bg-transparent!"
           >
             <Link href="/login">
               <UserCircle className="size-5" />

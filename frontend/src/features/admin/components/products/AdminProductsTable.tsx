@@ -1,12 +1,13 @@
 'use client';
 
 import Image from 'next/image';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit2, RotateCcw, Trash2 } from 'lucide-react';
 
 import type { AdminProduct } from '@/features/admin/types';
 import {
   adminProductStatusBadgeByValue,
   adminProductStatusLabelByValue,
+  getComputedProductStatus,
   getProductPriceRangeLabel,
   getProductTotalStock,
 } from '@/features/admin/utils/admin-products.utils';
@@ -25,12 +26,14 @@ type AdminProductsTableProps = {
   products: AdminProduct[];
   onEdit: (product: AdminProduct) => void;
   onDelete: (product: AdminProduct) => void;
+  onRestore: (product: AdminProduct) => void;
 };
 
 export function AdminProductsTable({
   products,
   onEdit,
   onDelete,
+  onRestore,
 }: AdminProductsTableProps) {
   return (
     <Table>
@@ -47,81 +50,97 @@ export function AdminProductsTable({
       </TableHeader>
 
       <TableBody>
-        {products.map((product) => (
-          <TableRow key={product.id}>
-            <TableCell className="pl-5">
-              <div className="flex min-w-68 items-center gap-3">
-                <div className="bg-card border-border/70 relative size-12 shrink-0 overflow-hidden rounded-[14px] border">
-                  <Image
-                    src={product.thumbnail}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    sizes="44px"
-                  />
+        {products.map((product, index) => {
+          const displayStatus = getComputedProductStatus(product);
+
+          return (
+            <TableRow key={`${product.id}-${index}`}>
+              <TableCell className="pl-5">
+                <div className="flex min-w-68 items-center gap-3">
+                  <div className="bg-card border-border/70 relative size-12 shrink-0 overflow-hidden rounded-[14px] border">
+                    <Image
+                      src={product.thumbnail}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="44px"
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-foreground truncate text-sm font-semibold">
+                      {product.name}
+                    </p>
+                    <p className="text-muted-foreground truncate text-xs">
+                      {product.description}
+                    </p>
+                  </div>
                 </div>
+              </TableCell>
 
-                <div className="min-w-0">
-                  <p className="text-foreground truncate text-sm font-semibold">
-                    {product.name}
-                  </p>
-                  <p className="text-muted-foreground truncate text-xs">
-                    {product.description}
-                  </p>
+              <TableCell className="text-muted-foreground capitalize">
+                {product.category}
+              </TableCell>
+
+              <TableCell className="text-right font-semibold">
+                {product.variants.length}
+              </TableCell>
+
+              <TableCell className="text-right font-semibold">
+                {getProductTotalStock(product.variants)}
+              </TableCell>
+
+              <TableCell className="text-right font-semibold">
+                {getProductPriceRangeLabel(product)}
+              </TableCell>
+
+              <TableCell>
+                <Badge
+                  variant={adminProductStatusBadgeByValue[displayStatus]}
+                  className="text-[10px]"
+                >
+                  {adminProductStatusLabelByValue[displayStatus]}
+                </Badge>
+              </TableCell>
+
+              <TableCell className="pr-5 text-right">
+                <div className="flex justify-end gap-1">
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="outline"
+                    onClick={() => onEdit(product)}
+                  >
+                    <Edit2 className="size-3.5" />
+                    <span className="sr-only">Edit product</span>
+                  </Button>
+
+                  {product.status === 'archived' ? (
+                    <Button
+                      type="button"
+                      size="icon-sm"
+                      variant="outline"
+                      onClick={() => onRestore(product)}
+                    >
+                      <RotateCcw className="size-3.5" />
+                      <span className="sr-only">Restore product</span>
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="icon-sm"
+                      variant="outline"
+                      onClick={() => onDelete(product)}
+                    >
+                      <Trash2 className="size-3.5" />
+                      <span className="sr-only">Archive product</span>
+                    </Button>
+                  )}
                 </div>
-              </div>
-            </TableCell>
-
-            <TableCell className="text-muted-foreground capitalize">
-              {product.category}
-            </TableCell>
-
-            <TableCell className="text-right font-semibold">
-              {product.variants.length}
-            </TableCell>
-
-            <TableCell className="text-right font-semibold">
-              {getProductTotalStock(product.variants)}
-            </TableCell>
-
-            <TableCell className="text-right font-semibold">
-              {getProductPriceRangeLabel(product)}
-            </TableCell>
-
-            <TableCell>
-              <Badge
-                variant={adminProductStatusBadgeByValue[product.status]}
-                className="text-[10px]"
-              >
-                {adminProductStatusLabelByValue[product.status]}
-              </Badge>
-            </TableCell>
-
-            <TableCell className="pr-5 text-right">
-              <div className="flex justify-end gap-1">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => onEdit(product)}
-                >
-                  <Edit2 className="size-3.5" />
-                  <span className="sr-only">Edit product</span>
-                </Button>
-
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
-                  onClick={() => onDelete(product)}
-                >
-                  <Trash2 className="size-3.5" />
-                  <span className="sr-only">Archive product</span>
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

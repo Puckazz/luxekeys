@@ -3,42 +3,31 @@
 import { useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
+import { ADMIN_CATEGORY_STATUSES } from '@/features/admin/types';
 import {
-  ADMIN_PRODUCT_SORT_OPTIONS,
-  ADMIN_PRODUCT_STATUS_FILTER_OPTIONS,
-  type AdminProductListQueryState,
-} from '@/features/admin/types/admin-products.types';
+  ADMIN_CATEGORY_SORT_OPTIONS,
+  type AdminCategoryListQueryState,
+} from '@/features/admin/types/admin-categories.types';
 
 const queryKeys = {
   search: 'search',
-  category: 'category',
   status: 'status',
   sort: 'sort',
   page: 'page',
 };
 
-const DEFAULT_PAGE_SIZE = 7;
-
-const isValidCategory = (
-  value: string
-): value is AdminProductListQueryState['category'] => {
-  return value === 'all' || ADMIN_PRODUCT_CATEGORIES.includes(value as never);
-};
+const DEFAULT_PAGE_SIZE = 8;
 
 const isValidStatus = (
   value: string
-): value is AdminProductListQueryState['status'] => {
-  return (
-    value === 'all' ||
-    ADMIN_PRODUCT_STATUS_FILTER_OPTIONS.includes(value as never)
-  );
+): value is AdminCategoryListQueryState['status'] => {
+  return value === 'all' || ADMIN_CATEGORY_STATUSES.includes(value as never);
 };
 
 const isValidSort = (
   value: string
-): value is AdminProductListQueryState['sort'] => {
-  return ADMIN_PRODUCT_SORT_OPTIONS.includes(value as never);
+): value is AdminCategoryListQueryState['sort'] => {
+  return ADMIN_CATEGORY_SORT_OPTIONS.includes(value as never);
 };
 
 const parsePositiveInt = (value: string | null, fallback: number) => {
@@ -51,20 +40,18 @@ const parsePositiveInt = (value: string | null, fallback: number) => {
   return next;
 };
 
-export const useAdminProductsQueryState = () => {
+export const useAdminCategoriesQueryState = () => {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const queryState: AdminProductListQueryState = useMemo(() => {
+  const queryState: AdminCategoryListQueryState = useMemo(() => {
     const search = searchParams.get(queryKeys.search) ?? '';
-    const rawCategory = searchParams.get(queryKeys.category) ?? 'all';
     const rawStatus = searchParams.get(queryKeys.status) ?? 'all';
     const rawSort = searchParams.get(queryKeys.sort) ?? 'newest';
 
     return {
       search,
-      category: isValidCategory(rawCategory) ? rawCategory : 'all',
       status: isValidStatus(rawStatus) ? rawStatus : 'all',
       sort: isValidSort(rawSort) ? rawSort : 'newest',
       page: parsePositiveInt(searchParams.get(queryKeys.page), 1),
@@ -96,18 +83,7 @@ export const useAdminProductsQueryState = () => {
     });
   };
 
-  const setCategory = (category: AdminProductListQueryState['category']) => {
-    updateSearchParams((params) => {
-      if (category === 'all') {
-        params.delete(queryKeys.category);
-      } else {
-        params.set(queryKeys.category, category);
-      }
-      resetPage(params);
-    });
-  };
-
-  const setStatus = (status: AdminProductListQueryState['status']) => {
+  const setStatus = (status: AdminCategoryListQueryState['status']) => {
     updateSearchParams((params) => {
       if (status === 'all') {
         params.delete(queryKeys.status);
@@ -118,7 +94,7 @@ export const useAdminProductsQueryState = () => {
     });
   };
 
-  const setSort = (sort: AdminProductListQueryState['sort']) => {
+  const setSort = (sort: AdminCategoryListQueryState['sort']) => {
     updateSearchParams((params) => {
       if (sort === 'newest') {
         params.delete(queryKeys.sort);
@@ -142,7 +118,6 @@ export const useAdminProductsQueryState = () => {
   return {
     queryState,
     setSearch,
-    setCategory,
     setStatus,
     setSort,
     setPage,

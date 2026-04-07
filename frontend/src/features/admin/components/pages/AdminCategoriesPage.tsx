@@ -1,18 +1,24 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { PackageSearch } from 'lucide-react';
+import { Shapes } from 'lucide-react';
 
 import {
-  useAdminProductsQuery,
-  useAdminProductsQueryState,
-  useCreateAdminProductMutation,
-  useRestoreAdminProductMutation,
-  useSoftDeleteAdminProductMutation,
-  useUpdateAdminProductMutation,
+  useAdminCategoriesQuery,
+  useAdminCategoriesQueryState,
+  useCreateAdminCategoryMutation,
+  useRestoreAdminCategoryMutation,
+  useSoftDeleteAdminCategoryMutation,
+  useUpdateAdminCategoryMutation,
 } from '@/features/admin/hooks';
-import type { AdminProduct } from '@/features/admin/types';
-import type { UpsertAdminProductInput } from '@/features/admin/types/admin-products.types';
+import {
+  AdminCategoriesTable,
+  AdminCategoriesToolbar,
+  AdminCategoryDeleteDialog,
+  AdminCategoryFormDialog,
+} from '@/features/admin/components/categories';
+import type { AdminCategory } from '@/features/admin/types';
+import type { UpsertAdminCategoryInput } from '@/features/admin/types/admin-categories.types';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import {
@@ -25,32 +31,26 @@ import {
 } from '@/shared/components/ui/pagination';
 import { Spinner } from '@/shared/components/ui/spinner';
 
-import { AdminProductDeleteDialog } from '@/features/admin/components/products/AdminProductDeleteDialog';
-import { AdminProductFormDialog } from '@/features/admin/components/products/AdminProductFormDialog';
-import { AdminProductsTable } from '@/features/admin/components/products/AdminProductsTable';
-import { AdminProductsToolbar } from '@/features/admin/components/products/AdminProductsToolbar';
+export function AdminCategoriesPage() {
+  const { queryState, setSearch, setStatus, setSort, setPage } =
+    useAdminCategoriesQueryState();
 
-export function AdminProductsPage() {
-  const { queryState, setSearch, setCategory, setStatus, setSort, setPage } =
-    useAdminProductsQueryState();
+  const categoriesQuery = useAdminCategoriesQuery(queryState);
 
-  const productsQuery = useAdminProductsQuery(queryState);
-
-  const createMutation = useCreateAdminProductMutation();
-  const updateMutation = useUpdateAdminProductMutation();
-  const deleteMutation = useSoftDeleteAdminProductMutation();
-  const restoreMutation = useRestoreAdminProductMutation();
+  const createMutation = useCreateAdminCategoryMutation();
+  const updateMutation = useUpdateAdminCategoryMutation();
+  const deleteMutation = useSoftDeleteAdminCategoryMutation();
+  const restoreMutation = useRestoreAdminCategoryMutation();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(
+  const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(
     null
   );
-  const [deletingProduct, setDeletingProduct] = useState<AdminProduct | null>(
-    null
-  );
+  const [deletingCategory, setDeletingCategory] =
+    useState<AdminCategory | null>(null);
 
-  const products = productsQuery.data?.items ?? [];
-  const meta = productsQuery.data?.meta;
+  const categories = categoriesQuery.data?.items ?? [];
+  const meta = categoriesQuery.data?.meta;
 
   const isMutating =
     createMutation.isPending ||
@@ -58,7 +58,7 @@ export function AdminProductsPage() {
     deleteMutation.isPending ||
     restoreMutation.isPending;
 
-  const mode = editingProduct ? 'edit' : 'create';
+  const mode = editingCategory ? 'edit' : 'create';
 
   const pageNumbers = useMemo(() => {
     if (!meta) {
@@ -69,25 +69,29 @@ export function AdminProductsPage() {
   }, [meta]);
 
   const handleCreateClick = () => {
-    setEditingProduct(null);
+    setEditingCategory(null);
     setIsFormOpen(true);
   };
 
-  const handleEdit = (product: AdminProduct) => {
-    setEditingProduct(product);
+  const handleEdit = (category: AdminCategory) => {
+    setEditingCategory(category);
     setIsFormOpen(true);
   };
 
-  const handleDelete = (product: AdminProduct) => {
-    setDeletingProduct(product);
+  const handleDelete = (category: AdminCategory) => {
+    setDeletingCategory(category);
   };
 
-  const handleSubmitProduct = (input: UpsertAdminProductInput) => {
+  const handleRestore = (category: AdminCategory) => {
+    restoreMutation.mutate(category.id);
+  };
+
+  const handleSubmitCategory = (input: UpsertAdminCategoryInput) => {
     if (mode === 'edit') {
       updateMutation.mutate(input, {
         onSuccess: () => {
           setIsFormOpen(false);
-          setEditingProduct(null);
+          setEditingCategory(null);
         },
       });
       return;
@@ -101,51 +105,46 @@ export function AdminProductsPage() {
   };
 
   const handleConfirmDelete = () => {
-    if (!deletingProduct) {
+    if (!deletingCategory) {
       return;
     }
 
-    deleteMutation.mutate(deletingProduct.id, {
+    deleteMutation.mutate(deletingCategory.id, {
       onSuccess: () => {
-        setDeletingProduct(null);
+        setDeletingCategory(null);
       },
     });
   };
 
-  const handleRestore = (product: AdminProduct) => {
-    restoreMutation.mutate(product.id);
-  };
-
   return (
     <div className="space-y-4">
-      <AdminProductsToolbar
+      <AdminCategoriesToolbar
         queryState={queryState}
         onSearchChange={setSearch}
-        onCategoryChange={setCategory}
         onStatusChange={setStatus}
         onSortChange={setSort}
         onCreateClick={handleCreateClick}
       />
 
-      {productsQuery.isLoading ? (
+      {categoriesQuery.isLoading ? (
         <Card className="border-border/70 bg-card/35">
           <CardContent className="items-center justify-center py-16">
             <Spinner />
           </CardContent>
         </Card>
-      ) : products.length === 0 ? (
+      ) : categories.length === 0 ? (
         <Card className="border-border/70 bg-card/35">
           <CardContent className="py-12 text-center">
-            <PackageSearch className="text-muted-foreground mx-auto size-8" />
+            <Shapes className="text-muted-foreground mx-auto size-8" />
             <p className="text-foreground mt-3 font-semibold">
-              No products found
+              No categories found
             </p>
             <p className="text-muted-foreground mt-1 text-sm">
-              Update your filters or add a new product.
+              Update your filters or add a new category.
             </p>
             <div className="mt-4">
               <Button type="button" size="sm" onClick={handleCreateClick}>
-                Add Product
+                Add Category
               </Button>
             </div>
           </CardContent>
@@ -153,8 +152,8 @@ export function AdminProductsPage() {
       ) : (
         <Card className="border-border/70 bg-card/35">
           <CardContent className="p-0">
-            <AdminProductsTable
-              products={products}
+            <AdminCategoriesTable
+              categories={categories}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onRestore={handleRestore}
@@ -196,27 +195,27 @@ export function AdminProductsPage() {
         </Pagination>
       )}
 
-      <AdminProductFormDialog
+      <AdminCategoryFormDialog
         mode={mode}
         open={isFormOpen}
-        product={editingProduct}
+        category={editingCategory}
         isSubmitting={isMutating}
         onOpenChange={(open) => {
           setIsFormOpen(open);
           if (!open) {
-            setEditingProduct(null);
+            setEditingCategory(null);
           }
         }}
-        onSubmit={handleSubmitProduct}
+        onSubmit={handleSubmitCategory}
       />
 
-      <AdminProductDeleteDialog
-        product={deletingProduct}
-        open={Boolean(deletingProduct)}
+      <AdminCategoryDeleteDialog
+        category={deletingCategory}
+        open={Boolean(deletingCategory)}
         isSubmitting={deleteMutation.isPending}
         onOpenChange={(open) => {
           if (!open) {
-            setDeletingProduct(null);
+            setDeletingCategory(null);
           }
         }}
         onConfirm={handleConfirmDelete}

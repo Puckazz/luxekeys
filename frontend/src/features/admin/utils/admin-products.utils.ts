@@ -1,10 +1,12 @@
 import type {
   AdminProduct,
-  AdminProductStatus,
   AdminProductVariant,
   AdminVariantStatus,
 } from '@/features/admin/types';
-import type { AdminProductSortOption } from '@/features/admin/types/admin-products.types';
+import type {
+  AdminComputedProductStatus,
+  AdminProductSortOption,
+} from '@/features/admin/types/admin-products.types';
 import type { VariantProps } from 'class-variance-authority';
 
 import type { badgeVariants } from '@/shared/components/ui/badge';
@@ -12,12 +14,13 @@ import type { badgeVariants } from '@/shared/components/ui/badge';
 type BadgeVariant = VariantProps<typeof badgeVariants>['variant'];
 
 export const adminProductStatusLabelByValue: Record<
-  AdminProductStatus,
+  AdminComputedProductStatus,
   string
 > = {
   active: 'Active',
   draft: 'Draft',
   archived: 'Archived',
+  'out-of-stock': 'Out of stock',
 };
 
 export const adminVariantStatusLabelByValue: Record<
@@ -29,12 +32,13 @@ export const adminVariantStatusLabelByValue: Record<
 };
 
 export const adminProductStatusBadgeByValue: Record<
-  AdminProductStatus,
+  AdminComputedProductStatus,
   BadgeVariant
 > = {
   active: 'success',
   draft: 'warning',
-  archived: 'secondary',
+  archived: 'destructive',
+  'out-of-stock': 'default',
 };
 
 export const adminVariantStatusBadgeByValue: Record<
@@ -67,6 +71,18 @@ export const formatCurrency = (value: number) => {
 
 export const getProductTotalStock = (variants: AdminProductVariant[]) => {
   return variants.reduce((total, variant) => total + variant.stock, 0);
+};
+
+export const getComputedProductStatus = (
+  product: AdminProduct
+): AdminComputedProductStatus => {
+  if (product.status === 'archived') {
+    return 'archived';
+  }
+
+  return getProductTotalStock(product.variants) <= 0
+    ? 'out-of-stock'
+    : product.status;
 };
 
 export const getProductPriceRangeLabel = (product: AdminProduct) => {
