@@ -51,7 +51,7 @@ export function AdminProductsTable({
           <TableRow key={product.id}>
             <TableCell className="pl-5">
               <div className="flex min-w-68 items-center gap-3">
-                <div className="bg-card border-border/70 relative size-11 shrink-0 overflow-hidden rounded-md border">
+                <div className="bg-card border-border/70 relative size-12 shrink-0 overflow-hidden rounded-[14px] border">
                   <Image
                     src={product.thumbnail}
                     alt={product.name}

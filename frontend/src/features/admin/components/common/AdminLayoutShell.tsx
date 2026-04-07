@@ -60,9 +60,9 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
 
   return (
     <SidebarProvider>
-      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        <div className="flex items-start gap-5 lg:gap-7">
-          <Sidebar className="sticky top-4 h-fit">
+      <section className="w-full">
+        <div className="flex min-h-screen items-start gap-0">
+          <Sidebar className="sticky top-0 h-screen rounded-none border-y-0 border-l-0">
             <SidebarHeader>
               <div className="flex items-center gap-2 px-1">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex size-8 items-center justify-center rounded-lg">
@@ -99,11 +99,13 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
           </Sidebar>
 
           <SidebarInset>
-            <div className="mb-3 lg:hidden">
-              <SidebarTrigger />
-            </div>
+            <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+              <div className="mb-3 lg:hidden">
+                <SidebarTrigger />
+              </div>
 
-            <main>{children}</main>
+              <main>{children}</main>
+            </div>
           </SidebarInset>
         </div>
       </section>

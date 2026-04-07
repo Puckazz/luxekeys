@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Filter, Plus, Search } from 'lucide-react';
 
 import {
@@ -55,10 +55,17 @@ export function AdminProductsToolbar({
     setSearchDraft(queryState.search);
   }, [queryState.search]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    onSearchChange(searchDraft);
-  };
+  useEffect(() => {
+    const debounceId = window.setTimeout(() => {
+      if (searchDraft !== queryState.search) {
+        onSearchChange(searchDraft);
+      }
+    }, 350);
+
+    return () => {
+      window.clearTimeout(debounceId);
+    };
+  }, [onSearchChange, queryState.search, searchDraft]);
 
   return (
     <div className="space-y-4">
@@ -85,7 +92,7 @@ export function AdminProductsToolbar({
 
       <div className="bg-card/35 border-border/70 rounded-2xl border p-3">
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-          <form className="w-full lg:max-w-sm" onSubmit={handleSubmit}>
+          <div className="w-full lg:max-w-sm">
             <div className="relative">
               <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
               <Input
@@ -95,7 +102,7 @@ export function AdminProductsToolbar({
                 className="h-11 pl-9"
               />
             </div>
-          </form>
+          </div>
 
           <div className="flex flex-1 flex-wrap items-center gap-2 lg:justify-end">
             <Select
@@ -158,14 +165,6 @@ export function AdminProductsToolbar({
                 )}
               </SelectContent>
             </Select>
-
-            <Button
-              type="submit"
-              size="sm"
-              onClick={() => onSearchChange(searchDraft)}
-            >
-              Apply
-            </Button>
           </div>
         </div>
       </div>
