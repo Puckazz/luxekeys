@@ -17,11 +17,9 @@ import {
 } from '@/features/admin/components/inventory';
 import { AdminProductFormDialog } from '@/features/admin/components/products';
 import { AdminListPagination } from '@/features/admin/components/common/AdminListPagination';
+import { AdminListStateCard } from '@/features/admin/components/common/AdminListStateCard';
 import type { AdminProduct } from '@/features/admin/types';
 import type { UpsertAdminProductInput } from '@/features/admin/types/admin-products.types';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Spinner } from '@/shared/components/ui/spinner';
 
 export function AdminInventoryPage() {
   const { queryState, setSearch, setCategory, setStatus, setSort, setPage } =
@@ -148,42 +146,23 @@ export function AdminInventoryPage() {
 
       {summary ? <AdminInventoryStats summary={summary} /> : null}
 
-      {inventoryQuery.isLoading ? (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="items-center justify-center py-16">
-            <Spinner />
-          </CardContent>
-        </Card>
-      ) : items.length === 0 ? (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="py-12 text-center">
-            <ArchiveX className="text-muted-foreground mx-auto size-8" />
-            <p className="text-foreground mt-3 font-semibold">
-              No inventory rows found
-            </p>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Adjust filters or update product variants to see stock entries.
-            </p>
-            <div className="mt-4">
-              <Button type="button" size="sm" onClick={() => setSearch('')}>
-                Reset Search
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="p-0">
-            <AdminInventoryTable
-              items={items}
-              selectedVariantIds={selectedVariantIds}
-              onToggleAll={handleToggleAll}
-              onToggleVariant={handleToggleVariant}
-              onEditProduct={handleEditProduct}
-            />
-          </CardContent>
-        </Card>
-      )}
+      <AdminListStateCard
+        isLoading={inventoryQuery.isLoading}
+        isEmpty={items.length === 0}
+        emptyIcon={ArchiveX}
+        emptyTitle="No inventory rows found"
+        emptyDescription="Adjust filters or update product variants to see stock entries."
+        emptyActionLabel="Reset Search"
+        onEmptyActionClick={() => setSearch('')}
+      >
+        <AdminInventoryTable
+          items={items}
+          selectedVariantIds={selectedVariantIds}
+          onToggleAll={handleToggleAll}
+          onToggleVariant={handleToggleVariant}
+          onEditProduct={handleEditProduct}
+        />
+      </AdminListStateCard>
 
       {meta ? (
         <AdminListPagination

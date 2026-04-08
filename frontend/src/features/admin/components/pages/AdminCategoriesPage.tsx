@@ -20,9 +20,7 @@ import {
 import type { AdminCategory } from '@/features/admin/types';
 import type { UpsertAdminCategoryInput } from '@/features/admin/types/admin-categories.types';
 import { AdminListPagination } from '@/features/admin/components/common/AdminListPagination';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Spinner } from '@/shared/components/ui/spinner';
+import { AdminListStateCard } from '@/features/admin/components/common/AdminListStateCard';
 
 export function AdminCategoriesPage() {
   const { queryState, setSearch, setStatus, setSort, setPage } =
@@ -111,41 +109,22 @@ export function AdminCategoriesPage() {
         onCreateClick={handleCreateClick}
       />
 
-      {categoriesQuery.isLoading ? (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="items-center justify-center py-16">
-            <Spinner />
-          </CardContent>
-        </Card>
-      ) : categories.length === 0 ? (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="py-12 text-center">
-            <Shapes className="text-muted-foreground mx-auto size-8" />
-            <p className="text-foreground mt-3 font-semibold">
-              No categories found
-            </p>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Update your filters or add a new category.
-            </p>
-            <div className="mt-4">
-              <Button type="button" size="sm" onClick={handleCreateClick}>
-                Add Category
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="p-0">
-            <AdminCategoriesTable
-              categories={categories}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onRestore={handleRestore}
-            />
-          </CardContent>
-        </Card>
-      )}
+      <AdminListStateCard
+        isLoading={categoriesQuery.isLoading}
+        isEmpty={categories.length === 0}
+        emptyIcon={Shapes}
+        emptyTitle="No categories found"
+        emptyDescription="Update your filters or add a new category."
+        emptyActionLabel="Add Category"
+        onEmptyActionClick={handleCreateClick}
+      >
+        <AdminCategoriesTable
+          categories={categories}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onRestore={handleRestore}
+        />
+      </AdminListStateCard>
 
       {meta ? (
         <AdminListPagination

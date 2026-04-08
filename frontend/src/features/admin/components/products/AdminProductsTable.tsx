@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { Edit2, RotateCcw, Trash2 } from 'lucide-react';
 
+import { AdminTableIconActionButton } from '@/features/admin/components/common/AdminTableIconActionButton';
 import type { AdminProduct } from '@/features/admin/types';
 import {
   adminProductStatusBadgeByValue,
@@ -12,7 +13,6 @@ import {
   getProductTotalStock,
 } from '@/features/admin/utils/admin-products.utils';
 import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
 import {
   Table,
   TableBody,
@@ -105,36 +105,24 @@ export function AdminProductsTable({
 
               <TableCell className="pr-5 text-right">
                 <div className="flex justify-end gap-1">
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="outline"
+                  <AdminTableIconActionButton
+                    icon={Edit2}
+                    label="Edit product"
                     onClick={() => onEdit(product)}
-                  >
-                    <Edit2 className="size-3.5" />
-                    <span className="sr-only">Edit product</span>
-                  </Button>
+                  />
 
                   {product.status === 'archived' ? (
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="outline"
+                    <AdminTableIconActionButton
+                      icon={RotateCcw}
+                      label="Restore product"
                       onClick={() => onRestore(product)}
-                    >
-                      <RotateCcw className="size-3.5" />
-                      <span className="sr-only">Restore product</span>
-                    </Button>
+                    />
                   ) : (
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="outline"
+                    <AdminTableIconActionButton
+                      icon={Trash2}
+                      label="Archive product"
                       onClick={() => onDelete(product)}
-                    >
-                      <Trash2 className="size-3.5" />
-                      <span className="sr-only">Archive product</span>
-                    </Button>
+                    />
                   )}
                 </div>
               </TableCell>

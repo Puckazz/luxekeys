@@ -1,15 +1,7 @@
 'use client';
 
 import type { AdminProduct } from '@/features/admin/types';
-import { Button } from '@/shared/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/ui/dialog';
+import { AdminArchiveConfirmDialog } from '@/features/admin/components/common/AdminArchiveConfirmDialog';
 
 type AdminProductDeleteDialogProps = {
   product: AdminProduct | null;
@@ -27,37 +19,18 @@ export function AdminProductDeleteDialog({
   onConfirm,
 }: AdminProductDeleteDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-md">
-        <DialogHeader>
-          <DialogTitle>Archive Product</DialogTitle>
-          <DialogDescription>
-            {product
-              ? `This will move ${product.name} to archived status and remove it from the default list.`
-              : 'This action will archive the selected product.'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            disabled={isSubmitting}
-            onClick={onConfirm}
-          >
-            Archive Product
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <AdminArchiveConfirmDialog
+      open={open}
+      title="Archive Product"
+      description={
+        product
+          ? `This will move ${product.name} to archived status and remove it from the default list.`
+          : 'This action will archive the selected product.'
+      }
+      confirmLabel="Archive Product"
+      isSubmitting={isSubmitting}
+      onOpenChange={onOpenChange}
+      onConfirm={onConfirm}
+    />
   );
 }

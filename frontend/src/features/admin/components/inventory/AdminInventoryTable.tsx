@@ -7,13 +7,13 @@ import type {
   AdminInventoryItem,
   AdminInventoryStockStatus,
 } from '@/features/admin/types/admin-inventory.types';
+import { AdminTableIconActionButton } from '@/features/admin/components/common/AdminTableIconActionButton';
 import type { AdminProduct } from '@/features/admin/types';
 import {
   adminInventoryStockStatusBadgeByValue,
   adminInventoryStockStatusLabelByValue,
 } from '@/features/admin/utils/admin-products.utils';
 import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import {
   Table,
@@ -126,15 +126,11 @@ export function AdminInventoryTable({
               </TableCell>
 
               <TableCell className="pr-5 text-right">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
+                <AdminTableIconActionButton
+                  icon={Edit2}
+                  label="Edit product stock"
                   onClick={() => onEditProduct(item.product)}
-                >
-                  <Edit2 className="size-3.5" />
-                  <span className="sr-only">Edit product stock</span>
-                </Button>
+                />
               </TableCell>
             </TableRow>
           );

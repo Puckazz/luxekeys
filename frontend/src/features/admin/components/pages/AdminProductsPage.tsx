@@ -12,11 +12,9 @@ import {
   useUpdateAdminProductMutation,
 } from '@/features/admin/hooks';
 import { AdminListPagination } from '@/features/admin/components/common/AdminListPagination';
+import { AdminListStateCard } from '@/features/admin/components/common/AdminListStateCard';
 import type { AdminProduct } from '@/features/admin/types';
 import type { UpsertAdminProductInput } from '@/features/admin/types/admin-products.types';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Spinner } from '@/shared/components/ui/spinner';
 
 import { AdminProductDeleteDialog } from '@/features/admin/components/products/AdminProductDeleteDialog';
 import { AdminProductFormDialog } from '@/features/admin/components/products/AdminProductFormDialog';
@@ -112,41 +110,22 @@ export function AdminProductsPage() {
         onCreateClick={handleCreateClick}
       />
 
-      {productsQuery.isLoading ? (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="items-center justify-center py-16">
-            <Spinner />
-          </CardContent>
-        </Card>
-      ) : products.length === 0 ? (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="py-12 text-center">
-            <PackageSearch className="text-muted-foreground mx-auto size-8" />
-            <p className="text-foreground mt-3 font-semibold">
-              No products found
-            </p>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Update your filters or add a new product.
-            </p>
-            <div className="mt-4">
-              <Button type="button" size="sm" onClick={handleCreateClick}>
-                Add Product
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-border/70 bg-card/35">
-          <CardContent className="p-0">
-            <AdminProductsTable
-              products={products}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onRestore={handleRestore}
-            />
-          </CardContent>
-        </Card>
-      )}
+      <AdminListStateCard
+        isLoading={productsQuery.isLoading}
+        isEmpty={products.length === 0}
+        emptyIcon={PackageSearch}
+        emptyTitle="No products found"
+        emptyDescription="Update your filters or add a new product."
+        emptyActionLabel="Add Product"
+        onEmptyActionClick={handleCreateClick}
+      >
+        <AdminProductsTable
+          products={products}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onRestore={handleRestore}
+        />
+      </AdminListStateCard>
 
       {meta ? (
         <AdminListPagination

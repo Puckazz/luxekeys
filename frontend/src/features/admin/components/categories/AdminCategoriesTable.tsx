@@ -2,6 +2,7 @@
 
 import { Edit2, RotateCcw, Trash2 } from 'lucide-react';
 
+import { AdminTableIconActionButton } from '@/features/admin/components/common/AdminTableIconActionButton';
 import type { AdminCategory } from '@/features/admin/types';
 import {
   adminCategoryStatusBadgeByValue,
@@ -9,7 +10,6 @@ import {
   formatRelativeDate,
 } from '@/features/admin/utils/admin-categories.utils';
 import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
 import {
   Table,
   TableBody,
@@ -55,7 +55,7 @@ export function AdminCategoriesTable({
             <TableCell className="text-muted-foreground text-sm">
               {category.slug}
             </TableCell>
-            <TableCell className="text-muted-foreground max-w-[280px] truncate text-sm">
+            <TableCell className="text-muted-foreground max-w-70 truncate text-sm">
               {category.description}
             </TableCell>
             <TableCell className="text-right font-semibold">
@@ -74,36 +74,24 @@ export function AdminCategoriesTable({
             </TableCell>
             <TableCell className="pr-5 text-right">
               <div className="flex justify-end gap-1">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="outline"
+                <AdminTableIconActionButton
+                  icon={Edit2}
+                  label="Edit category"
                   onClick={() => onEdit(category)}
-                >
-                  <Edit2 className="size-3.5" />
-                  <span className="sr-only">Edit category</span>
-                </Button>
+                />
 
                 {category.status === 'archived' ? (
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="outline"
+                  <AdminTableIconActionButton
+                    icon={RotateCcw}
+                    label="Restore category"
                     onClick={() => onRestore(category)}
-                  >
-                    <RotateCcw className="size-3.5" />
-                    <span className="sr-only">Restore category</span>
-                  </Button>
+                  />
                 ) : (
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="outline"
+                  <AdminTableIconActionButton
+                    icon={Trash2}
+                    label="Archive category"
                     onClick={() => onDelete(category)}
-                  >
-                    <Trash2 className="size-3.5" />
-                    <span className="sr-only">Archive category</span>
-                  </Button>
+                  />
                 )}
               </div>
             </TableCell>
