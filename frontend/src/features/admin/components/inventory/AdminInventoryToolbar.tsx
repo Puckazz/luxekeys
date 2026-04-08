@@ -1,17 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Filter, Plus, Search } from 'lucide-react';
+import { Filter, Layers3, Search } from 'lucide-react';
 
 import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
-  ADMIN_PRODUCT_STATUS_FILTER_OPTIONS,
-  type AdminProductListQueryState,
-} from '@/features/admin/types/admin-products.types';
+  ADMIN_INVENTORY_STATUS_FILTER_OPTIONS,
+  type AdminInventoryListQueryState,
+} from '@/features/admin/types/admin-inventory.types';
 import { ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE } from '@/features/admin/utils/admin-products.constants';
 import {
-  adminProductSortLabelByValue,
-  adminProductStatusLabelByValue,
+  adminInventorySortLabelByValue,
+  adminInventoryStockStatusLabelByValue,
 } from '@/features/admin/utils/admin-products.utils';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -23,23 +23,27 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 
-type AdminProductsToolbarProps = {
-  queryState: AdminProductListQueryState;
+type AdminInventoryToolbarProps = {
+  queryState: AdminInventoryListQueryState;
+  selectedCount: number;
   onSearchChange: (search: string) => void;
-  onCategoryChange: (category: AdminProductListQueryState['category']) => void;
-  onStatusChange: (status: AdminProductListQueryState['status']) => void;
-  onSortChange: (sort: AdminProductListQueryState['sort']) => void;
-  onCreateClick: () => void;
+  onCategoryChange: (
+    category: AdminInventoryListQueryState['category']
+  ) => void;
+  onStatusChange: (status: AdminInventoryListQueryState['status']) => void;
+  onSortChange: (sort: AdminInventoryListQueryState['sort']) => void;
+  onBulkUpdateClick: () => void;
 };
 
-export function AdminProductsToolbar({
+export function AdminInventoryToolbar({
   queryState,
+  selectedCount,
   onSearchChange,
   onCategoryChange,
   onStatusChange,
   onSortChange,
-  onCreateClick,
-}: AdminProductsToolbarProps) {
+  onBulkUpdateClick,
+}: AdminInventoryToolbarProps) {
   const [searchDraft, setSearchDraft] = useState(queryState.search);
 
   useEffect(() => {
@@ -63,20 +67,22 @@ export function AdminProductsToolbar({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-foreground text-2xl font-bold tracking-tight">
-            Products
+            Inventory
           </h1>
           <p className="text-muted-foreground text-sm">
-            Manage catalog products and their variant combinations.
+            Monitor stock by variant and update quantities in bulk.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="lg">
-            Import
-          </Button>
-          <Button type="button" size="lg" onClick={onCreateClick}>
-            <Plus className="size-4" />
-            Add Product
+          <Button
+            type="button"
+            size="lg"
+            onClick={onBulkUpdateClick}
+            disabled={selectedCount <= 0}
+          >
+            <Layers3 className="size-4" />
+            Bulk Update
           </Button>
         </div>
       </div>
@@ -89,7 +95,7 @@ export function AdminProductsToolbar({
               <Input
                 value={searchDraft}
                 onChange={(event) => setSearchDraft(event.target.value)}
-                placeholder="Search product or SKU"
+                placeholder="Search product, SKU or variant"
                 className="h-11 pl-9"
               />
             </div>
@@ -100,7 +106,7 @@ export function AdminProductsToolbar({
               value={queryState.category}
               onValueChange={(value) =>
                 onCategoryChange(
-                  value as AdminProductListQueryState['category']
+                  value as AdminInventoryListQueryState['category']
                 )
               }
             >
@@ -120,18 +126,18 @@ export function AdminProductsToolbar({
             <Select
               value={queryState.status}
               onValueChange={(value) =>
-                onStatusChange(value as AdminProductListQueryState['status'])
+                onStatusChange(value as AdminInventoryListQueryState['status'])
               }
             >
-              <SelectTrigger size="sm" className="h-11 min-w-36">
+              <SelectTrigger size="sm" className="h-11 min-w-40">
                 <Filter className="size-4" />
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Stock status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
-                {ADMIN_PRODUCT_STATUS_FILTER_OPTIONS.map((status) => (
+                {ADMIN_INVENTORY_STATUS_FILTER_OPTIONS.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {adminProductStatusLabelByValue[status]}
+                    {adminInventoryStockStatusLabelByValue[status]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -140,14 +146,14 @@ export function AdminProductsToolbar({
             <Select
               value={queryState.sort}
               onValueChange={(value) =>
-                onSortChange(value as AdminProductListQueryState['sort'])
+                onSortChange(value as AdminInventoryListQueryState['sort'])
               }
             >
-              <SelectTrigger size="sm" className="h-11 min-w-40">
+              <SelectTrigger size="sm" className="h-11 min-w-44">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(adminProductSortLabelByValue).map(
+                {Object.entries(adminInventorySortLabelByValue).map(
                   ([value, label]) => (
                     <SelectItem key={value} value={value}>
                       {label}

@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   LogOut,
   Package,
+  PackageSearch,
   Tag,
   User,
 } from 'lucide-react';
@@ -51,6 +52,12 @@ const navItems = [
     label: 'Products',
     icon: Package,
     activeIncludes: ['/admin/products'],
+  },
+  {
+    href: '/admin/inventory',
+    label: 'Inventory',
+    icon: PackageSearch,
+    activeIncludes: ['/admin/inventory'],
   },
   {
     href: '/admin/categories',
@@ -142,7 +149,11 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
                   </button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent side="right" align="end" className="w-64 rounded-md">
+                <DropdownMenuContent
+                  side="right"
+                  align="end"
+                  className="w-64 rounded-md"
+                >
                   <DropdownMenuLabel>
                     <div className="flex items-center gap-2">
                       <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { PackageSearch } from 'lucide-react';
 
 import {
@@ -11,18 +11,11 @@ import {
   useSoftDeleteAdminProductMutation,
   useUpdateAdminProductMutation,
 } from '@/features/admin/hooks';
+import { AdminListPagination } from '@/features/admin/components/common/AdminListPagination';
 import type { AdminProduct } from '@/features/admin/types';
 import type { UpsertAdminProductInput } from '@/features/admin/types/admin-products.types';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/shared/components/ui/pagination';
 import { Spinner } from '@/shared/components/ui/spinner';
 
 import { AdminProductDeleteDialog } from '@/features/admin/components/products/AdminProductDeleteDialog';
@@ -59,14 +52,6 @@ export function AdminProductsPage() {
     restoreMutation.isPending;
 
   const mode = editingProduct ? 'edit' : 'create';
-
-  const pageNumbers = useMemo(() => {
-    if (!meta) {
-      return [];
-    }
-
-    return Array.from({ length: meta.totalPages }, (_, index) => index + 1);
-  }, [meta]);
 
   const handleCreateClick = () => {
     setEditingProduct(null);
@@ -163,38 +148,13 @@ export function AdminProductsPage() {
         </Card>
       )}
 
-      {meta && meta.totalPages > 1 && (
-        <Pagination className="justify-end">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setPage(Math.max(1, meta.page - 1))}
-                disabled={meta.page <= 1}
-              />
-            </PaginationItem>
-
-            {pageNumbers.map((pageNumber) => (
-              <PaginationItem key={pageNumber}>
-                <PaginationLink
-                  isActive={meta.page === pageNumber}
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  setPage(Math.min(meta.totalPages, meta.page + 1))
-                }
-                disabled={meta.page >= meta.totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+      {meta ? (
+        <AdminListPagination
+          page={meta.page}
+          totalPages={meta.totalPages}
+          onPageChange={setPage}
+        />
+      ) : null}
 
       <AdminProductFormDialog
         mode={mode}

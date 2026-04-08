@@ -12,6 +12,7 @@ import {
 } from 'react-hook-form';
 
 import type { AdminProductFormValues } from '@/features/admin/types/admin-products.types';
+import { LOW_STOCK_THRESHOLD } from '@/features/admin/utils/admin-products.constants';
 import { adminVariantStatusLabelByValue } from '@/features/admin/utils/admin-products.utils';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -147,7 +148,9 @@ export function AdminVariantEditor({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold">Stock</label>
+                <label className="text-xs font-semibold">
+                  Stock (Low-stock at {LOW_STOCK_THRESHOLD} or below)
+                </label>
                 <Input
                   {...register(`variants.${index}.stock`, {
                     valueAsNumber: true,

@@ -7,9 +7,14 @@ import type {
   AdminComputedProductStatus,
   AdminProductSortOption,
 } from '@/features/admin/types/admin-products.types';
+import type {
+  AdminInventorySortOption,
+  AdminInventoryStockStatus,
+} from '@/features/admin/types/admin-inventory.types';
 import type { VariantProps } from 'class-variance-authority';
 
 import type { badgeVariants } from '@/shared/components/ui/badge';
+import { LOW_STOCK_THRESHOLD } from '@/features/admin/utils/admin-products.constants';
 
 type BadgeVariant = VariantProps<typeof badgeVariants>['variant'];
 
@@ -60,6 +65,34 @@ export const adminProductSortLabelByValue: Record<
   'price-desc': 'Price (high-low)',
 };
 
+export const adminInventoryStockStatusLabelByValue: Record<
+  AdminInventoryStockStatus,
+  string
+> = {
+  'in-stock': 'In stock',
+  'low-stock': 'Low stock',
+  'out-of-stock': 'Out of stock',
+};
+
+export const adminInventoryStockStatusBadgeByValue: Record<
+  AdminInventoryStockStatus,
+  BadgeVariant
+> = {
+  'in-stock': 'success',
+  'low-stock': 'warning',
+  'out-of-stock': 'destructive',
+};
+
+export const adminInventorySortLabelByValue: Record<
+  AdminInventorySortOption,
+  string
+> = {
+  'updated-desc': 'Last updated',
+  'name-asc': 'Name (A-Z)',
+  'stock-asc': 'Stock (low-high)',
+  'stock-desc': 'Stock (high-low)',
+};
+
 export const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -71,6 +104,16 @@ export const formatCurrency = (value: number) => {
 
 export const getProductTotalStock = (variants: AdminProductVariant[]) => {
   return variants.reduce((total, variant) => total + variant.stock, 0);
+};
+
+export const getInventoryStockStatus = (
+  quantity: number
+): AdminInventoryStockStatus => {
+  if (quantity <= 0) {
+    return 'out-of-stock';
+  }
+
+  return quantity <= LOW_STOCK_THRESHOLD ? 'low-stock' : 'in-stock';
 };
 
 export const getComputedProductStatus = (

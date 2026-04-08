@@ -3,6 +3,13 @@
 import { useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import {
+  getNextSearchParamsString,
+  parsePositiveIntParam,
+  resetPageParam,
+  setPageParam,
+  setParamWithDefault,
+} from '@/features/admin/hooks/admin-query-state.utils';
 import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
   ADMIN_PRODUCT_SORT_OPTIONS,
@@ -41,16 +48,6 @@ const isValidSort = (
   return ADMIN_PRODUCT_SORT_OPTIONS.includes(value as never);
 };
 
-const parsePositiveInt = (value: string | null, fallback: number) => {
-  const next = Number(value);
-
-  if (!Number.isInteger(next) || next <= 0) {
-    return fallback;
-  }
-
-  return next;
-};
-
 export const useAdminProductsQueryState = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -67,75 +64,51 @@ export const useAdminProductsQueryState = () => {
       category: isValidCategory(rawCategory) ? rawCategory : 'all',
       status: isValidStatus(rawStatus) ? rawStatus : 'all',
       sort: isValidSort(rawSort) ? rawSort : 'newest',
-      page: parsePositiveInt(searchParams.get(queryKeys.page), 1),
+      page: parsePositiveIntParam(searchParams.get(queryKeys.page), 1),
       pageSize: DEFAULT_PAGE_SIZE,
     };
   }, [searchParams]);
 
   const updateSearchParams = (updater: (params: URLSearchParams) => void) => {
-    const next = new URLSearchParams(searchParams.toString());
-    updater(next);
-
-    const query = next.toString();
+    const query = getNextSearchParamsString(searchParams, updater);
     router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 
   const resetPage = (params: URLSearchParams) => {
-    params.delete(queryKeys.page);
+    resetPageParam(params, queryKeys.page);
   };
 
   const setSearch = (search: string) => {
     updateSearchParams((params) => {
-      const normalized = search.trim();
-      if (!normalized) {
-        params.delete(queryKeys.search);
-      } else {
-        params.set(queryKeys.search, normalized);
-      }
+      setParamWithDefault(params, queryKeys.search, search.trim(), '');
       resetPage(params);
     });
   };
 
   const setCategory = (category: AdminProductListQueryState['category']) => {
     updateSearchParams((params) => {
-      if (category === 'all') {
-        params.delete(queryKeys.category);
-      } else {
-        params.set(queryKeys.category, category);
-      }
+      setParamWithDefault(params, queryKeys.category, category, 'all');
       resetPage(params);
     });
   };
 
   const setStatus = (status: AdminProductListQueryState['status']) => {
     updateSearchParams((params) => {
-      if (status === 'all') {
-        params.delete(queryKeys.status);
-      } else {
-        params.set(queryKeys.status, status);
-      }
+      setParamWithDefault(params, queryKeys.status, status, 'all');
       resetPage(params);
     });
   };
 
   const setSort = (sort: AdminProductListQueryState['sort']) => {
     updateSearchParams((params) => {
-      if (sort === 'newest') {
-        params.delete(queryKeys.sort);
-      } else {
-        params.set(queryKeys.sort, sort);
-      }
+      setParamWithDefault(params, queryKeys.sort, sort, 'newest');
       resetPage(params);
     });
   };
 
   const setPage = (page: number) => {
     updateSearchParams((params) => {
-      if (page <= 1) {
-        params.delete(queryKeys.page);
-      } else {
-        params.set(queryKeys.page, String(page));
-      }
+      setPageParam(params, queryKeys.page, page);
     });
   };
 

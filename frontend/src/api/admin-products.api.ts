@@ -9,6 +9,15 @@ import type {
   AdminProductListQueryState,
   UpsertAdminProductInput,
 } from '@/features/admin/types/admin-products.types';
+import type {
+  AdminInventoryBulkUpdateInput,
+  AdminInventoryBulkUpdateResponse,
+  AdminInventoryItem,
+  AdminInventoryListApiResponse,
+  AdminInventoryListQueryState,
+  AdminInventoryStatusFilter,
+} from '@/features/admin/types/admin-inventory.types';
+import { getInventoryStockStatus } from '@/features/admin/utils/admin-products.utils';
 
 const MOCK_NETWORK_DELAY = 160;
 
@@ -241,6 +250,115 @@ const filterBySearch = (products: AdminProduct[], search: string) => {
   });
 };
 
+const buildInventoryItems = (
+  products: AdminProduct[]
+): AdminInventoryItem[] => {
+  return products.flatMap((product) => {
+    const totalStock = sumVariantStock(product.variants);
+
+    return product.variants.map((variant) => {
+      return {
+        product,
+        variantId: variant.id,
+        variantSku: variant.sku,
+        variantColor: variant.color,
+        variantSwitchType: variant.switchType,
+        variantStock: variant.stock,
+        totalStock,
+        stockStatus: getInventoryStockStatus(variant.stock),
+      };
+    });
+  });
+};
+
+const filterInventoryByStatus = (
+  items: AdminInventoryItem[],
+  status: AdminInventoryStatusFilter
+) => {
+  if (status === 'all') {
+    return items;
+  }
+
+  return items.filter((item) => item.stockStatus === status);
+};
+
+const filterInventoryBySearch = (
+  items: AdminInventoryItem[],
+  search: string
+) => {
+  const normalizedSearch = normalizeSearchTerm(search);
+
+  if (!normalizedSearch) {
+    return items;
+  }
+
+  return items.filter((item) => {
+    return (
+      normalizeSearchTerm(item.product.name).includes(normalizedSearch) ||
+      normalizeSearchTerm(item.product.description).includes(
+        normalizedSearch
+      ) ||
+      normalizeSearchTerm(item.variantSku).includes(normalizedSearch) ||
+      normalizeSearchTerm(item.variantColor).includes(normalizedSearch) ||
+      normalizeSearchTerm(item.variantSwitchType).includes(normalizedSearch)
+    );
+  });
+};
+
+const sortInventoryItems = (
+  items: AdminInventoryItem[],
+  sort: AdminInventoryListQueryState['sort']
+) => {
+  const next = [...items];
+
+  if (sort === 'name-asc') {
+    next.sort((left, right) =>
+      left.product.name.localeCompare(right.product.name)
+    );
+    return next;
+  }
+
+  if (sort === 'stock-asc') {
+    next.sort((left, right) => left.variantStock - right.variantStock);
+    return next;
+  }
+
+  if (sort === 'stock-desc') {
+    next.sort((left, right) => right.variantStock - left.variantStock);
+    return next;
+  }
+
+  next.sort(
+    (left, right) =>
+      new Date(right.product.updatedAt).getTime() -
+      new Date(left.product.updatedAt).getTime()
+  );
+
+  return next;
+};
+
+const paginateInventory = (
+  items: AdminInventoryItem[],
+  page: number,
+  pageSize: number
+): Pick<AdminInventoryListApiResponse, 'items' | 'meta'> => {
+  const totalItems = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const start = (currentPage - 1) * pageSize;
+  const end = start + pageSize;
+
+  return {
+    items: items.slice(start, end),
+    meta: {
+      page: currentPage,
+      pageSize,
+      totalItems,
+      totalPages,
+    },
+  };
+};
+
 const paginate = (
   products: AdminProduct[],
   page: number,
@@ -280,6 +398,50 @@ export const adminProductsApi = {
     const sorted = sortProducts(withSearch, queryState.sort);
 
     return paginate(sorted, queryState.page, queryState.pageSize);
+  },
+
+  getInventory: async (
+    queryState: AdminInventoryListQueryState
+  ): Promise<AdminInventoryListApiResponse> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const activeProducts = productsStore.filter(
+      (product) => product.status !== 'archived'
+    );
+    const withCategory = filterByCategory(activeProducts, queryState.category);
+    const flattened = buildInventoryItems(withCategory);
+    const withStatus = filterInventoryByStatus(flattened, queryState.status);
+    const withSearch = filterInventoryBySearch(withStatus, queryState.search);
+    const sorted = sortInventoryItems(withSearch, queryState.sort);
+    const paginated = paginateInventory(
+      sorted,
+      queryState.page,
+      queryState.pageSize
+    );
+
+    const summary = withSearch.reduce(
+      (accumulator, item) => {
+        if (item.stockStatus === 'low-stock') {
+          accumulator.lowStockItems += 1;
+        }
+
+        if (item.stockStatus === 'out-of-stock') {
+          accumulator.outOfStockItems += 1;
+        }
+
+        return accumulator;
+      },
+      {
+        totalVariants: withSearch.length,
+        lowStockItems: 0,
+        outOfStockItems: 0,
+      }
+    );
+
+    return {
+      ...paginated,
+      summary,
+    };
   },
 
   createProduct: async (
@@ -387,5 +549,53 @@ export const adminProductsApi = {
     });
 
     return restoredProduct;
+  },
+
+  bulkUpdateInventoryStock: async (
+    input: AdminInventoryBulkUpdateInput
+  ): Promise<AdminInventoryBulkUpdateResponse> => {
+    await delay(MOCK_NETWORK_DELAY);
+
+    const updatesByProduct = input.updates.reduce((accumulator, update) => {
+      const list = accumulator.get(update.productId) ?? [];
+      list.push(update);
+      accumulator.set(update.productId, list);
+      return accumulator;
+    }, new Map<string, AdminInventoryBulkUpdateInput['updates']>());
+
+    productsStore = productsStore.map((product) => {
+      const updates = updatesByProduct.get(product.id);
+
+      if (!updates || updates.length === 0) {
+        return product;
+      }
+
+      const updatesByVariantId = new Map(
+        updates.map((update) => [update.variantId, update])
+      );
+
+      const nextVariants = product.variants.map((variant) => {
+        const update = updatesByVariantId.get(variant.id);
+
+        if (!update) {
+          return variant;
+        }
+
+        return {
+          ...variant,
+          stock: update.stock,
+        };
+      });
+
+      return {
+        ...product,
+        variants: nextVariants,
+        updatedAt: nowIso(),
+      };
+    });
+
+    return {
+      updatedCount: input.updates.length,
+    };
   },
 };

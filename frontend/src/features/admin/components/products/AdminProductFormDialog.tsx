@@ -10,6 +10,7 @@ import type {
   AdminProductFormValues,
   UpsertAdminProductInput,
 } from '@/features/admin/types/admin-products.types';
+import { ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE } from '@/features/admin/utils/admin-products.constants';
 import {
   adminProductStatusLabelByValue,
   buildDefaultVariant,
@@ -34,13 +35,6 @@ import {
 import { Textarea } from '@/shared/components/ui/textarea';
 
 import { AdminVariantEditor } from './AdminVariantEditor';
-
-const categoryLabelByValue: Record<AdminProduct['category'], string> = {
-  keyboards: 'Keyboards',
-  switches: 'Switches',
-  keycaps: 'Keycaps',
-  accessories: 'Accessories',
-};
 
 type AdminProductFormDialogProps = {
   mode: 'create' | 'edit';
@@ -122,7 +116,7 @@ export function AdminProductFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] min-h-0 max-w-4xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl rounded-md">
+      <DialogContent className="flex max-h-[90vh] min-h-0 max-w-4xl flex-col gap-0 overflow-hidden rounded-md p-0 sm:max-w-4xl">
         <DialogHeader className="shrink-0 border-b px-4 pt-4 pr-10 pb-3 sm:px-6 sm:pt-6">
           <DialogTitle>
             {mode === 'create' ? 'Add Product' : 'Edit Product'}
@@ -161,13 +155,13 @@ export function AdminProductFormDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(categoryLabelByValue).map(
-                          ([value, label]) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          )
-                        )}
+                        {Object.entries(
+                          ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE
+                        ).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   )}
