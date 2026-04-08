@@ -24,6 +24,7 @@ export interface AdminProductVariant {
   color: string;
   switchType: string;
   sku: string;
+  originalPrice: number;
   price: number;
   stock: number;
   status: AdminVariantStatus;

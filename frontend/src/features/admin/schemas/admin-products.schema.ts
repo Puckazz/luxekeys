@@ -15,15 +15,21 @@ const productStatusSchema = z.enum(
 
 const variantStatusSchema = z.enum(ADMIN_VARIANT_STATUSES);
 
-export const adminProductVariantSchema = z.object({
-  id: z.string().optional(),
-  color: z.string().trim().min(1, 'Color is required.'),
-  switchType: z.string().trim().min(1, 'Switch type is required.'),
-  sku: z.string().trim().min(3, 'SKU must be at least 3 characters.'),
-  price: z.number().min(0, 'Price must be 0 or greater.'),
-  stock: z.number().int().min(0, 'Stock must be 0 or greater.'),
-  status: variantStatusSchema,
-});
+export const adminProductVariantSchema = z
+  .object({
+    id: z.string().optional(),
+    color: z.string().trim().min(1, 'Color is required.'),
+    switchType: z.string().trim().min(1, 'Switch type is required.'),
+    sku: z.string().trim().min(3, 'SKU must be at least 3 characters.'),
+    originalPrice: z.number().min(0, 'Original price must be 0 or greater.'),
+    price: z.number().min(0, 'Price must be 0 or greater.'),
+    stock: z.number().int().min(0, 'Stock must be 0 or greater.'),
+    status: variantStatusSchema,
+  })
+  .refine((variant) => variant.originalPrice >= variant.price, {
+    message: 'Original price must be greater than or equal to price.',
+    path: ['originalPrice'],
+  });
 
 export const adminProductFormSchema = z.object({
   name: z.string().trim().min(2, 'Product name must be at least 2 characters.'),

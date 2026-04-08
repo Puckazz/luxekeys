@@ -1,6 +1,6 @@
 import type { CartLineItem } from '@/features/shop/types/cart-page.types';
 
-export type CheckoutStepKey = 'shipping' | 'payment' | 'confirmation';
+export type CheckoutStepKey = 'checkout' | 'confirmation';
 
 export type ShippingMethodId = 'standard' | 'express';
 

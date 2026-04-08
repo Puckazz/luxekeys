@@ -111,7 +111,7 @@ export function AdminVariantEditor({
                       value={controllerField.value}
                       onValueChange={controllerField.onChange}
                     >
-                      <SelectTrigger size="sm" className="h-10 w-full">
+                      <SelectTrigger size="sm" className="h-10! w-full min-w-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -131,38 +131,58 @@ export function AdminVariantEditor({
                 </p>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold">Price</label>
-                <Input
-                  {...register(`variants.${index}.price`, {
-                    valueAsNumber: true,
-                  })}
-                  type="number"
-                  min={0}
-                  step={1}
-                  className="h-10"
-                />
-                <p className="text-destructive text-xs">
-                  {errors.variants?.[index]?.price?.message}
-                </p>
-              </div>
+              <div className="grid gap-2 md:col-span-2 md:grid-cols-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold">
+                    Original Price
+                  </label>
+                  <Input
+                    {...register(`variants.${index}.originalPrice`, {
+                      valueAsNumber: true,
+                    })}
+                    type="number"
+                    min={0}
+                    step={1}
+                    className="h-10"
+                  />
+                  <p className="text-destructive text-xs">
+                    {errors.variants?.[index]?.originalPrice?.message}
+                  </p>
+                </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold">
-                  Stock (Low-stock at {LOW_STOCK_THRESHOLD} or below)
-                </label>
-                <Input
-                  {...register(`variants.${index}.stock`, {
-                    valueAsNumber: true,
-                  })}
-                  type="number"
-                  min={0}
-                  step={1}
-                  className="h-10"
-                />
-                <p className="text-destructive text-xs">
-                  {errors.variants?.[index]?.stock?.message}
-                </p>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold">Price</label>
+                  <Input
+                    {...register(`variants.${index}.price`, {
+                      valueAsNumber: true,
+                    })}
+                    type="number"
+                    min={0}
+                    step={1}
+                    className="h-10"
+                  />
+                  <p className="text-destructive text-xs">
+                    {errors.variants?.[index]?.price?.message}
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold">
+                    Stock (Low-stock at {LOW_STOCK_THRESHOLD} or below)
+                  </label>
+                  <Input
+                    {...register(`variants.${index}.stock`, {
+                      valueAsNumber: true,
+                    })}
+                    type="number"
+                    min={0}
+                    step={1}
+                    className="h-10"
+                  />
+                  <p className="text-destructive text-xs">
+                    {errors.variants?.[index]?.stock?.message}
+                  </p>
+                </div>
               </div>
             </div>
 

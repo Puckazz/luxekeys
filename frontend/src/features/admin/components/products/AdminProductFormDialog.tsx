@@ -68,6 +68,7 @@ const toFormValues = (product: AdminProduct | null): AdminProductFormValues => {
       color: variant.color,
       switchType: variant.switchType,
       sku: variant.sku,
+      originalPrice: variant.originalPrice,
       price: variant.price,
       stock: variant.stock,
       status: variant.status,

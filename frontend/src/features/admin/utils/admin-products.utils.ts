@@ -145,6 +145,7 @@ export const buildDefaultVariant = () => {
     color: '',
     switchType: '',
     sku: '',
+    originalPrice: 0,
     price: 0,
     stock: 0,
     status: 'active' as const,

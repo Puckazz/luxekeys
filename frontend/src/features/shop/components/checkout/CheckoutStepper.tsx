@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, CreditCard, Truck } from 'lucide-react';
+import { CheckCircle2, CreditCard } from 'lucide-react';
 
 import type {
   CheckoutStepKey,
@@ -13,8 +13,7 @@ const steps: Array<{
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { key: 'shipping', label: 'Shipping', icon: Truck },
-  { key: 'payment', label: 'Payment', icon: CreditCard },
+  { key: 'checkout', label: 'Checkout', icon: CreditCard },
   { key: 'confirmation', label: 'Confirmation', icon: CheckCircle2 },
 ];
 

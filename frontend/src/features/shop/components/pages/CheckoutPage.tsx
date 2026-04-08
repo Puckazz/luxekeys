@@ -113,7 +113,7 @@ const getDefaultValues = (
       city: 'Ho Chi Minh City',
       district: 'District 1',
       shippingMethod: 'standard',
-      paymentMethod: 'vnpay-qr',
+      paymentMethod: 'cod',
       cardNumber: '',
       expiry: '',
       cvc: '',
@@ -129,8 +129,8 @@ const getDefaultValues = (
     streetAddress: draft.shippingAddress.streetAddress,
     city: draft.shippingAddress.city,
     district: draft.shippingAddress.district,
-    shippingMethod: draft.shippingMethod,
-    paymentMethod: draft.paymentMethod,
+    shippingMethod: 'standard',
+    paymentMethod: 'cod',
     cardNumber: '',
     expiry: '',
     cvc: '',
@@ -175,7 +175,6 @@ export default function CheckoutPage() {
   const [promoInputValue, setPromoInputValue] = useState(
     getDefaultValues(draft).promoCode
   );
-  const [hasPaymentInteraction, setHasPaymentInteraction] = useState(false);
 
   useEffect(() => {
     if (!checkoutHydrated) {
@@ -192,9 +191,6 @@ export default function CheckoutPage() {
   const selectedPromoCode = watch('promoCode');
   const selectedPaymentMethod = watch('paymentMethod');
   const streetAddress = watch('streetAddress');
-  const fullName = watch('fullName');
-  const email = watch('email');
-  const phone = watch('phone');
   const district = watch('district');
 
   const availableDistricts =
@@ -219,17 +215,7 @@ export default function CheckoutPage() {
     streetAddress.trim().length > 5 && !errors.streetAddress;
   const isCardPayment = selectedPaymentMethod === 'card';
 
-  const isShippingReady =
-    fullName.trim().length > 1 &&
-    email.trim().length > 0 &&
-    phone.trim().length > 0 &&
-    streetAddress.trim().length > 5 &&
-    selectedCity.trim().length > 0 &&
-    district.trim().length > 0 &&
-    selectedShippingMethod.trim().length > 0;
-
-  const checkoutStep =
-    hasPaymentInteraction && isShippingReady ? 'payment' : 'shipping';
+  const checkoutStep = 'checkout';
 
   const onSubmit = async (values: CheckoutFormValues) => {
     const reviewData = await submitCheckout(values);
@@ -386,22 +372,14 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
 
-              <CardContent
-                className="space-y-4"
-                onFocusCapture={() => {
-                  setHasPaymentInteraction(true);
-                }}
-              >
+              <CardContent className="space-y-4">
                 <Controller
                   control={control}
                   name="paymentMethod"
                   render={({ field }) => (
                     <RadioGroup
                       value={field.value}
-                      onValueChange={(value) => {
-                        setHasPaymentInteraction(true);
-                        field.onChange(value);
-                      }}
+                      onValueChange={field.onChange}
                       className="grid gap-4 sm:grid-cols-2"
                     >
                       {paymentOptions.map((option) => (
