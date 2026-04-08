@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Edit2, RotateCcw, Trash2 } from 'lucide-react';
 
-import { AdminTableIconActionButton } from '@/features/admin/components/common/AdminTableIconActionButton';
+import { AdminTableIconActionButton } from '@/features/admin/components/common';
 import type { AdminProduct } from '@/features/admin/types';
 import {
   adminProductStatusBadgeByValue,

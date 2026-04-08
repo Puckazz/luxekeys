@@ -17,10 +17,12 @@ import {
   AdminCategoryDeleteDialog,
   AdminCategoryFormDialog,
 } from '@/features/admin/components/categories';
+import {
+  AdminListPagination,
+  AdminListStateCard,
+} from '@/features/admin/components/common';
 import type { AdminCategory } from '@/features/admin/types';
 import type { UpsertAdminCategoryInput } from '@/features/admin/types/admin-categories.types';
-import { AdminListPagination } from '@/features/admin/components/common/AdminListPagination';
-import { AdminListStateCard } from '@/features/admin/components/common/AdminListStateCard';
 
 export function AdminCategoriesPage() {
   const { queryState, setSearch, setStatus, setSort, setPage } =

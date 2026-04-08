@@ -2,9 +2,11 @@
 
 import { Filter, Plus } from 'lucide-react';
 
-import { AdminDebouncedSearchInput } from '@/features/admin/components/common/AdminDebouncedSearchInput';
-import { AdminToolbarFiltersPanel } from '@/features/admin/components/common/AdminToolbarFiltersPanel';
-import { AdminToolbarHeader } from '@/features/admin/components/common/AdminToolbarHeader';
+import {
+  AdminDebouncedSearchInput,
+  AdminToolbarFiltersPanel,
+  AdminToolbarHeader,
+} from '@/features/admin/components/common';
 import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
   ADMIN_PRODUCT_STATUS_FILTER_OPTIONS,

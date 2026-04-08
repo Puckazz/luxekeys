@@ -1,7 +1,7 @@
 'use client';
 
 import type { AdminProduct } from '@/features/admin/types';
-import { AdminArchiveConfirmDialog } from '@/features/admin/components/common/AdminArchiveConfirmDialog';
+import { AdminArchiveConfirmDialog } from '@/features/admin/components/common';
 
 type AdminProductDeleteDialogProps = {
   product: AdminProduct | null;

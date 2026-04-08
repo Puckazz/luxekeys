@@ -11,8 +11,10 @@ import {
   useSoftDeleteAdminProductMutation,
   useUpdateAdminProductMutation,
 } from '@/features/admin/hooks';
-import { AdminListPagination } from '@/features/admin/components/common/AdminListPagination';
-import { AdminListStateCard } from '@/features/admin/components/common/AdminListStateCard';
+import {
+  AdminListPagination,
+  AdminListStateCard,
+} from '@/features/admin/components/common';
 import type { AdminProduct } from '@/features/admin/types';
 import type { UpsertAdminProductInput } from '@/features/admin/types/admin-products.types';
 

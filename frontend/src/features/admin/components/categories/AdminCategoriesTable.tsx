@@ -2,7 +2,7 @@
 
 import { Edit2, RotateCcw, Trash2 } from 'lucide-react';
 
-import { AdminTableIconActionButton } from '@/features/admin/components/common/AdminTableIconActionButton';
+import { AdminTableIconActionButton } from '@/features/admin/components/common';
 import type { AdminCategory } from '@/features/admin/types';
 import {
   adminCategoryStatusBadgeByValue,
