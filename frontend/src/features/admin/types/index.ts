@@ -75,3 +75,20 @@ export interface AdminCategoryListApiResponse {
   items: AdminCategory[];
   meta: AdminCategoryPaginationMeta;
 }
+
+export type {
+  AdminOrder,
+  AdminOrderCustomer,
+  AdminOrderDetail,
+  AdminOrderLineItem,
+  AdminOrderListApiResponse,
+  AdminOrderListQueryState,
+  AdminOrderPaginationMeta,
+  AdminOrderShippingAddressSummary,
+  AdminOrderSortOption,
+  AdminOrderStatusFilter,
+  AdminOrderStatusSummary,
+  BulkUpdateAdminOrderStatusInput,
+  BulkUpdateAdminOrderStatusResponse,
+  UpdateAdminOrderStatusInput,
+} from '@/features/admin/types/admin-orders.types';

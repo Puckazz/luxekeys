@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   Boxes,
   ChevronUp,
+  ClipboardList,
   LayoutGrid,
   LogOut,
   Package,
@@ -64,6 +65,12 @@ const navItems = [
     label: 'Categories',
     icon: Tag,
     activeIncludes: ['/admin/categories'],
+  },
+  {
+    href: '/admin/orders',
+    label: 'Orders',
+    icon: ClipboardList,
+    activeIncludes: ['/admin/orders'],
   },
 ] as const;
 
