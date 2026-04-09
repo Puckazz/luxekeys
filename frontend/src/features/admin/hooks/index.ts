@@ -11,3 +11,4 @@ export * from '@/features/admin/hooks/useAdminOrdersQueryState';
 export * from '@/features/admin/hooks/useAdminOrdersQuery';
 export * from '@/features/admin/hooks/useAdminOrderDetailQuery';
 export * from '@/features/admin/hooks/useAdminOrderMutations';
+export * from '@/features/admin/hooks/useAdminDashboardQuery';

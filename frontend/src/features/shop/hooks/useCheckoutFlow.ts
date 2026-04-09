@@ -41,16 +41,13 @@ export const useCheckoutFlow = () => {
   const clearCart = useCartStore((state) => state.clear);
 
   const draft = useCheckoutStore((state) => state.draft);
-  const review = useCheckoutStore((state) => state.review);
   const setDraft = useCheckoutStore((state) => state.setDraft);
-  const setReview = useCheckoutStore((state) => state.setReview);
   const setConfirmation = useCheckoutStore((state) => state.setConfirmation);
 
   const previewMutation = useMutation({
     mutationFn: checkoutApi.previewCheckout,
-    onSuccess: (reviewData, variables) => {
+    onSuccess: (_, variables) => {
       setDraft(variables.draft);
-      setReview(reviewData);
     },
   });
 
@@ -71,19 +68,16 @@ export const useCheckoutFlow = () => {
     });
   };
 
-  const confirmCheckout = async (reviewOverride = review) => {
-    if (!reviewOverride) {
-      throw new Error('No review data found.');
-    }
-
+  const confirmCheckout = async (
+    reviewData: Awaited<ReturnType<typeof checkoutApi.previewCheckout>>
+  ) => {
     return confirmMutation.mutateAsync({
-      review: reviewOverride,
+      review: reviewData,
     });
   };
 
   return {
     draft,
-    review,
     shippingOptions: checkoutShippingOptions,
     paymentOptions: checkoutPaymentOptions,
     isSubmittingCheckout: previewMutation.isPending,

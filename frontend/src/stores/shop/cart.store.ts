@@ -44,7 +44,6 @@ export const useCartStore = create<CartState>()(
 
           if (existing) {
             return {
-              ...state,
               items: state.items.map((item) =>
                 item.id === itemId
                   ? { ...item, quantity: item.quantity + normalizedQuantity }
@@ -56,7 +55,6 @@ export const useCartStore = create<CartState>()(
           }
 
           return {
-            ...state,
             items: [
               ...state.items,
               {
@@ -76,7 +74,6 @@ export const useCartStore = create<CartState>()(
 
       removeItem: (id) =>
         set((state) => ({
-          ...state,
           items: state.items.filter((item) => item.id !== id),
           updatedAt: now(),
           isDirty: true,
@@ -84,7 +81,6 @@ export const useCartStore = create<CartState>()(
 
       setQuantity: (id, quantity) =>
         set((state) => ({
-          ...state,
           items: state.items.map((item) =>
             item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
           ),
@@ -93,32 +89,22 @@ export const useCartStore = create<CartState>()(
         })),
 
       clear: () =>
-        set((state) => ({
-          ...state,
+        set({
           items: [],
           updatedAt: now(),
           isDirty: true,
-        })),
+        }),
 
       replaceFromServer: (items, updatedAt) =>
-        set((state) => ({
-          ...state,
+        set(() => ({
           items: items.map((item) => ({ ...item })),
           updatedAt,
           isDirty: false,
         })),
 
-      markSynced: () =>
-        set((state) => ({
-          ...state,
-          isDirty: false,
-        })),
+      markSynced: () => set({ isDirty: false }),
 
-      setHydrated: (value) =>
-        set((state) => ({
-          ...state,
-          hydrated: value,
-        })),
+      setHydrated: (value) => set({ hydrated: value }),
     }),
     {
       name: 'luxekeys-cart',

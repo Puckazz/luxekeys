@@ -12,14 +12,6 @@ type ProductFiltersStore = {
 
 export const useProductFiltersStore = create<ProductFiltersStore>()((set) => ({
   controller: null,
-  setController: (controller) =>
-    set((state) => ({
-      ...state,
-      controller,
-    })),
-  clearController: () =>
-    set((state) => ({
-      ...state,
-      controller: null,
-    })),
+  setController: (controller) => set({ controller }),
+  clearController: () => set({ controller: null }),
 }));

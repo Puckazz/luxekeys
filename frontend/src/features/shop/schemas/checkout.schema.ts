@@ -3,7 +3,6 @@ import { z } from 'zod';
 const paymentMethodSchema = z.enum([
   'vnpay-qr',
   'momo',
-  'zalopay',
   'card',
   'cod',
 ]);

@@ -28,7 +28,6 @@ export const useWishlistStore = create<WishlistState>()(
 
           if (exists) {
             return {
-              ...state,
               items: state.items.filter(
                 (wishlistItem) => wishlistItem.slug !== item.slug
               ),
@@ -36,28 +35,18 @@ export const useWishlistStore = create<WishlistState>()(
           }
 
           return {
-            ...state,
             items: [...state.items, item],
           };
         }),
 
       removeItem: (slug) =>
         set((state) => ({
-          ...state,
           items: state.items.filter((item) => item.slug !== slug),
         })),
 
-      clear: () =>
-        set((state) => ({
-          ...state,
-          items: [],
-        })),
+      clear: () => set({ items: [] }),
 
-      setHydrated: (value) =>
-        set((state) => ({
-          ...state,
-          hydrated: value,
-        })),
+      setHydrated: (value) => set({ hydrated: value }),
     }),
     {
       name: 'luxekeys-wishlist',

@@ -54,7 +54,6 @@ const paymentBadgeClassByMethod: Record<
 > = {
   'vnpay-qr': 'bg-white text-[#0A3D91]',
   momo: 'bg-[#B5007A] text-white',
-  zalopay: 'bg-[#138DFF] text-white',
   card: 'bg-[#3C4E6A] text-white',
   cod: 'bg-[#2B3E5A] text-white',
 };

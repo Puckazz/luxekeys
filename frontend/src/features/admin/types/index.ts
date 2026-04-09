@@ -78,6 +78,17 @@ export interface AdminCategoryListApiResponse {
 }
 
 export type {
+  AdminDashboardCustomerMixItem,
+  AdminDashboardKpiMetric,
+  AdminDashboardPeriod,
+  AdminDashboardRevenuePoint,
+  AdminDashboardStatusBreakdownItem,
+  AdminDashboardSummary,
+  AdminDashboardTopProduct,
+  AdminDashboardVisitsSegment,
+} from '@/features/admin/types/admin-dashboard.types';
+
+export type {
   AdminOrder,
   AdminOrderCustomer,
   AdminOrderDetail,

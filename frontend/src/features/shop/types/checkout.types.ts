@@ -4,7 +4,7 @@ export type CheckoutStepKey = 'checkout' | 'confirmation';
 
 export type ShippingMethodId = 'standard' | 'express';
 
-export type PaymentMethodId = 'vnpay-qr' | 'momo' | 'zalopay' | 'card' | 'cod';
+export type PaymentMethodId = 'vnpay-qr' | 'momo' | 'card' | 'cod';
 
 export type CheckoutPaymentMethodOption = {
   id: PaymentMethodId;
