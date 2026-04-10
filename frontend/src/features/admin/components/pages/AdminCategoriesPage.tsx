@@ -13,6 +13,7 @@ import {
 } from '@/features/admin/hooks';
 import {
   AdminCategoriesTable,
+  AdminCategoriesTableSkeleton,
   AdminCategoriesToolbar,
   AdminCategoryDeleteDialog,
   AdminCategoryFormDialog,
@@ -113,6 +114,7 @@ export function AdminCategoriesPage() {
 
       <AdminListStateCard
         isLoading={categoriesQuery.isLoading}
+        loadingSkeleton={<AdminCategoriesTableSkeleton />}
         isEmpty={categories.length === 0}
         emptyIcon={Shapes}
         emptyTitle="No categories found"

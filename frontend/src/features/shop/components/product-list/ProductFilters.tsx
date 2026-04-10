@@ -19,10 +19,7 @@ import {
 } from '@/features/shop/types';
 import type { ProductFiltersProps } from '@/features/shop/types/product-list.types';
 import { useProductFiltersStore } from '@/stores/shop/productFilters.store';
-
-const formatCurrency = (value: number): string => {
-  return `$${value}`;
-};
+import { formatCurrency } from '@/lib/formatters';
 
 const toInputId = (prefix: string, value: string): string => {
   return `${prefix}-${value.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
@@ -373,8 +370,20 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
               aria-label="Price range"
             />
             <div className="text-muted-foreground flex items-center justify-between text-xs">
-              <span>Min: {formatCurrency(selectedPrice.min)}</span>
-              <span>Max: {formatCurrency(selectedPrice.max)}</span>
+              <span>
+                Min:{' '}
+                {formatCurrency(selectedPrice.min, {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                })}
+              </span>
+              <span>
+                Max:{' '}
+                {formatCurrency(selectedPrice.max, {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                })}
+              </span>
             </div>
           </div>
 

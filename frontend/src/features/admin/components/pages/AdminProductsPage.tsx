@@ -21,6 +21,7 @@ import type { UpsertAdminProductInput } from '@/features/admin/types/admin-produ
 import { AdminProductDeleteDialog } from '@/features/admin/components/products/AdminProductDeleteDialog';
 import { AdminProductFormDialog } from '@/features/admin/components/products/AdminProductFormDialog';
 import { AdminProductsTable } from '@/features/admin/components/products/AdminProductsTable';
+import { AdminProductsTableSkeleton } from '@/features/admin/components/products/AdminProductsTableSkeleton';
 import { AdminProductsToolbar } from '@/features/admin/components/products/AdminProductsToolbar';
 
 export function AdminProductsPage() {
@@ -114,6 +115,7 @@ export function AdminProductsPage() {
 
       <AdminListStateCard
         isLoading={productsQuery.isLoading}
+        loadingSkeleton={<AdminProductsTableSkeleton />}
         isEmpty={products.length === 0}
         emptyIcon={PackageSearch}
         emptyTitle="No products found"

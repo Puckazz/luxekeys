@@ -12,7 +12,9 @@ import {
 import {
   AdminInventoryBulkUpdateDialog,
   AdminInventoryStats,
+  AdminInventoryStatsSkeleton,
   AdminInventoryTable,
+  AdminInventoryTableSkeleton,
   AdminInventoryToolbar,
 } from '@/features/admin/components/inventory';
 import {
@@ -146,10 +148,12 @@ export function AdminInventoryPage() {
         onBulkUpdateClick={handleOpenBulkDialog}
       />
 
+      {inventoryQuery.isLoading ? <AdminInventoryStatsSkeleton /> : null}
       {summary ? <AdminInventoryStats summary={summary} /> : null}
 
       <AdminListStateCard
         isLoading={inventoryQuery.isLoading}
+        loadingSkeleton={<AdminInventoryTableSkeleton />}
         isEmpty={items.length === 0}
         emptyIcon={ArchiveX}
         emptyTitle="No inventory rows found"

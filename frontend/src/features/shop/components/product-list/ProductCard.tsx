@@ -3,6 +3,7 @@ import { useCartStore } from '@/stores/shop/cart.store';
 import { useWishlistStore } from '@/stores/shop/wishlist.store';
 import { ProductCardBadge } from '@/features/shop/types';
 import type { ProductCardProps } from '@/features/shop/types/product-list.types';
+import { formatCurrency } from '@/lib/formatters';
 
 const badgeVariants: Record<
   ProductCardBadge,
@@ -17,14 +18,6 @@ const badgeLabel: Record<ProductCardBadge, string> = {
   new: 'New',
   'in-stock': 'In Stock',
   limited: 'Limited',
-};
-
-const toCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-  }).format(value);
 };
 
 const getDiscountedPrice = (price: number, discountPercentage?: number) => {
@@ -50,7 +43,7 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
     slug: product.slug,
     name: product.name,
     subtitle: `${product.layout} / ${product.switchType}`,
-    price: toCurrency(product.price),
+    price: formatCurrency(product.price, { minimumFractionDigits: 0 }),
     discountPercentage: product.discountPercentage,
     badge: product.badge ? badgeLabel[product.badge] : null,
     image: product.image,
@@ -65,9 +58,11 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
       brand={product.brand}
       description={product.description}
       tags={product.tags}
-      priceLabel={toCurrency(discountedPrice)}
+      priceLabel={formatCurrency(discountedPrice, { minimumFractionDigits: 0 })}
       originalPriceLabel={
-        product.discountPercentage ? toCurrency(product.price) : undefined
+        product.discountPercentage
+          ? formatCurrency(product.price, { minimumFractionDigits: 0 })
+          : undefined
       }
       badge={
         product.badge

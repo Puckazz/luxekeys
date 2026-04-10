@@ -15,6 +15,7 @@ import type { VariantProps } from 'class-variance-authority';
 
 import type { badgeVariants } from '@/shared/components/ui/badge';
 import { LOW_STOCK_THRESHOLD } from '@/features/admin/utils/admin-products.constants';
+import { formatCurrency as formatSharedCurrency } from '@/lib/formatters';
 
 type BadgeVariant = VariantProps<typeof badgeVariants>['variant'];
 
@@ -94,12 +95,10 @@ export const adminInventorySortLabelByValue: Record<
 };
 
 export const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return formatSharedCurrency(value, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value);
+  });
 };
 
 export const getProductTotalStock = (variants: AdminProductVariant[]) => {

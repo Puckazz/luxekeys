@@ -222,7 +222,7 @@ function SidebarMenuButton({
       data-slot="sidebar-menu-button"
       data-active={isActive}
       className={cn(
-        'flex w-full items-center gap-2 rounded-xl border px-3 py-3 text-sm transition-colors font-semibold',
+        'flex w-full items-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition-colors',
         isActive
           ? 'bg-sidebar-primary text-sidebar-primary-foreground border-sidebar-primary/80'
           : 'border-sidebar-border text-sidebar-foreground/80 hover:bg-card/70 hover:text-sidebar-accent-foreground',
@@ -234,6 +234,7 @@ function SidebarMenuButton({
 }
 
 export {
+  useSidebar,
   SidebarProvider,
   Sidebar,
   SidebarTrigger,

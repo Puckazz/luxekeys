@@ -16,6 +16,7 @@ import {
   AdminOrderDetailsDialog,
   AdminOrdersBulkStatusDialog,
   AdminOrdersTable,
+  AdminOrdersTableSkeleton,
   AdminOrdersToolbar,
 } from '@/features/admin/components/orders';
 import type { AdminOrder } from '@/features/admin/types/admin-orders.types';
@@ -124,6 +125,7 @@ export function AdminOrdersPage() {
 
       <AdminListStateCard
         isLoading={ordersQuery.isLoading}
+        loadingSkeleton={<AdminOrdersTableSkeleton />}
         isEmpty={orders.length === 0}
         emptyIcon={ShoppingCart}
         emptyTitle="No orders found"

@@ -5,6 +5,7 @@ import type {
   AdminDashboardSummary,
   AdminDashboardTopProduct,
 } from '@/features/admin/types/admin-dashboard.types';
+import { formatCurrency } from '@/lib/formatters';
 
 const ORDER_QUERY_ALL = {
   search: '',
@@ -24,11 +25,6 @@ const PRODUCT_QUERY_ALL = {
 };
 
 const numberFormatter = new Intl.NumberFormat('en-US');
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
 
 const periodToDays = (period: AdminDashboardPeriod) => {
   if (period === '7d') {
@@ -249,7 +245,7 @@ export const adminDashboardApi = {
         {
           key: 'revenue',
           label: 'Total revenue',
-          value: currencyFormatter.format(currentRevenue),
+          value: formatCurrency(currentRevenue, { maximumFractionDigits: 0 }),
           changeLabel: toPercentChangeLabel(currentRevenue, previousRevenue),
         },
         {

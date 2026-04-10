@@ -16,6 +16,7 @@ import {
 } from '@/stores/shop/wishlist.store';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';
+import { formatCurrency } from '@/lib/formatters';
 
 const toUnitPrice = (price: string) => {
   const parsedValue = Number(price.replace(/[^0-9.]/g, ''));
@@ -25,14 +26,6 @@ const toUnitPrice = (price: string) => {
   }
 
   return parsedValue;
-};
-
-const toCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(value);
 };
 
 const getDiscountedPrice = (price: string, discountPercentage?: number) => {
@@ -128,7 +121,9 @@ export default function WishlistPage() {
                   image={item.image}
                   name={item.name}
                   subtitle={item.subtitle}
-                  priceLabel={toCurrency(discountedPrice)}
+                  priceLabel={formatCurrency(discountedPrice, {
+                    minimumFractionDigits: 2,
+                  })}
                   originalPriceLabel={
                     item.discountPercentage ? item.price : undefined
                   }

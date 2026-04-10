@@ -20,6 +20,7 @@ import {
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 export default function ProductCollectionSection({
   title,
@@ -45,14 +46,6 @@ export default function ProductCollectionSection({
     }
 
     return parsedValue;
-  };
-
-  const toCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(value);
   };
 
   const getDiscountedPrice = (price: string, discountPercentage?: number) => {
@@ -255,7 +248,9 @@ export default function ProductCollectionSection({
                     </p>
                     <div className="mt-2">
                       <p className="text-primary text-lg font-semibold">
-                        {toCurrency(discountedPrice)}
+                        {formatCurrency(discountedPrice, {
+                          minimumFractionDigits: 2,
+                        })}
                       </p>
                       {product.discountPercentage ? (
                         <p className="text-muted-foreground text-xs line-through">

@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import { Spinner } from '@/shared/components/ui/spinner';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 
 type AdminListStateCardProps = {
   isLoading: boolean;
@@ -13,6 +13,7 @@ type AdminListStateCardProps = {
   emptyIcon: LucideIcon;
   emptyActionLabel?: string;
   onEmptyActionClick?: () => void;
+  loadingSkeleton?: ReactNode;
   children: ReactNode;
 };
 
@@ -24,13 +25,33 @@ export function AdminListStateCard({
   emptyIcon: EmptyIcon,
   emptyActionLabel,
   onEmptyActionClick,
+  loadingSkeleton,
   children,
 }: AdminListStateCardProps) {
   if (isLoading) {
+    if (loadingSkeleton) {
+      return loadingSkeleton;
+    }
+
     return (
       <Card className="border-border/70 bg-card/35">
-        <CardContent className="items-center justify-center py-16">
-          <Spinner />
+        <CardContent className="p-4" aria-hidden="true">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-9 w-9 rounded-md" />
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="ml-auto h-4 w-20" />
+            </div>
+
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
+          </div>
         </CardContent>
       </Card>
     );

@@ -1,5 +1,6 @@
 import type { CartLineItem } from '@/features/shop/types/cart-page.types';
 import type { CheckoutPricingBreakdown } from '@/features/shop/types/checkout.types';
+import { formatCurrency as formatSharedCurrency } from '@/lib/formatters';
 
 export const CHECKOUT_ESTIMATED_TAX_RATE = 0.036;
 
@@ -45,9 +46,7 @@ export const buildOrderPricing = ({
 };
 
 export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return formatSharedCurrency(value, {
     minimumFractionDigits: 2,
-  }).format(value);
+  });
 };

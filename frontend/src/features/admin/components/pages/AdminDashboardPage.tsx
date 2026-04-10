@@ -8,12 +8,12 @@ import {
   AdminDashboardHeader,
   AdminDashboardKpis,
   AdminRevenueTrendCard,
+  AdminDashboardSkeleton,
   AdminStoreVisitsCard,
   AdminTopProductsCard,
 } from '@/features/admin/components/dashboard';
 import { useAdminDashboardQuery } from '@/features/admin/hooks';
 import type { AdminDashboardPeriod } from '@/features/admin/types/admin-dashboard.types';
-import { Spinner } from '@/shared/components/ui/spinner';
 
 export function AdminDashboardPage() {
   const [period, setPeriod] = useState<AdminDashboardPeriod>('30d');
@@ -25,11 +25,7 @@ export function AdminDashboardPage() {
     <div className="space-y-4">
       <AdminDashboardHeader period={period} onPeriodChange={setPeriod} />
 
-      {dashboardQuery.isLoading ? (
-        <div className="flex min-h-52 items-center justify-center">
-          <Spinner />
-        </div>
-      ) : null}
+      {dashboardQuery.isLoading ? <AdminDashboardSkeleton /> : null}
 
       {!dashboardQuery.isLoading && !summary ? (
         <div className="py-12 text-center">

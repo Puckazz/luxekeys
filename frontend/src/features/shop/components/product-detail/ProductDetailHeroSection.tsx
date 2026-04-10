@@ -28,20 +28,13 @@ import type {
   ProductDetailHeroProps,
   ProductStockBadgeProps,
 } from '@/features/shop/types/product-detail.types';
+import { formatCurrency } from '@/lib/formatters';
 
 const stockBadgeVariantMap = {
   'in-stock': 'success',
   'low-stock': 'warning',
   'out-of-stock': 'secondary',
 } as const;
-
-const toCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(value);
-};
 
 const calculateDiscountedPrice = (
   price: number,
@@ -286,11 +279,11 @@ export default function ProductDetailHeroSection({
 
             <div className="mt-5 flex flex-wrap items-end gap-2">
               <p className="text-foreground text-2xl font-bold lg:text-3xl">
-                {toCurrency(discountedPrice)}
+                {formatCurrency(discountedPrice, { minimumFractionDigits: 2 })}
               </p>
               {hasDiscount ? (
                 <p className="text-muted-foreground text-lg line-through">
-                  {toCurrency(product.price)}
+                  {formatCurrency(product.price, { minimumFractionDigits: 2 })}
                 </p>
               ) : null}
             </div>

@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 
 import type { AdminDashboardRevenuePoint } from '@/features/admin/types';
+import { formatCurrency } from '@/lib/formatters';
 import {
   Card,
   CardContent,
@@ -23,12 +24,6 @@ import {
 type AdminRevenueTrendCardProps = {
   points: AdminDashboardRevenuePoint[];
 };
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
 
 export function AdminRevenueTrendCard({ points }: AdminRevenueTrendCardProps) {
   const totalRevenue = points.reduce(
@@ -57,7 +52,7 @@ export function AdminRevenueTrendCard({ points }: AdminRevenueTrendCardProps) {
             Period revenue
           </p>
           <p className="text-2xl font-semibold">
-            {currencyFormatter.format(totalRevenue)}
+            {formatCurrency(totalRevenue, { maximumFractionDigits: 0 })}
           </p>
         </div>
 
@@ -92,7 +87,9 @@ export function AdminRevenueTrendCard({ points }: AdminRevenueTrendCardProps) {
                   background: 'var(--color-card)',
                 }}
                 labelStyle={{ color: 'var(--color-foreground)' }}
-                formatter={(value) => currencyFormatter.format(Number(value))}
+                formatter={(value) =>
+                  formatCurrency(Number(value), { maximumFractionDigits: 0 })
+                }
               />
               <Line
                 type="monotone"

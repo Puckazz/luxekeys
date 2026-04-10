@@ -22,14 +22,7 @@ import {
 } from '@/shared/components/ui/card';
 import { PrimaryButton } from '@/shared/components/ui/primary-button';
 import { cn } from '@/lib/utils';
-
-const toCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(value);
-};
+import { formatCurrency } from '@/lib/formatters';
 
 export default function CartPage() {
   const hydrated = useCartStore((state) => state.hydrated);
@@ -150,7 +143,9 @@ export default function CartPage() {
 
                         <div className="flex items-center justify-between sm:flex-col sm:items-stretch sm:justify-between sm:gap-15">
                           <p className="text-foreground text-2xl font-semibold">
-                            {toCurrency(item.unitPrice * item.quantity)}
+                            {formatCurrency(item.unitPrice * item.quantity, {
+                              minimumFractionDigits: 2,
+                            })}
                           </p>
                           <Button
                             variant="link"
@@ -179,19 +174,25 @@ export default function CartPage() {
                 <div className="text-muted-foreground flex items-center justify-between text-sm">
                   <span>Subtotal</span>
                   <span className="text-foreground font-semibold">
-                    {toCurrency(pricing.subtotal)}
+                    {formatCurrency(pricing.subtotal, {
+                      minimumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
                 <div className="text-muted-foreground flex items-center justify-between text-sm">
                   <span>Shipping estimate</span>
                   <span className="text-foreground font-semibold">
-                    {toCurrency(pricing.shipping)}
+                    {formatCurrency(pricing.shipping, {
+                      minimumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
                 <div className="text-muted-foreground flex items-center justify-between text-sm">
                   <span>Tax estimate</span>
                   <span className="text-foreground font-semibold">
-                    {toCurrency(pricing.estimatedTax)}
+                    {formatCurrency(pricing.estimatedTax, {
+                      minimumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
 
@@ -201,7 +202,9 @@ export default function CartPage() {
                       Order total
                     </p>
                     <p className="text-foreground text-xl font-black">
-                      {toCurrency(pricing.total)}
+                      {formatCurrency(pricing.total, {
+                        minimumFractionDigits: 2,
+                      })}
                     </p>
                   </div>
                 </div>

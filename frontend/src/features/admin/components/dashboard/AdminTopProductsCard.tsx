@@ -1,4 +1,5 @@
 import type { AdminDashboardTopProduct } from '@/features/admin/types';
+import { formatCurrency } from '@/lib/formatters';
 import {
   Card,
   CardContent,
@@ -18,12 +19,6 @@ import {
 type AdminTopProductsCardProps = {
   products: AdminDashboardTopProduct[];
 };
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
 
 export function AdminTopProductsCard({ products }: AdminTopProductsCardProps) {
   return (
@@ -52,7 +47,10 @@ export function AdminTopProductsCard({ products }: AdminTopProductsCardProps) {
                   <TableCell>
                     <p className="font-medium">{product.name}</p>
                     <p className="text-muted-foreground text-xs">
-                      {currencyFormatter.format(product.unitPrice)} average unit
+                      {formatCurrency(product.unitPrice, {
+                        maximumFractionDigits: 0,
+                      })}{' '}
+                      average unit
                     </p>
                   </TableCell>
                   <TableCell className="capitalize">
@@ -62,7 +60,9 @@ export function AdminTopProductsCard({ products }: AdminTopProductsCardProps) {
                     {product.unitsSold}
                   </TableCell>
                   <TableCell className="text-right font-semibold">
-                    {currencyFormatter.format(product.revenue)}
+                    {formatCurrency(product.revenue, {
+                      maximumFractionDigits: 0,
+                    })}
                   </TableCell>
                 </TableRow>
               ))}
