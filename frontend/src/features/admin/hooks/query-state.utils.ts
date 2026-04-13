@@ -1,5 +1,13 @@
 import type { ReadonlyURLSearchParams } from 'next/navigation';
 
+export const isOneOf = <T extends string>(
+  value: string,
+  options: readonly T[]
+): value is T => {
+  const optionsSet = new Set<string>(options);
+  return optionsSet.has(value);
+};
+
 export const parsePositiveIntParam = (
   value: string | null,
   fallback: number

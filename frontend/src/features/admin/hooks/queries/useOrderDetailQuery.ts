@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { adminOrdersApi } from '@/api/admin-orders.api';
-import { ADMIN_ORDERS_QUERY_KEYS } from '@/features/admin/hooks/admin-orders.query-keys';
+import { ADMIN_ORDERS_QUERY_KEYS } from '@/features/admin/hooks/orders.key';
 
 export const useAdminOrderDetailQuery = (
   orderId: string | null,

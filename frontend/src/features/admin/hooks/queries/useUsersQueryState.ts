@@ -1,15 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-
 import {
-  getNextSearchParamsString,
+  isOneOf,
   parsePositiveIntParam,
-  resetPageParam,
-  setPageParam,
-  setParamWithDefault,
-} from '@/features/admin/hooks/admin-query-state.utils';
+} from '@/features/admin/hooks/query-state.utils';
+import { useQueryStateNavigation } from '@/features/admin/hooks/queries/useQueryStateNavigation';
 import {
   ADMIN_USER_SORT_OPTIONS,
   ADMIN_USER_STATUSES,
@@ -30,25 +26,25 @@ const DEFAULT_PAGE_SIZE = 7;
 const isValidRole = (
   value: string
 ): value is AdminUserListQueryState['role'] => {
-  return value === 'all' || USER_ROLES.includes(value as never);
+  return value === 'all' || isOneOf(value, USER_ROLES);
 };
 
 const isValidStatus = (
   value: string
 ): value is AdminUserListQueryState['status'] => {
-  return value === 'all' || ADMIN_USER_STATUSES.includes(value as never);
+  return value === 'all' || isOneOf(value, ADMIN_USER_STATUSES);
 };
 
 const isValidSort = (
   value: string
 ): value is AdminUserListQueryState['sort'] => {
-  return ADMIN_USER_SORT_OPTIONS.includes(value as never);
+  return isOneOf(value, ADMIN_USER_SORT_OPTIONS);
 };
 
 export const useAdminUsersQueryState = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { searchParams, setField, setPage } = useQueryStateNavigation(
+    queryKeys.page
+  );
 
   const queryState: AdminUserListQueryState = useMemo(() => {
     const search = searchParams.get(queryKeys.search) ?? '';
@@ -66,47 +62,20 @@ export const useAdminUsersQueryState = () => {
     };
   }, [searchParams]);
 
-  const updateSearchParams = (updater: (params: URLSearchParams) => void) => {
-    const query = getNextSearchParamsString(searchParams, updater);
-    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  };
-
-  const resetPage = (params: URLSearchParams) => {
-    resetPageParam(params, queryKeys.page);
-  };
-
   const setSearch = (search: string) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.search, search.trim(), '');
-      resetPage(params);
-    });
+    setField(queryKeys.search, search.trim(), '');
   };
 
   const setRole = (role: AdminUserListQueryState['role']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.role, role, 'all');
-      resetPage(params);
-    });
+    setField(queryKeys.role, role, 'all');
   };
 
   const setStatus = (status: AdminUserListQueryState['status']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.status, status, 'all');
-      resetPage(params);
-    });
+    setField(queryKeys.status, status, 'all');
   };
 
   const setSort = (sort: AdminUserListQueryState['sort']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.sort, sort, 'newest');
-      resetPage(params);
-    });
-  };
-
-  const setPage = (page: number) => {
-    updateSearchParams((params) => {
-      setPageParam(params, queryKeys.page, page);
-    });
+    setField(queryKeys.sort, sort, 'newest');
   };
 
   return {

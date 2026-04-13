@@ -1,15 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-
 import {
-  getNextSearchParamsString,
+  isOneOf,
   parsePositiveIntParam,
-  resetPageParam,
-  setPageParam,
-  setParamWithDefault,
-} from '@/features/admin/hooks/admin-query-state.utils';
+} from '@/features/admin/hooks/query-state.utils';
+import { useQueryStateNavigation } from '@/features/admin/hooks/queries/useQueryStateNavigation';
 import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
   ADMIN_PRODUCT_SORT_OPTIONS,
@@ -30,28 +26,25 @@ const DEFAULT_PAGE_SIZE = 7;
 const isValidCategory = (
   value: string
 ): value is AdminProductListQueryState['category'] => {
-  return value === 'all' || ADMIN_PRODUCT_CATEGORIES.includes(value as never);
+  return value === 'all' || isOneOf(value, ADMIN_PRODUCT_CATEGORIES);
 };
 
 const isValidStatus = (
   value: string
 ): value is AdminProductListQueryState['status'] => {
-  return (
-    value === 'all' ||
-    ADMIN_PRODUCT_STATUS_FILTER_OPTIONS.includes(value as never)
-  );
+  return value === 'all' || isOneOf(value, ADMIN_PRODUCT_STATUS_FILTER_OPTIONS);
 };
 
 const isValidSort = (
   value: string
 ): value is AdminProductListQueryState['sort'] => {
-  return ADMIN_PRODUCT_SORT_OPTIONS.includes(value as never);
+  return isOneOf(value, ADMIN_PRODUCT_SORT_OPTIONS);
 };
 
 export const useAdminProductsQueryState = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { searchParams, setField, setPage } = useQueryStateNavigation(
+    queryKeys.page
+  );
 
   const queryState: AdminProductListQueryState = useMemo(() => {
     const search = searchParams.get(queryKeys.search) ?? '';
@@ -69,47 +62,20 @@ export const useAdminProductsQueryState = () => {
     };
   }, [searchParams]);
 
-  const updateSearchParams = (updater: (params: URLSearchParams) => void) => {
-    const query = getNextSearchParamsString(searchParams, updater);
-    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  };
-
-  const resetPage = (params: URLSearchParams) => {
-    resetPageParam(params, queryKeys.page);
-  };
-
   const setSearch = (search: string) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.search, search.trim(), '');
-      resetPage(params);
-    });
+    setField(queryKeys.search, search.trim(), '');
   };
 
   const setCategory = (category: AdminProductListQueryState['category']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.category, category, 'all');
-      resetPage(params);
-    });
+    setField(queryKeys.category, category, 'all');
   };
 
   const setStatus = (status: AdminProductListQueryState['status']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.status, status, 'all');
-      resetPage(params);
-    });
+    setField(queryKeys.status, status, 'all');
   };
 
   const setSort = (sort: AdminProductListQueryState['sort']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.sort, sort, 'newest');
-      resetPage(params);
-    });
-  };
-
-  const setPage = (page: number) => {
-    updateSearchParams((params) => {
-      setPageParam(params, queryKeys.page, page);
-    });
+    setField(queryKeys.sort, sort, 'newest');
   };
 
   return {

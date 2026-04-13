@@ -1,15 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-
 import {
-  getNextSearchParamsString,
+  isOneOf,
   parsePositiveIntParam,
-  resetPageParam,
-  setPageParam,
-  setParamWithDefault,
-} from '@/features/admin/hooks/admin-query-state.utils';
+} from '@/features/admin/hooks/query-state.utils';
+import { useQueryStateNavigation } from '@/features/admin/hooks/queries/useQueryStateNavigation';
 import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
   ADMIN_INVENTORY_SORT_OPTIONS,
@@ -30,28 +26,27 @@ const DEFAULT_PAGE_SIZE = 10;
 const isValidCategory = (
   value: string
 ): value is AdminInventoryListQueryState['category'] => {
-  return value === 'all' || ADMIN_PRODUCT_CATEGORIES.includes(value as never);
+  return value === 'all' || isOneOf(value, ADMIN_PRODUCT_CATEGORIES);
 };
 
 const isValidStatus = (
   value: string
 ): value is AdminInventoryListQueryState['status'] => {
   return (
-    value === 'all' ||
-    ADMIN_INVENTORY_STATUS_FILTER_OPTIONS.includes(value as never)
+    value === 'all' || isOneOf(value, ADMIN_INVENTORY_STATUS_FILTER_OPTIONS)
   );
 };
 
 const isValidSort = (
   value: string
 ): value is AdminInventoryListQueryState['sort'] => {
-  return ADMIN_INVENTORY_SORT_OPTIONS.includes(value as never);
+  return isOneOf(value, ADMIN_INVENTORY_SORT_OPTIONS);
 };
 
 export const useAdminInventoryQueryState = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { searchParams, setField, setPage } = useQueryStateNavigation(
+    queryKeys.page
+  );
 
   const queryState: AdminInventoryListQueryState = useMemo(() => {
     const search = searchParams.get(queryKeys.search) ?? '';
@@ -69,47 +64,20 @@ export const useAdminInventoryQueryState = () => {
     };
   }, [searchParams]);
 
-  const updateSearchParams = (updater: (params: URLSearchParams) => void) => {
-    const query = getNextSearchParamsString(searchParams, updater);
-    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  };
-
-  const resetPage = (params: URLSearchParams) => {
-    resetPageParam(params, queryKeys.page);
-  };
-
   const setSearch = (search: string) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.search, search.trim(), '');
-      resetPage(params);
-    });
+    setField(queryKeys.search, search.trim(), '');
   };
 
   const setCategory = (category: AdminInventoryListQueryState['category']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.category, category, 'all');
-      resetPage(params);
-    });
+    setField(queryKeys.category, category, 'all');
   };
 
   const setStatus = (status: AdminInventoryListQueryState['status']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.status, status, 'all');
-      resetPage(params);
-    });
+    setField(queryKeys.status, status, 'all');
   };
 
   const setSort = (sort: AdminInventoryListQueryState['sort']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.sort, sort, 'updated-desc');
-      resetPage(params);
-    });
-  };
-
-  const setPage = (page: number) => {
-    updateSearchParams((params) => {
-      setPageParam(params, queryKeys.page, page);
-    });
+    setField(queryKeys.sort, sort, 'updated-desc');
   };
 
   return {

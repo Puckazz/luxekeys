@@ -1,15 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-
 import {
-  getNextSearchParamsString,
+  isOneOf,
   parsePositiveIntParam,
-  resetPageParam,
-  setPageParam,
-  setParamWithDefault,
-} from '@/features/admin/hooks/admin-query-state.utils';
+} from '@/features/admin/hooks/query-state.utils';
+import { useQueryStateNavigation } from '@/features/admin/hooks/queries/useQueryStateNavigation';
 import { ADMIN_CATEGORY_STATUSES } from '@/features/admin/types';
 import {
   ADMIN_CATEGORY_SORT_OPTIONS,
@@ -28,19 +24,19 @@ const DEFAULT_PAGE_SIZE = 8;
 const isValidStatus = (
   value: string
 ): value is AdminCategoryListQueryState['status'] => {
-  return value === 'all' || ADMIN_CATEGORY_STATUSES.includes(value as never);
+  return value === 'all' || isOneOf(value, ADMIN_CATEGORY_STATUSES);
 };
 
 const isValidSort = (
   value: string
 ): value is AdminCategoryListQueryState['sort'] => {
-  return ADMIN_CATEGORY_SORT_OPTIONS.includes(value as never);
+  return isOneOf(value, ADMIN_CATEGORY_SORT_OPTIONS);
 };
 
 export const useAdminCategoriesQueryState = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { searchParams, setField, setPage } = useQueryStateNavigation(
+    queryKeys.page
+  );
 
   const queryState: AdminCategoryListQueryState = useMemo(() => {
     const search = searchParams.get(queryKeys.search) ?? '';
@@ -56,40 +52,16 @@ export const useAdminCategoriesQueryState = () => {
     };
   }, [searchParams]);
 
-  const updateSearchParams = (updater: (params: URLSearchParams) => void) => {
-    const query = getNextSearchParamsString(searchParams, updater);
-    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  };
-
-  const resetPage = (params: URLSearchParams) => {
-    resetPageParam(params, queryKeys.page);
-  };
-
   const setSearch = (search: string) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.search, search.trim(), '');
-      resetPage(params);
-    });
+    setField(queryKeys.search, search.trim(), '');
   };
 
   const setStatus = (status: AdminCategoryListQueryState['status']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.status, status, 'all');
-      resetPage(params);
-    });
+    setField(queryKeys.status, status, 'all');
   };
 
   const setSort = (sort: AdminCategoryListQueryState['sort']) => {
-    updateSearchParams((params) => {
-      setParamWithDefault(params, queryKeys.sort, sort, 'newest');
-      resetPage(params);
-    });
-  };
-
-  const setPage = (page: number) => {
-    updateSearchParams((params) => {
-      setPageParam(params, queryKeys.page, page);
-    });
+    setField(queryKeys.sort, sort, 'newest');
   };
 
   return {

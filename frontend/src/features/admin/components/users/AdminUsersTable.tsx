@@ -39,12 +39,12 @@ type AdminUsersTableProps = {
 
 const statusBadgeVariantByValue: Record<
   AdminUser['status'],
-  'success' | 'secondary' | 'destructive'
+  'success' | 'tag' | 'destructive'
 > = {
   active: 'success',
-  inactive: 'secondary',
+  inactive: 'tag',
   suspended: 'destructive',
-  archived: 'secondary',
+  archived: 'tag',
 };
 
 export function AdminUsersTable({

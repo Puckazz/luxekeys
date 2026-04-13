@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { adminProductsApi } from '@/api/admin-products.api';
-import { ADMIN_PRODUCTS_QUERY_KEYS } from '@/features/admin/hooks/admin-products.query-keys';
+import { ADMIN_PRODUCTS_QUERY_KEYS } from '@/features/admin/hooks/products.key';
 import type { AdminInventoryBulkUpdateInput } from '@/features/admin/types/admin-inventory.types';
 
 export const useBulkUpdateInventoryStockMutation = () => {
