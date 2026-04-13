@@ -10,6 +10,7 @@ export const profileUserMock: ProfileUserDto = {
   email: 'john@example.com',
   phone: '0912 345 678',
   joined_at: '2024-03-20T08:00:00.000Z',
+  role: 'customer',
 };
 
 export const addressesMock: SavedAddressDto[] = [

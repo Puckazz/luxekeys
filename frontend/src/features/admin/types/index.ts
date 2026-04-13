@@ -89,6 +89,20 @@ export type {
 } from '@/features/admin/types/admin-dashboard.types';
 
 export type {
+  AdminUserFormValues,
+  AdminUser,
+  AdminUserListApiResponse,
+  AdminUserListQueryState,
+  AdminUserPaginationMeta,
+  AdminUserSortOption,
+  AdminUserStatus,
+  ArchiveAdminUserInput,
+  RestoreAdminUserInput,
+  UpsertAdminUserInput,
+  UpdateAdminUserRoleInput,
+} from '@/features/admin/types/admin-users.types';
+
+export type {
   AdminOrder,
   AdminOrderCustomer,
   AdminOrderDetail,

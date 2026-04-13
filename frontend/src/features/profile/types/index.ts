@@ -1,3 +1,5 @@
+import type { UserRole } from '@/lib/rbac';
+
 export type OrderStatus =
   | 'pending'
   | 'confirmed'
@@ -11,6 +13,7 @@ export type ProfileUser = {
   email: string;
   phone: string;
   joinedAt: string;
+  role: UserRole;
 };
 
 export type SavedAddress = {

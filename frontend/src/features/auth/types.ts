@@ -1,7 +1,13 @@
+import type { UserRole } from '@/lib/rbac';
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string;
+  role: UserRole;
+}
+
+export interface AuthUserRecord extends AuthUser {
   password: string;
 }
 export interface LoginRequest {

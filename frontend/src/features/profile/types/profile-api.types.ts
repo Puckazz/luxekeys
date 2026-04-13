@@ -1,4 +1,5 @@
 import type { OrderStatus } from '@/features/profile/types';
+import type { UserRole } from '@/lib/rbac';
 
 export type ProfileUserDto = {
   id: string;
@@ -6,6 +7,7 @@ export type ProfileUserDto = {
   email: string;
   phone: string;
   joined_at: string;
+  role: UserRole;
 };
 
 export type SavedAddressDto = {

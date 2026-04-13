@@ -13,6 +13,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/features/auth/schemas/auth.schema';
 import { useRouter } from 'next/navigation';
+import { canAccessAdminPanel } from '@/lib/rbac';
+import { persistAuthSession } from '@/lib/auth-session';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -53,9 +55,16 @@ export default function LoginForm() {
 
   const onSubmit = (formData: LoginRequest) => {
     login(formData, {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        if (!response.user) {
+          return;
+        }
+
+        persistAuthSession(response.user);
         setIsRedirecting(true);
-        router.replace('/');
+        router.replace(
+          canAccessAdminPanel(response.user.role) ? '/admin' : '/'
+        );
       },
     });
   };

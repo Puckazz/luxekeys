@@ -13,6 +13,7 @@ import {
   Package,
   PackageSearch,
   Tag,
+  Users,
   User,
 } from 'lucide-react';
 
@@ -37,6 +38,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/shared/components/ui/sidebar';
+import { clearAuthSession, getAuthSession } from '@/lib/auth-session';
 
 type AdminLayoutShellProps = {
   children: React.ReactNode;
@@ -74,6 +76,12 @@ const navItems = [
     icon: ClipboardList,
     activeIncludes: ['/admin/orders'],
   },
+  {
+    href: '/admin/users',
+    label: 'Users',
+    icon: Users,
+    activeIncludes: ['/admin/users'],
+  },
 ] as const;
 
 const isActiveItem = (
@@ -101,6 +109,16 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { isMobile, setMobileOpen } = useSidebar();
+  const sessionUser = getAuthSession();
+  const displayName = sessionUser?.name ?? 'Admin Keys';
+  const displayEmail = sessionUser?.email ?? 'admin@luxekeys.io';
+  const displayInitials =
+    displayName
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'AK';
 
   useEffect(() => {
     if (isMobile) {
@@ -158,12 +176,14 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
                   className="bg-sidebar-accent/35 border-sidebar-border/80 hover:bg-sidebar-accent/55 flex w-full items-center gap-2 rounded-md border p-3 text-left transition-colors"
                 >
                   <div className="bg-sidebar-primary text-sidebar-primary-foreground flex size-9 items-center justify-center rounded-full text-xs font-semibold">
-                    AK
+                    {displayInitials}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">Admin Keys</p>
+                    <p className="truncate text-sm font-semibold">
+                      {displayName}
+                    </p>
                     <p className="text-sidebar-foreground/70 truncate text-xs">
-                      admin@luxekeys.io
+                      {displayEmail}
                     </p>
                   </div>
                   <ChevronUp className="text-sidebar-foreground/70 size-4" />
@@ -178,14 +198,14 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
                 <DropdownMenuLabel>
                   <div className="flex items-center gap-2">
                     <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold">
-                      AK
+                      {displayInitials}
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">
-                        Admin Keys
+                        {displayName}
                       </p>
                       <p className="text-muted-foreground truncate text-xs">
-                        admin@luxekeys.io
+                        {displayEmail}
                       </p>
                     </div>
                   </div>
@@ -202,6 +222,7 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
 
                 <DropdownMenuItem
                   onClick={() => {
+                    clearAuthSession();
                     router.push('/login');
                   }}
                 >

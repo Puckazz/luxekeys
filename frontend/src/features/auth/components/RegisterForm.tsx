@@ -13,6 +13,7 @@ import { useRegister } from '@/features/auth/hooks/auth.hooks';
 import { AuthApiError, RegisterRequest } from '@/features/auth/types';
 import { registerSchema } from '@/features/auth/schemas/auth.schema';
 import { useRouter } from 'next/navigation';
+import { persistAuthSession } from '@/lib/auth-session';
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -64,7 +65,12 @@ export default function RegisterForm() {
       return;
     }
     registerUser(formData, {
-      onSuccess: () => {
+      onSuccess: (response) => {
+        if (!response.user) {
+          return;
+        }
+
+        persistAuthSession(response.user);
         setIsRedirecting(true);
         router.replace('/');
       },

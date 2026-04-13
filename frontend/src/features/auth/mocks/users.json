@@ -2,15 +2,31 @@
   "users": [
     {
       "id": "1",
-      "name": "John Doe",
-      "email": "john@example.com",
-      "password": "123456"
+      "name": "Admin Keys",
+      "email": "admin@luxekeys.io",
+      "password": "admin123",
+      "role": "admin"
     },
     {
       "id": "2",
+      "name": "Staff Ops",
+      "email": "staff@luxekeys.io",
+      "password": "staff123",
+      "role": "staff"
+    },
+    {
+      "id": "3",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "password": "123456",
+      "role": "customer"
+    },
+    {
+      "id": "4",
       "name": "Jane Smith",
       "email": "jane@example.com",
-      "password": "phuc1234"
+      "password": "phuc1234",
+      "role": "customer"
     }
   ]
 }

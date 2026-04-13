@@ -1,20 +1,36 @@
 import {
   AuthApiError,
   AuthResponse,
+  AuthUserRecord,
   AuthUser,
   LoginRequest,
   RegisterRequest,
 } from '@/features/auth/types';
 import usersData from '@/features/auth/mocks/users.json';
+import { USER_ROLES, type UserRole } from '@/lib/rbac';
 
 const MOCK_DELAY = 1000;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const mockUsers: AuthUser[] = usersData.users.map((user) => ({
+const isUserRole = (value: string): value is UserRole => {
+  return USER_ROLES.includes(value as UserRole);
+};
+
+const mockUsers: AuthUserRecord[] = usersData.users.map((user) => ({
   ...user,
   password: user.password,
+  role: isUserRole(user.role) ? user.role : 'customer',
 }));
+
+const toPublicAuthUser = (user: AuthUserRecord): AuthUser => {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+};
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
@@ -34,11 +50,7 @@ export const authApi = {
       });
     }
 
-    const userWithoutPassword = {
-      id: userByEmail.id,
-      name: userByEmail.name,
-      email: userByEmail.email,
-    } as AuthUser;
+    const userWithoutPassword = toPublicAuthUser(userByEmail);
     return {
       success: true,
       user: userWithoutPassword,
@@ -62,23 +74,20 @@ export const authApi = {
       });
     }
 
-    const newUser: AuthUser = {
+    const newUser: AuthUserRecord = {
       id: String(mockUsers.length + 1),
       name: data.name,
       email: data.email,
       password: data.password,
+      role: 'customer',
     };
 
     mockUsers.push(newUser);
-    const userWithoutPassword = {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-    } as AuthUser;
+    const userWithoutPassword = toPublicAuthUser(newUser);
 
     return {
       success: true,
-      user: userWithoutPassword as AuthUser,
+      user: userWithoutPassword,
       message: 'Registration successful',
     };
   },
