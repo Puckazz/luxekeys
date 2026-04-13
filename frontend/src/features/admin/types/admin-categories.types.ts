@@ -14,6 +14,11 @@ export type AdminCategorySortOption =
 
 export type AdminCategoryStatusFilter = AdminCategoryStatus | 'all';
 
+export type AdminCategoryStatusSummary = Record<
+  AdminCategoryStatusFilter,
+  number
+>;
+
 export interface AdminCategoryListQueryState {
   search: string;
   status: AdminCategoryStatusFilter;
@@ -35,4 +40,6 @@ export interface UpsertAdminCategoryInput {
   status: Exclude<AdminCategoryStatus, 'archived'>;
 }
 
-export type AdminCategoryListResponse = AdminCategoryListApiResponse;
+export interface AdminCategoryListResponse extends AdminCategoryListApiResponse {
+  summary: AdminCategoryStatusSummary;
+}

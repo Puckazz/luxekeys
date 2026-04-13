@@ -45,6 +45,7 @@ export function AdminUsersPage() {
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
 
   const users = usersQuery.data?.items ?? [];
+  const summary = usersQuery.data?.summary;
   const meta = usersQuery.data?.meta;
 
   const actorRole = getAuthSession()?.role ?? 'customer';
@@ -152,6 +153,7 @@ export function AdminUsersPage() {
       <AdminUsersToolbar
         actorRole={actorRole}
         queryState={queryState}
+        summary={summary}
         onSearchChange={setSearch}
         onRoleChange={setRole}
         onStatusChange={setStatus}

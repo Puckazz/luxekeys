@@ -3,6 +3,7 @@ import {
   type AdminUser,
   type AdminUserListApiResponse,
   type AdminUserListQueryState,
+  type AdminUserStatusSummary,
   type RestoreAdminUserInput,
   type UpsertAdminUserInput,
   type UpdateAdminUserRoleInput,
@@ -59,7 +60,7 @@ const sortUsers = (
   return next;
 };
 
-const filterUsers = (
+const filterUsersBySearchAndRole = (
   users: AdminUser[],
   queryState: AdminUserListQueryState
 ) => {
@@ -73,18 +74,42 @@ const filterUsers = (
 
     const matchRole =
       queryState.role === 'all' || user.role === queryState.role;
-    const matchStatus =
-      queryState.status === 'all' || user.status === queryState.status;
 
-    return matchSearch && matchRole && matchStatus;
+    return matchSearch && matchRole;
   });
+};
+
+const filterUsersByStatus = (
+  users: AdminUser[],
+  status: AdminUserListQueryState['status']
+) => {
+  if (status === 'all') {
+    return users;
+  }
+
+  return users.filter((user) => user.status === status);
+};
+
+const buildUserStatusSummary = (users: AdminUser[]): AdminUserStatusSummary => {
+  const initialSummary: AdminUserStatusSummary = {
+    all: users.length,
+    active: 0,
+    inactive: 0,
+    suspended: 0,
+    archived: 0,
+  };
+
+  return users.reduce((summary, user) => {
+    summary[user.status] += 1;
+    return summary;
+  }, initialSummary);
 };
 
 const paginate = (
   users: AdminUser[],
   page: number,
   pageSize: number
-): AdminUserListApiResponse => {
+): Pick<AdminUserListApiResponse, 'items' | 'meta'> => {
   const totalItems = users.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const currentPage = Math.min(Math.max(1, page), totalPages);
@@ -134,9 +159,22 @@ export const adminUsersApi = {
       (user) => queryState.status === 'archived' || user.status !== 'archived'
     );
 
-    const filtered = filterUsers(withoutArchived, queryState);
-    const sorted = sortUsers(filtered, queryState.sort);
-    return paginate(sorted, queryState.page, queryState.pageSize);
+    const withSearchAndRole = filterUsersBySearchAndRole(
+      withoutArchived,
+      queryState
+    );
+    const summary = buildUserStatusSummary(withSearchAndRole);
+    const withStatus = filterUsersByStatus(
+      withSearchAndRole,
+      queryState.status
+    );
+    const sorted = sortUsers(withStatus, queryState.sort);
+    const paginated = paginate(sorted, queryState.page, queryState.pageSize);
+
+    return {
+      ...paginated,
+      summary,
+    };
   },
 
   updateUserRole: async (

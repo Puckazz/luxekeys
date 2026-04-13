@@ -44,6 +44,7 @@ export function AdminProductsPage() {
   );
 
   const products = productsQuery.data?.items ?? [];
+  const summary = productsQuery.data?.summary;
   const meta = productsQuery.data?.meta;
 
   const isMutating =
@@ -106,6 +107,7 @@ export function AdminProductsPage() {
     <div className="space-y-4">
       <AdminProductsToolbar
         queryState={queryState}
+        summary={summary}
         onSearchChange={setSearch}
         onCategoryChange={setCategory}
         onStatusChange={setStatus}

@@ -95,6 +95,7 @@ export type {
   AdminUserListQueryState,
   AdminUserPaginationMeta,
   AdminUserSortOption,
+  AdminUserStatusSummary,
   AdminUserStatus,
   ArchiveAdminUserInput,
   RestoreAdminUserInput,
@@ -118,3 +119,18 @@ export type {
   BulkUpdateAdminOrderStatusResponse,
   UpdateAdminOrderStatusInput,
 } from '@/features/admin/types/admin-orders.types';
+
+export type {
+  AdminReview,
+  AdminReviewDetail,
+  AdminReviewListApiResponse,
+  AdminReviewListQueryState,
+  AdminReviewPaginationMeta,
+  AdminReviewSortOption,
+  AdminReviewStatus,
+  AdminReviewStatusFilter,
+  AdminReviewStatusSummary,
+  BulkUpdateAdminReviewStatusInput,
+  BulkUpdateAdminReviewStatusResponse,
+  UpdateAdminReviewStatusInput,
+} from '@/features/admin/types/admin-reviews.types';

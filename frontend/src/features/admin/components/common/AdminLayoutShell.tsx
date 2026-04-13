@@ -10,6 +10,7 @@ import {
   ClipboardList,
   LayoutGrid,
   LogOut,
+  MessageSquare,
   Package,
   PackageSearch,
   Tag,
@@ -81,6 +82,12 @@ const navItems = [
     label: 'Users',
     icon: Users,
     activeIncludes: ['/admin/users'],
+  },
+  {
+    href: '/admin/reviews',
+    label: 'Reviews',
+    icon: MessageSquare,
+    activeIncludes: ['/admin/reviews'],
   },
 ] as const;
 

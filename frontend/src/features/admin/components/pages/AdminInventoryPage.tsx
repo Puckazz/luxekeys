@@ -45,6 +45,7 @@ export function AdminInventoryPage() {
     return inventoryQuery.data?.items ?? [];
   }, [inventoryQuery.data?.items]);
   const summary = inventoryQuery.data?.summary;
+  const statusSummary = inventoryQuery.data?.statusSummary;
   const meta = inventoryQuery.data?.meta;
 
   const selectedItems = useMemo(() => {
@@ -140,6 +141,7 @@ export function AdminInventoryPage() {
     <div className="space-y-4">
       <AdminInventoryToolbar
         queryState={queryState}
+        statusSummary={statusSummary}
         selectedCount={selectedCount}
         onSearchChange={setSearch}
         onCategoryChange={setCategory}

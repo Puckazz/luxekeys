@@ -1,9 +1,10 @@
 'use client';
 
-import { Filter, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import {
   AdminDebouncedSearchInput,
+  AdminQuickStatusTabs,
   AdminToolbarFiltersPanel,
   AdminToolbarHeader,
 } from '@/features/admin/components/common';
@@ -11,6 +12,7 @@ import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
   ADMIN_PRODUCT_STATUS_FILTER_OPTIONS,
   type AdminProductListQueryState,
+  type AdminProductStatusSummary,
 } from '@/features/admin/types/admin-products.types';
 import { ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE } from '@/features/admin/utils/admin-products.constants';
 import {
@@ -28,6 +30,7 @@ import {
 
 type AdminProductsToolbarProps = {
   queryState: AdminProductListQueryState;
+  summary?: AdminProductStatusSummary;
   onSearchChange: (search: string) => void;
   onCategoryChange: (category: AdminProductListQueryState['category']) => void;
   onStatusChange: (status: AdminProductListQueryState['status']) => void;
@@ -35,8 +38,22 @@ type AdminProductsToolbarProps = {
   onCreateClick: () => void;
 };
 
+const statusQuickFilters: AdminProductListQueryState['status'][] = [
+  'all',
+  ...ADMIN_PRODUCT_STATUS_FILTER_OPTIONS,
+];
+
+const productStatusFilterLabelByValue: Record<
+  AdminProductListQueryState['status'],
+  string
+> = {
+  all: 'All',
+  ...adminProductStatusLabelByValue,
+};
+
 export function AdminProductsToolbar({
   queryState,
+  summary,
   onSearchChange,
   onCategoryChange,
   onStatusChange,
@@ -59,6 +76,14 @@ export function AdminProductsToolbar({
             </Button>
           </>
         }
+      />
+
+      <AdminQuickStatusTabs
+        value={queryState.status}
+        options={statusQuickFilters}
+        labelByValue={productStatusFilterLabelByValue}
+        summary={summary}
+        onValueChange={(status) => onStatusChange(status)}
       />
 
       <AdminToolbarFiltersPanel
@@ -84,26 +109,6 @@ export function AdminProductsToolbar({
             {ADMIN_PRODUCT_CATEGORIES.map((category) => (
               <SelectItem key={category} value={category}>
                 {ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE[category]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={queryState.status}
-          onValueChange={(value) =>
-            onStatusChange(value as AdminProductListQueryState['status'])
-          }
-        >
-          <SelectTrigger size="sm" className="h-11 min-w-36">
-            <Filter className="size-4" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {ADMIN_PRODUCT_STATUS_FILTER_OPTIONS.map((status) => (
-              <SelectItem key={status} value={status}>
-                {adminProductStatusLabelByValue[status]}
               </SelectItem>
             ))}
           </SelectContent>

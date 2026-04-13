@@ -1,14 +1,18 @@
 'use client';
 
-import { Filter, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import {
   AdminDebouncedSearchInput,
+  AdminQuickStatusTabs,
   AdminToolbarFiltersPanel,
   AdminToolbarHeader,
 } from '@/features/admin/components/common';
 import { ADMIN_CATEGORY_STATUSES } from '@/features/admin/types';
-import type { AdminCategoryListQueryState } from '@/features/admin/types/admin-categories.types';
+import type {
+  AdminCategoryListQueryState,
+  AdminCategoryStatusSummary,
+} from '@/features/admin/types/admin-categories.types';
 import {
   adminCategorySortLabelByValue,
   adminCategoryStatusLabelByValue,
@@ -24,14 +28,29 @@ import {
 
 type AdminCategoriesToolbarProps = {
   queryState: AdminCategoryListQueryState;
+  summary?: AdminCategoryStatusSummary;
   onSearchChange: (search: string) => void;
   onStatusChange: (status: AdminCategoryListQueryState['status']) => void;
   onSortChange: (sort: AdminCategoryListQueryState['sort']) => void;
   onCreateClick: () => void;
 };
 
+const statusQuickFilters: AdminCategoryListQueryState['status'][] = [
+  'all',
+  ...ADMIN_CATEGORY_STATUSES,
+];
+
+const categoryStatusFilterLabelByValue: Record<
+  AdminCategoryListQueryState['status'],
+  string
+> = {
+  all: 'All',
+  ...adminCategoryStatusLabelByValue,
+};
+
 export function AdminCategoriesToolbar({
   queryState,
+  summary,
   onSearchChange,
   onStatusChange,
   onSortChange,
@@ -50,6 +69,14 @@ export function AdminCategoriesToolbar({
         }
       />
 
+      <AdminQuickStatusTabs
+        value={queryState.status}
+        options={statusQuickFilters}
+        labelByValue={categoryStatusFilterLabelByValue}
+        summary={summary}
+        onValueChange={(status) => onStatusChange(status)}
+      />
+
       <AdminToolbarFiltersPanel
         searchSlot={
           <AdminDebouncedSearchInput
@@ -59,26 +86,6 @@ export function AdminCategoriesToolbar({
           />
         }
       >
-        <Select
-          value={queryState.status}
-          onValueChange={(value) =>
-            onStatusChange(value as AdminCategoryListQueryState['status'])
-          }
-        >
-          <SelectTrigger size="sm" className="h-11 min-w-36">
-            <Filter className="size-4" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {ADMIN_CATEGORY_STATUSES.map((status) => (
-              <SelectItem key={status} value={status}>
-                {adminCategoryStatusLabelByValue[status]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         <Select
           value={queryState.sort}
           onValueChange={(value) =>

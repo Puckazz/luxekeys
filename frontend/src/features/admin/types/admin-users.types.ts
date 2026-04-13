@@ -39,7 +39,10 @@ export interface AdminUserPaginationMeta {
 export interface AdminUserListApiResponse {
   items: AdminUser[];
   meta: AdminUserPaginationMeta;
+  summary: AdminUserStatusSummary;
 }
+
+export type AdminUserStatusSummary = Record<AdminUserStatus | 'all', number>;
 
 export interface AdminUserListQueryState {
   search: string;

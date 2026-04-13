@@ -1,9 +1,10 @@
 'use client';
 
-import { Filter, Layers3 } from 'lucide-react';
+import { Layers3 } from 'lucide-react';
 
 import {
   AdminDebouncedSearchInput,
+  AdminQuickStatusTabs,
   AdminToolbarFiltersPanel,
   AdminToolbarHeader,
 } from '@/features/admin/components/common';
@@ -11,6 +12,7 @@ import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
   ADMIN_INVENTORY_STATUS_FILTER_OPTIONS,
   type AdminInventoryListQueryState,
+  type AdminInventoryStatusSummary,
 } from '@/features/admin/types/admin-inventory.types';
 import { ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE } from '@/features/admin/utils/admin-products.constants';
 import {
@@ -28,6 +30,7 @@ import {
 
 type AdminInventoryToolbarProps = {
   queryState: AdminInventoryListQueryState;
+  statusSummary?: AdminInventoryStatusSummary;
   selectedCount: number;
   onSearchChange: (search: string) => void;
   onCategoryChange: (
@@ -38,8 +41,22 @@ type AdminInventoryToolbarProps = {
   onBulkUpdateClick: () => void;
 };
 
+const statusQuickFilters: AdminInventoryListQueryState['status'][] = [
+  'all',
+  ...ADMIN_INVENTORY_STATUS_FILTER_OPTIONS,
+];
+
+const inventoryStatusFilterLabelByValue: Record<
+  AdminInventoryListQueryState['status'],
+  string
+> = {
+  all: 'All',
+  ...adminInventoryStockStatusLabelByValue,
+};
+
 export function AdminInventoryToolbar({
   queryState,
+  statusSummary,
   selectedCount,
   onSearchChange,
   onCategoryChange,
@@ -65,6 +82,14 @@ export function AdminInventoryToolbar({
         }
       />
 
+      <AdminQuickStatusTabs
+        value={queryState.status}
+        options={statusQuickFilters}
+        labelByValue={inventoryStatusFilterLabelByValue}
+        summary={statusSummary}
+        onValueChange={(status) => onStatusChange(status)}
+      />
+
       <AdminToolbarFiltersPanel
         searchSlot={
           <AdminDebouncedSearchInput
@@ -88,26 +113,6 @@ export function AdminInventoryToolbar({
             {ADMIN_PRODUCT_CATEGORIES.map((category) => (
               <SelectItem key={category} value={category}>
                 {ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE[category]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={queryState.status}
-          onValueChange={(value) =>
-            onStatusChange(value as AdminInventoryListQueryState['status'])
-          }
-        >
-          <SelectTrigger size="sm" className="h-11 min-w-40">
-            <Filter className="size-4" />
-            <SelectValue placeholder="Stock status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {ADMIN_INVENTORY_STATUS_FILTER_OPTIONS.map((status) => (
-              <SelectItem key={status} value={status}>
-                {adminInventoryStockStatusLabelByValue[status]}
               </SelectItem>
             ))}
           </SelectContent>

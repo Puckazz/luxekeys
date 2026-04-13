@@ -1,5 +1,6 @@
 export { AdminArchiveConfirmDialog } from '@/features/admin/components/common/AdminArchiveConfirmDialog';
 export { AdminDebouncedSearchInput } from '@/features/admin/components/common/AdminDebouncedSearchInput';
+export { AdminQuickStatusTabs } from '@/features/admin/components/common/AdminQuickStatusTabs';
 export { AdminLayoutShell } from '@/features/admin/components/common/AdminLayoutShell';
 export { AdminListPagination } from '@/features/admin/components/common/AdminListPagination';
 export { AdminListStateCard } from '@/features/admin/components/common/AdminListStateCard';

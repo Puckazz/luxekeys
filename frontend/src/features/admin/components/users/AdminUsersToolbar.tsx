@@ -1,15 +1,15 @@
 'use client';
 
-import { Filter } from 'lucide-react';
-
 import {
   AdminDebouncedSearchInput,
+  AdminQuickStatusTabs,
   AdminToolbarFiltersPanel,
   AdminToolbarHeader,
 } from '@/features/admin/components/common';
 import {
   ADMIN_USER_STATUSES,
   type AdminUserListQueryState,
+  type AdminUserStatusSummary,
 } from '@/features/admin/types/admin-users.types';
 import {
   adminUserRoleLabelByValue,
@@ -29,6 +29,7 @@ import {
 type AdminUsersToolbarProps = {
   actorRole: UserRole;
   queryState: AdminUserListQueryState;
+  summary?: AdminUserStatusSummary;
   onSearchChange: (search: string) => void;
   onRoleChange: (role: AdminUserListQueryState['role']) => void;
   onStatusChange: (status: AdminUserListQueryState['status']) => void;
@@ -36,9 +37,23 @@ type AdminUsersToolbarProps = {
   onCreateClick: () => void;
 };
 
+const statusQuickFilters: AdminUserListQueryState['status'][] = [
+  'all',
+  ...ADMIN_USER_STATUSES,
+];
+
+const userStatusFilterLabelByValue: Record<
+  AdminUserListQueryState['status'],
+  string
+> = {
+  all: 'All',
+  ...adminUserStatusLabelByValue,
+};
+
 export function AdminUsersToolbar({
   actorRole,
   queryState,
+  summary,
   onSearchChange,
   onRoleChange,
   onStatusChange,
@@ -57,6 +72,14 @@ export function AdminUsersToolbar({
             </Button>
           ) : null
         }
+      />
+
+      <AdminQuickStatusTabs
+        value={queryState.status}
+        options={statusQuickFilters}
+        labelByValue={userStatusFilterLabelByValue}
+        summary={summary}
+        onValueChange={(status) => onStatusChange(status)}
       />
 
       <AdminToolbarFiltersPanel
@@ -82,26 +105,6 @@ export function AdminUsersToolbar({
             {USER_ROLES.map((role) => (
               <SelectItem key={role} value={role}>
                 {adminUserRoleLabelByValue[role]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={queryState.status}
-          onValueChange={(value) =>
-            onStatusChange(value as AdminUserListQueryState['status'])
-          }
-        >
-          <SelectTrigger size="sm" className="h-11 min-w-36">
-            <Filter className="size-4" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {ADMIN_USER_STATUSES.map((status) => (
-              <SelectItem key={status} value={status}>
-                {adminUserStatusLabelByValue[status]}
               </SelectItem>
             ))}
           </SelectContent>

@@ -31,6 +31,11 @@ export type AdminProductStatusFilter =
   | (typeof ADMIN_PRODUCT_STATUS_FILTER_OPTIONS)[number]
   | 'all';
 
+export type AdminProductStatusSummary = Record<
+  AdminProductStatusFilter,
+  number
+>;
+
 export interface AdminProductListQueryState {
   search: string;
   category: AdminProductCategory | 'all';
@@ -74,4 +79,6 @@ export interface UpsertAdminProductInput {
   >;
 }
 
-export type AdminProductListResponse = AdminProductListApiResponse;
+export interface AdminProductListResponse extends AdminProductListApiResponse {
+  summary: AdminProductStatusSummary;
+}

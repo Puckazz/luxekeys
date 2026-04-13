@@ -5,8 +5,10 @@ import type {
   AdminProductVariant,
 } from '@/features/admin/types';
 import type {
+  AdminProductListResponse,
   AdminProductStatusFilter,
   AdminProductListQueryState,
+  AdminProductStatusSummary,
   UpsertAdminProductInput,
 } from '@/features/admin/types/admin-products.types';
 import type {
@@ -15,6 +17,7 @@ import type {
   AdminInventoryItem,
   AdminInventoryListApiResponse,
   AdminInventoryListQueryState,
+  AdminInventoryStatusSummary,
   AdminInventoryStatusFilter,
 } from '@/features/admin/types/admin-inventory.types';
 import { createSeedProducts } from '@/api/mocks/admin-products.mock';
@@ -289,10 +292,51 @@ const paginate = (
   };
 };
 
+const buildProductStatusSummary = (
+  products: AdminProduct[]
+): AdminProductStatusSummary => {
+  const initialSummary: AdminProductStatusSummary = {
+    all: products.length,
+    active: 0,
+    draft: 0,
+    archived: 0,
+    'out-of-stock': 0,
+  };
+
+  return products.reduce((summary, product) => {
+    summary[product.status] += 1;
+
+    if (
+      product.status !== 'archived' &&
+      sumVariantStock(product.variants) <= 0
+    ) {
+      summary['out-of-stock'] += 1;
+    }
+
+    return summary;
+  }, initialSummary);
+};
+
+const buildInventoryStatusSummary = (
+  items: AdminInventoryItem[]
+): AdminInventoryStatusSummary => {
+  const initialSummary: AdminInventoryStatusSummary = {
+    all: items.length,
+    'in-stock': 0,
+    'low-stock': 0,
+    'out-of-stock': 0,
+  };
+
+  return items.reduce((summary, item) => {
+    summary[item.stockStatus] += 1;
+    return summary;
+  }, initialSummary);
+};
+
 export const adminProductsApi = {
   getProducts: async (
     queryState: AdminProductListQueryState
-  ): Promise<AdminProductListApiResponse> => {
+  ): Promise<AdminProductListResponse> => {
     await delay(MOCK_NETWORK_DELAY);
 
     const withoutArchived =
@@ -301,11 +345,16 @@ export const adminProductsApi = {
         : productsStore.filter((product) => product.status !== 'archived');
 
     const withCategory = filterByCategory(withoutArchived, queryState.category);
-    const withStatus = filterByStatus(withCategory, queryState.status);
-    const withSearch = filterBySearch(withStatus, queryState.search);
-    const sorted = sortProducts(withSearch, queryState.sort);
+    const withSearch = filterBySearch(withCategory, queryState.search);
+    const summary = buildProductStatusSummary(withSearch);
+    const withStatus = filterByStatus(withSearch, queryState.status);
+    const sorted = sortProducts(withStatus, queryState.sort);
+    const paginated = paginate(sorted, queryState.page, queryState.pageSize);
 
-    return paginate(sorted, queryState.page, queryState.pageSize);
+    return {
+      ...paginated,
+      summary,
+    };
   },
 
   getInventory: async (
@@ -318,9 +367,10 @@ export const adminProductsApi = {
     );
     const withCategory = filterByCategory(activeProducts, queryState.category);
     const flattened = buildInventoryItems(withCategory);
-    const withStatus = filterInventoryByStatus(flattened, queryState.status);
-    const withSearch = filterInventoryBySearch(withStatus, queryState.search);
-    const sorted = sortInventoryItems(withSearch, queryState.sort);
+    const withSearch = filterInventoryBySearch(flattened, queryState.search);
+    const statusSummary = buildInventoryStatusSummary(withSearch);
+    const withStatus = filterInventoryByStatus(withSearch, queryState.status);
+    const sorted = sortInventoryItems(withStatus, queryState.sort);
     const paginated = paginateInventory(
       sorted,
       queryState.page,
@@ -349,6 +399,7 @@ export const adminProductsApi = {
     return {
       ...paginated,
       summary,
+      statusSummary,
     };
   },
 

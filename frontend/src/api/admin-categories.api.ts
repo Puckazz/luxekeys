@@ -4,7 +4,9 @@ import type {
   AdminCategoryStatus,
 } from '@/features/admin/types';
 import type {
+  AdminCategoryListResponse,
   AdminCategoryListQueryState,
+  AdminCategoryStatusSummary,
   UpsertAdminCategoryInput,
 } from '@/features/admin/types/admin-categories.types';
 import { createSeedCategories } from '@/api/mocks/admin-categories.mock';
@@ -107,10 +109,26 @@ const paginate = (
   };
 };
 
+const buildCategoryStatusSummary = (
+  categories: AdminCategory[]
+): AdminCategoryStatusSummary => {
+  const initialSummary: AdminCategoryStatusSummary = {
+    all: categories.length,
+    active: 0,
+    draft: 0,
+    archived: 0,
+  };
+
+  return categories.reduce((summary, category) => {
+    summary[category.status] += 1;
+    return summary;
+  }, initialSummary);
+};
+
 export const adminCategoriesApi = {
   getCategories: async (
     queryState: AdminCategoryListQueryState
-  ): Promise<AdminCategoryListApiResponse> => {
+  ): Promise<AdminCategoryListResponse> => {
     await delay(MOCK_NETWORK_DELAY);
 
     const withoutArchived = categoriesStore.filter(
@@ -118,11 +136,16 @@ export const adminCategoriesApi = {
         queryState.status === 'archived' || category.status !== 'archived'
     );
 
-    const withStatus = filterByStatus(withoutArchived, queryState.status);
-    const withSearch = filterBySearch(withStatus, queryState.search);
-    const sorted = sortCategories(withSearch, queryState.sort);
+    const withSearch = filterBySearch(withoutArchived, queryState.search);
+    const summary = buildCategoryStatusSummary(withSearch);
+    const withStatus = filterByStatus(withSearch, queryState.status);
+    const sorted = sortCategories(withStatus, queryState.sort);
+    const paginated = paginate(sorted, queryState.page, queryState.pageSize);
 
-    return paginate(sorted, queryState.page, queryState.pageSize);
+    return {
+      ...paginated,
+      summary,
+    };
   },
 
   createCategory: async (

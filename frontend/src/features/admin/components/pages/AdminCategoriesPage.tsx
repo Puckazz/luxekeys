@@ -44,6 +44,7 @@ export function AdminCategoriesPage() {
     useState<AdminCategory | null>(null);
 
   const categories = categoriesQuery.data?.items ?? [];
+  const summary = categoriesQuery.data?.summary;
   const meta = categoriesQuery.data?.meta;
 
   const isMutating =
@@ -106,6 +107,7 @@ export function AdminCategoriesPage() {
     <div className="space-y-4">
       <AdminCategoriesToolbar
         queryState={queryState}
+        summary={summary}
         onSearchChange={setSearch}
         onStatusChange={setStatus}
         onSortChange={setSort}

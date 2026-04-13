@@ -25,6 +25,11 @@ export type AdminInventoryStockStatus =
 
 export type AdminInventoryStatusFilter = AdminInventoryStockStatus | 'all';
 
+export type AdminInventoryStatusSummary = Record<
+  AdminInventoryStatusFilter,
+  number
+>;
+
 export interface AdminInventoryListQueryState {
   search: string;
   category: AdminProductCategory | 'all';
@@ -55,6 +60,7 @@ export interface AdminInventoryListApiResponse {
   items: AdminInventoryItem[];
   meta: AdminProductPaginationMeta;
   summary: AdminInventoryListSummary;
+  statusSummary: AdminInventoryStatusSummary;
 }
 
 export interface AdminInventoryBulkUpdateItemInput {
