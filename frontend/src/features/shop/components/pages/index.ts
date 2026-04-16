@@ -1,3 +1,4 @@
+export { default as AboutPage } from '@/features/shop/components/pages/AboutPage';
 export { default as CartPage } from '@/features/shop/components/pages/CartPage';
 export { default as CheckoutConfirmationPage } from '@/features/shop/components/pages/CheckoutConfirmationPage';
 export { default as CheckoutPage } from '@/features/shop/components/pages/CheckoutPage';

@@ -82,7 +82,7 @@ const accessoryItems = [
 const navLinks = [
   { label: 'Switches', href: '/products/switches' },
   { label: 'Keycaps', href: '/products/keycaps' },
-  { label: 'About', href: '/' },
+  { label: 'About', href: '/about' },
 ];
 
 const navSections = [
