@@ -47,7 +47,7 @@ const toBoolean = ({ value }: { value: unknown }) => {
 };
 
 export class GetProductsQueryDto {
-  @ApiPropertyOptional({ example: 1, minimum: 1, description: 'Page number' })
+  @ApiPropertyOptional({ minimum: 1, description: 'Page number' })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -55,7 +55,6 @@ export class GetProductsQueryDto {
   page?: number;
 
   @ApiPropertyOptional({
-    example: 12,
     minimum: 1,
     description: 'Number of products per page',
   })
@@ -66,41 +65,40 @@ export class GetProductsQueryDto {
   limit?: number;
 
   @ApiPropertyOptional({
-    example: 'wireless keyboard',
     description: 'Search by product name or keyword',
   })
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ example: 'Logitech' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   brand?: string;
 
-  @ApiPropertyOptional({ example: 'Mechanical Keyboard' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   category?: string;
 
-  @ApiPropertyOptional({ enum: PRODUCT_TYPES, example: PRODUCT_TYPES[0] })
+  @ApiPropertyOptional({ enum: PRODUCT_TYPES })
   @IsOptional()
   @IsEnum(PRODUCT_TYPES)
   type?: ProductType;
 
-  @ApiPropertyOptional({ example: 50, minimum: 0 })
+  @ApiPropertyOptional({ minimum: 0 })
   @IsOptional()
   @Type(() => Number)
   @Min(0)
   minPrice?: number;
 
-  @ApiPropertyOptional({ example: 300, minimum: 0 })
+  @ApiPropertyOptional({ minimum: 0 })
   @IsOptional()
   @Type(() => Number)
   @Min(0)
   maxPrice?: number;
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional()
   @IsOptional()
   @Transform(toBoolean)
   @IsBoolean()
@@ -108,7 +106,6 @@ export class GetProductsQueryDto {
 
   @ApiPropertyOptional({
     enum: PRODUCT_SORT_FIELDS,
-    example: 'createdAt',
     description: 'Sort field',
   })
   @IsOptional()
@@ -117,7 +114,6 @@ export class GetProductsQueryDto {
 
   @ApiPropertyOptional({
     enum: SORT_ORDERS,
-    example: 'desc',
     description: 'Sort direction',
   })
   @IsOptional()
