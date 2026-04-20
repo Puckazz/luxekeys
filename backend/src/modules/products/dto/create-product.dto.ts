@@ -1,104 +1,75 @@
-import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  ArrayMinSize,
-  IsArray,
   IsBoolean,
-  IsDefined,
+  IsDecimal,
   IsEnum,
-  IsInt,
-  IsNumber,
-  IsObject,
   IsOptional,
   IsString,
-  IsUrl,
-  Min,
-  ValidateIf,
-  ValidateNested,
+  IsUUID,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
-import type { ProductType } from '../interfaces/product.interface';
-import { AccessoryDetailsDto } from './accessory-details.dto';
-import { KeyboardDetailsDto } from './keyboard-details.dto';
-import { KeycapDetailsDto } from './keycap-details.dto';
-import { PRODUCT_TYPES } from './product-dto.constants';
-import { ProductVariantDto } from './product-variant.dto';
-import { SwitchDetailsDto } from './switch-details.dto';
+import { ProductStatus, ProductType } from '../../../generated/prisma';
 
 export class CreateProductDto {
+  @ApiProperty({ example: 'Keychron Q1 Pro' })
   @IsString()
+  @MinLength(2)
+  @MaxLength(120)
   name!: string;
 
+  @ApiPropertyOptional({ example: 'keychron-q1-pro' })
+  @IsOptional()
   @IsString()
-  slug!: string;
+  @MaxLength(150)
+  slug?: string;
 
+  @ApiPropertyOptional({ example: 'Gasket-mounted wireless mechanical keyboard.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  shortDescription?: string;
+
+  @ApiPropertyOptional({ example: 'Full product description in markdown...' })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @IsNumber()
-  @Min(0)
-  price!: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  compareAtPrice?: number;
-
-  @IsString()
-  brand!: string;
-
-  @IsString()
-  category!: string;
-
-  @IsEnum(PRODUCT_TYPES)
+  @ApiProperty({ enum: ProductType, example: ProductType.KEYBOARD })
+  @IsEnum(ProductType)
   type!: ProductType;
 
-  @IsArray()
-  @ArrayMinSize(1)
-  @IsUrl({}, { each: true })
-  images!: string[];
-
-  @IsUrl()
-  thumbnail!: string;
-
+  @ApiPropertyOptional({ enum: ProductStatus, example: ProductStatus.ACTIVE })
   @IsOptional()
-  @IsObject()
-  specs?: Record<string, string>;
+  @IsEnum(ProductStatus)
+  status?: ProductStatus;
 
+  @ApiPropertyOptional({ example: 'uuid-of-brand' })
   @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProductVariantDto)
-  variants?: ProductVariantDto[];
+  @IsUUID()
+  brandId?: string;
 
-  @IsInt()
-  @Min(0)
-  stock!: number;
+  @ApiPropertyOptional({ example: 'uuid-of-category' })
+  @IsOptional()
+  @IsUUID()
+  categoryId?: string;
 
+  @ApiProperty({ example: '199.99' })
+  @IsDecimal({ decimal_digits: '0,2' })
+  basePrice!: string;
+
+  @ApiPropertyOptional({ example: '249.99' })
+  @IsOptional()
+  @IsDecimal({ decimal_digits: '0,2' })
+  compareAtPrice?: string;
+
+  @ApiPropertyOptional({ example: 'https://cdn.luxekeys.com/products/q1-pro.jpg' })
+  @IsOptional()
+  @IsString()
+  thumbnailUrl?: string;
+
+  @ApiPropertyOptional({ example: false })
   @IsOptional()
   @IsBoolean()
-  isActive?: boolean;
-
-  @ValidateIf((o: CreateProductDto) => o.type === 'keyboard')
-  @IsDefined()
-  @ValidateNested()
-  @Type(() => KeyboardDetailsDto)
-  keyboard?: KeyboardDetailsDto;
-
-  @ValidateIf((o: CreateProductDto) => o.type === 'switch')
-  @IsDefined()
-  @ValidateNested()
-  @Type(() => SwitchDetailsDto)
-  switch?: SwitchDetailsDto;
-
-  @ValidateIf((o: CreateProductDto) => o.type === 'keycap')
-  @IsDefined()
-  @ValidateNested()
-  @Type(() => KeycapDetailsDto)
-  keycap?: KeycapDetailsDto;
-
-  @ValidateIf((o: CreateProductDto) => o.type === 'accessory')
-  @IsDefined()
-  @ValidateNested()
-  @Type(() => AccessoryDetailsDto)
-  accessory?: AccessoryDetailsDto;
+  isFeatured?: boolean;
 }

@@ -1,121 +1,99 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
 } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import type { ProductType } from '../interfaces/product.interface';
-import { PRODUCT_TYPES } from './product-dto.constants';
+import { ProductStatus, ProductType } from '../../../generated/prisma';
 
-export const PRODUCT_SORT_FIELDS = [
-  'createdAt',
-  'updatedAt',
-  'name',
-  'price',
-  'stock',
-  'brand',
-  'category',
-] as const;
-
+export const PRODUCT_SORT_FIELDS = ['createdAt', 'basePrice', 'name'] as const;
 export const SORT_ORDERS = ['asc', 'desc'] as const;
 
 export type ProductSortField = (typeof PRODUCT_SORT_FIELDS)[number];
 export type SortOrder = (typeof SORT_ORDERS)[number];
 
 const toBoolean = ({ value }: { value: unknown }) => {
-  if (typeof value === 'boolean') {
-    return value;
-  }
-
+  if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase();
-
-    if (normalized === 'true') {
-      return true;
-    }
-
-    if (normalized === 'false') {
-      return false;
-    }
+    if (normalized === 'true') return true;
+    if (normalized === 'false') return false;
   }
-
   return value;
 };
 
 export class GetProductsQueryDto {
-  @ApiPropertyOptional({ minimum: 1, description: 'Page number' })
+  @ApiPropertyOptional({ minimum: 1, default: 1 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   page?: number;
 
-  @ApiPropertyOptional({
-    minimum: 1,
-    description: 'Number of products per page',
-  })
+  @ApiPropertyOptional({ minimum: 1, default: 20 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   limit?: number;
 
-  @ApiPropertyOptional({
-    description: 'Search by product name or keyword',
-  })
+  @ApiPropertyOptional({ enum: ProductType })
   @IsOptional()
-  @IsString()
-  search?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  brand?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  category?: string;
-
-  @ApiPropertyOptional({ enum: PRODUCT_TYPES })
-  @IsOptional()
-  @IsEnum(PRODUCT_TYPES)
+  @IsEnum(ProductType)
   type?: ProductType;
 
-  @ApiPropertyOptional({ minimum: 0 })
+  @ApiPropertyOptional({ enum: ProductStatus })
   @IsOptional()
-  @Type(() => Number)
-  @Min(0)
-  minPrice?: number;
+  @IsEnum(ProductStatus)
+  status?: ProductStatus;
 
-  @ApiPropertyOptional({ minimum: 0 })
+  @ApiPropertyOptional({ description: 'Filter by brand UUID' })
   @IsOptional()
-  @Type(() => Number)
-  @Min(0)
-  maxPrice?: number;
+  @IsUUID()
+  brandId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by category UUID' })
+  @IsOptional()
+  @IsUUID()
+  categoryId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @Transform(toBoolean)
   @IsBoolean()
-  isActive?: boolean;
+  isFeatured?: boolean;
 
-  @ApiPropertyOptional({
-    enum: PRODUCT_SORT_FIELDS,
-    description: 'Sort field',
-  })
+  @ApiPropertyOptional({ description: 'Minimum base price' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Maximum base price' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  maxPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Search by name' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({ enum: PRODUCT_SORT_FIELDS })
   @IsOptional()
   @IsEnum(PRODUCT_SORT_FIELDS)
   sortBy?: ProductSortField;
 
-  @ApiPropertyOptional({
-    enum: SORT_ORDERS,
-    description: 'Sort direction',
-  })
+  @ApiPropertyOptional({ enum: SORT_ORDERS })
   @IsOptional()
   @IsEnum(SORT_ORDERS)
   sortOrder?: SortOrder;
