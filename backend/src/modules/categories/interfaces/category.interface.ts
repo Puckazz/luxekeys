@@ -1,20 +1,21 @@
-export interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  productCount: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import {
+  Prisma,
+  Category as PrismaCategory,
+} from '../../../generated/prisma/index.js';
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+export type CategoryWithChildren = PrismaCategory & {
+  children?: CategoryWithChildren[];
+  parent?: PrismaCategory | null;
+  _count?: { products: number };
+};
+
+export const CATEGORY_DETAIL_INCLUDE = {
+  parent: true,
+  children: { where: { deletedAt: null }, orderBy: { name: 'asc' as const } },
+  _count: { select: { products: true } },
+} satisfies Prisma.CategoryInclude;
+
+export const CATEGORY_LIST_INCLUDE = {
+  parent: true,
+  _count: { select: { products: true } },
+} satisfies Prisma.CategoryInclude;

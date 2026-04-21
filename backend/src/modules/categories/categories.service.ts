@@ -1,142 +1,118 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma } from '../../generated/prisma/index.js';
+import { PaginatedResponse } from '../../common/interfaces';
+import { toSlug } from '../../common/utils/slugify.util';
+import { buildOrderBy } from '../../common/utils/query.util';
+import { PrismaService } from '../database/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { GetCategoriesQueryDto } from './dto/get-categories-query.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Category, PaginatedResponse } from './interfaces/category.interface';
+import {
+  CATEGORY_DETAIL_INCLUDE,
+  CATEGORY_LIST_INCLUDE,
+  CategoryWithChildren,
+} from './interfaces/category.interface';
 
 @Injectable()
 export class CategoriesService {
-  private categories: Category[] = [
-    {
-      id: 'cat_001',
-      name: 'Keyboards',
-      slug: 'keyboards',
-      description: 'Mechanical keyboards for gaming, work, and customization.',
-      productCount: 28,
-      isActive: true,
-      createdAt: new Date('2025-09-14T08:00:00.000Z').toISOString(),
-      updatedAt: new Date('2026-03-20T08:00:00.000Z').toISOString(),
-    },
-    {
-      id: 'cat_002',
-      name: 'Switches',
-      slug: 'switches',
-      description: 'Linear, tactile, clicky, and magnetic switch collections.',
-      productCount: 16,
-      isActive: true,
-      createdAt: new Date('2025-09-14T08:10:00.000Z').toISOString(),
-      updatedAt: new Date('2026-03-12T08:10:00.000Z').toISOString(),
-    },
-    {
-      id: 'cat_003',
-      name: 'Keycaps',
-      slug: 'keycaps',
-      description: 'PBT and ABS keycap sets with multiple profile options.',
-      productCount: 13,
-      isActive: true,
-      createdAt: new Date('2025-09-14T08:20:00.000Z').toISOString(),
-      updatedAt: new Date('2026-03-01T08:20:00.000Z').toISOString(),
-    },
-    {
-      id: 'cat_004',
-      name: 'Accessories',
-      slug: 'accessories',
-      description: 'Cables, wrist rests, deskmats, and keyboard essentials.',
-      productCount: 11,
-      isActive: false,
-      createdAt: new Date('2025-09-14T08:30:00.000Z').toISOString(),
-      updatedAt: new Date('2026-02-25T08:30:00.000Z').toISOString(),
-    },
-  ];
+  constructor(private readonly prisma: PrismaService) {}
 
-  private toSlug(value: string): string {
-    return value
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+  async create(dto: CreateCategoryDto): Promise<CategoryWithChildren> {
+    const slug = dto.slug ?? toSlug(dto.name);
+
+    const existing = await this.prisma.category.findUnique({
+      where: { slug },
+    });
+    if (existing) {
+      throw new ConflictException(`Slug "${slug}" is already taken`);
+    }
+
+    return this.prisma.category.create({
+      data: {
+        name: dto.name,
+        slug,
+        parentId: dto.parentId ?? null,
+        isActive: dto.isActive ?? true,
+      },
+      include: CATEGORY_DETAIL_INCLUDE,
+    });
   }
 
-  create(createCategoryDto: CreateCategoryDto): Category {
-    const now = new Date().toISOString();
-    const category: Category = {
-      id: `cat_${Date.now()}`,
-      name: createCategoryDto.name,
-      slug: createCategoryDto.slug ?? this.toSlug(createCategoryDto.name),
-      description: createCategoryDto.description,
-      productCount: 0,
-      isActive: createCategoryDto.isActive ?? true,
-      createdAt: now,
-      updatedAt: now,
-    };
+  async findAll(
+    query: GetCategoriesQueryDto,
+  ): Promise<PaginatedResponse<CategoryWithChildren>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
 
-    this.categories.unshift(category);
-
-    return category;
-  }
-
-  findAll(query: GetCategoriesQueryDto): PaginatedResponse<Category> {
-    const sortOrder = query.sortOrder === 'desc' ? 'desc' : 'asc';
-
-    const comparators: Record<
-      'name' | 'productCount' | 'createdAt' | 'updatedAt',
-      (a: Category, b: Category) => number
-    > = {
-      name: (a, b) => a.name.localeCompare(b.name),
-      productCount: (a, b) => a.productCount - b.productCount,
-      createdAt: (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      updatedAt: (a, b) =>
-        new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
-    };
-
-    let data = [...this.categories];
+    const where: Prisma.CategoryWhereInput = { deletedAt: null };
 
     if (query.search) {
-      const keyword = query.search.toLowerCase();
-      data = data.filter((item) => {
-        return (
-          item.name.toLowerCase().includes(keyword) ||
-          item.slug.toLowerCase().includes(keyword) ||
-          item.description?.toLowerCase().includes(keyword)
-        );
-      });
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { slug: { contains: query.search, mode: 'insensitive' } },
+      ];
     }
 
     if (query.isActive !== undefined) {
-      data = data.filter((item) => item.isActive === query.isActive);
+      where.isActive = query.isActive;
     }
 
-    if (query.sortBy) {
-      const compare = comparators[query.sortBy];
+    const orderBy = buildOrderBy<Prisma.CategoryOrderByWithRelationInput>(
+      ['name', 'updatedAt', 'createdAt'],
+      'createdAt',
+      query.sortBy,
+      query.sortOrder,
+    );
 
-      data.sort((a, b) => {
-        const result = compare(a, b);
-        return sortOrder === 'desc' ? -result : result;
-      });
-    }
-
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const total = data.length;
-    const totalPages = Math.ceil(total / limit);
-    const startIndex = (page - 1) * limit;
-    const paginatedData = data.slice(startIndex, startIndex + limit);
+    const [total, data] = await this.prisma.$transaction([
+      this.prisma.category.count({ where }),
+      this.prisma.category.findMany({
+        where,
+        orderBy,
+        skip,
+        take: limit,
+        include: CATEGORY_LIST_INCLUDE,
+      }),
+    ]);
 
     return {
-      data: paginatedData,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-      },
+      data,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
   }
 
-  findOne(id: string): Category {
-    const category = this.categories.find((item) => item.id === id);
+  async findTree(): Promise<CategoryWithChildren[]> {
+    return this.prisma.category.findMany({
+      where: { parentId: null, deletedAt: null },
+      orderBy: { name: 'asc' },
+      include: {
+        children: {
+          where: { deletedAt: null },
+          orderBy: { name: 'asc' },
+          include: {
+            children: {
+              where: { deletedAt: null },
+              orderBy: { name: 'asc' },
+              include: { _count: { select: { products: true } } },
+            },
+            _count: { select: { products: true } },
+          },
+        },
+        _count: { select: { products: true } },
+      },
+    });
+  }
+
+  async findOne(id: string): Promise<CategoryWithChildren> {
+    const category = await this.prisma.category.findFirst({
+      where: { id, deletedAt: null },
+      include: CATEGORY_DETAIL_INCLUDE,
+    });
 
     if (!category) {
       throw new NotFoundException(`Category with ID "${id}" not found`);
@@ -145,36 +121,75 @@ export class CategoriesService {
     return category;
   }
 
-  update(id: string, updateCategoryDto: UpdateCategoryDto): Category {
-    const index = this.categories.findIndex((item) => item.id === id);
+  async findProductsByCategory(id: string, page = 1, limit = 20) {
+    await this.findOne(id);
 
-    if (index === -1) {
-      throw new NotFoundException(`Category with ID "${id}" not found`);
-    }
-
-    const current = this.categories[index];
-    const nextName = updateCategoryDto.name ?? current.name;
-    const updatedCategory: Category = {
-      ...current,
-      ...updateCategoryDto,
-      slug: updateCategoryDto.slug ?? this.toSlug(nextName),
-      updatedAt: new Date().toISOString(),
+    const skip = (page - 1) * limit;
+    const where: Prisma.ProductWhereInput = {
+      categoryId: id,
+      deletedAt: null,
+      status: 'ACTIVE',
     };
 
-    this.categories[index] = updatedCategory;
+    const [total, products] = await this.prisma.$transaction([
+      this.prisma.product.count({ where }),
+      this.prisma.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          brand: true,
+          images: { where: { isPrimary: true }, take: 1 },
+          _count: { select: { variants: true, reviews: true } },
+        },
+      }),
+    ]);
 
-    return updatedCategory;
+    return {
+      data: products,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
-  remove(id: string): Category {
-    const index = this.categories.findIndex((item) => item.id === id);
+  async update(
+    id: string,
+    dto: UpdateCategoryDto,
+  ): Promise<CategoryWithChildren> {
+    await this.findOne(id);
 
-    if (index === -1) {
-      throw new NotFoundException(`Category with ID "${id}" not found`);
+    if (dto.slug) {
+      const conflict = await this.prisma.category.findFirst({
+        where: { slug: dto.slug, NOT: { id } },
+      });
+      if (conflict) {
+        throw new ConflictException(`Slug "${dto.slug}" is already taken`);
+      }
     }
 
-    const [removedCategory] = this.categories.splice(index, 1);
+    return this.prisma.category.update({
+      where: { id },
+      data: {
+        ...(dto.name !== undefined && { name: dto.name }),
+        ...(dto.slug !== undefined
+          ? { slug: dto.slug }
+          : dto.name !== undefined
+            ? { slug: toSlug(dto.name) }
+            : {}),
+        ...(dto.parentId !== undefined && { parentId: dto.parentId }),
+        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+      },
+      include: CATEGORY_DETAIL_INCLUDE,
+    });
+  }
 
-    return removedCategory;
+  async remove(id: string): Promise<CategoryWithChildren> {
+    await this.findOne(id);
+
+    return this.prisma.category.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+      include: CATEGORY_DETAIL_INCLUDE,
+    });
   }
 }

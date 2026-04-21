@@ -1,10 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-// Load .env FIRST — must use require() so it executes before any imported module
-// (ESM import statements are hoisted before top-level code)
-const dotenv = require('dotenv') as typeof import('dotenv');
-const path = require('path') as typeof import('path');
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
+import 'dotenv/config';
 import * as crypto from 'crypto';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -16,7 +10,7 @@ import {
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
-} from '../src/generated/prisma';
+} from '../src/generated/prisma/index.js';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);

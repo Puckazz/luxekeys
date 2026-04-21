@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+﻿import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsDecimal,
@@ -9,7 +9,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { ProductStatus, ProductType } from '../../../generated/prisma';
+import { ProductStatus, ProductType } from '../../../generated/prisma/index.js';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Keychron Q1 Pro' })
@@ -24,7 +24,9 @@ export class CreateProductDto {
   @MaxLength(150)
   slug?: string;
 
-  @ApiPropertyOptional({ example: 'Gasket-mounted wireless mechanical keyboard.' })
+  @ApiPropertyOptional({
+    example: 'Gasket-mounted wireless mechanical keyboard.',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(300)
@@ -63,7 +65,9 @@ export class CreateProductDto {
   @IsDecimal({ decimal_digits: '0,2' })
   compareAtPrice?: string;
 
-  @ApiPropertyOptional({ example: 'https://cdn.luxekeys.com/products/q1-pro.jpg' })
+  @ApiPropertyOptional({
+    example: 'https://cdn.luxekeys.com/products/q1-pro.jpg',
+  })
   @IsOptional()
   @IsString()
   thumbnailUrl?: string;

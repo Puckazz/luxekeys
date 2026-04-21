@@ -1,10 +1,9 @@
-import { IsOptional, IsString } from 'class-validator';
+﻿import { IsOptional, IsString } from 'class-validator';
 
-// Query DTO cho /admin/stats/revenue
 export class RevenueQueryDto {
   @IsOptional()
   @IsString()
-  fromDate?: string; // ISO 8601, e.g. "2025-01-01"
+  fromDate?: string;
 
   @IsOptional()
   @IsString()
@@ -12,5 +11,5 @@ export class RevenueQueryDto {
 
   @IsOptional()
   @IsString()
-  groupBy?: 'day' | 'month'; // default: 'month'
+  groupBy?: 'day' | 'month';
 }
