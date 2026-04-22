@@ -15,7 +15,7 @@ export class PaginationQueryDto {
 
   @ApiPropertyOptional({
     minimum: 1,
-    default: 20,
+    default: 6,
     description: 'Items per page',
   })
   @IsOptional()

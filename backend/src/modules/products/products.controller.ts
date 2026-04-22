@@ -68,14 +68,6 @@ export class ProductsController {
     return this.productsService.findOne(id);
   }
 
-  @Get(':id/variants')
-  @ApiOperation({ summary: 'List variants of a product' })
-  @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  @ApiOkResponse({ description: 'List of active product variants' })
-  findVariants(@Param('id', ParseUUIDPipe) id: string) {
-    return this.productsService.findVariants(id);
-  }
-
   @Get(':id/reviews')
   @ApiOperation({ summary: 'List reviews for a product (paginated)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })

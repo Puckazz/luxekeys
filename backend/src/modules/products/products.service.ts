@@ -53,7 +53,7 @@ export class ProductsService {
     query: GetProductsQueryDto,
   ): Promise<PaginatedResponse<ProductSummary>> {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = query.limit ?? 6;
     const skip = (page - 1) * limit;
 
     const where: Prisma.ProductWhereInput = { deletedAt: null };
@@ -185,41 +185,46 @@ export class ProductsService {
   async update(id: string, dto: UpdateProductDto): Promise<ProductDetail> {
     await this.findOne(id);
 
-    if (dto.slug) {
+    const nextSlug = dto.slug !== undefined ? toSlug(dto.slug) : undefined;
+
+    if (nextSlug !== undefined) {
       const conflict = await this.prisma.product.findFirst({
-        where: { slug: dto.slug, NOT: { id } },
+        where: {
+          slug: nextSlug,
+          deletedAt: null,
+          NOT: { id },
+        },
       });
+
       if (conflict) {
-        throw new ConflictException(`Slug "${dto.slug}" is already taken`);
+        throw new ConflictException(`Slug "${nextSlug}" is already taken`);
       }
     }
 
+    const data: Prisma.ProductUpdateInput = {
+      ...(dto.name !== undefined && { name: dto.name }),
+      ...(nextSlug !== undefined && { slug: nextSlug }),
+      ...(dto.shortDescription !== undefined && {
+        shortDescription: dto.shortDescription,
+      }),
+      ...(dto.description !== undefined && { description: dto.description }),
+      ...(dto.type !== undefined && { type: dto.type }),
+      ...(dto.status !== undefined && { status: dto.status }),
+      ...(dto.brandId !== undefined && { brandId: dto.brandId }),
+      ...(dto.categoryId !== undefined && { categoryId: dto.categoryId }),
+      ...(dto.basePrice !== undefined && { basePrice: dto.basePrice }),
+      ...(dto.compareAtPrice !== undefined && {
+        compareAtPrice: dto.compareAtPrice,
+      }),
+      ...(dto.thumbnailUrl !== undefined && {
+        thumbnailUrl: dto.thumbnailUrl,
+      }),
+      ...(dto.isFeatured !== undefined && { isFeatured: dto.isFeatured }),
+    };
+
     return this.prisma.product.update({
       where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.slug !== undefined
-          ? { slug: dto.slug }
-          : dto.name !== undefined
-            ? { slug: toSlug(dto.name) }
-            : {}),
-        ...(dto.shortDescription !== undefined && {
-          shortDescription: dto.shortDescription,
-        }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.type !== undefined && { type: dto.type }),
-        ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.brandId !== undefined && { brandId: dto.brandId }),
-        ...(dto.categoryId !== undefined && { categoryId: dto.categoryId }),
-        ...(dto.basePrice !== undefined && { basePrice: dto.basePrice }),
-        ...(dto.compareAtPrice !== undefined && {
-          compareAtPrice: dto.compareAtPrice,
-        }),
-        ...(dto.thumbnailUrl !== undefined && {
-          thumbnailUrl: dto.thumbnailUrl,
-        }),
-        ...(dto.isFeatured !== undefined && { isFeatured: dto.isFeatured }),
-      },
+      data,
       include: PRODUCT_DETAIL_INCLUDE,
     });
   }

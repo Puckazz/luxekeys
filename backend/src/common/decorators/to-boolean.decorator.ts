@@ -1,4 +1,4 @@
 ﻿import { Transform } from 'class-transformer';
-import { toBoolean } from '../utils/transform.util';
+import { toBoolean } from '../utils';
 
 export const ToBoolean = (): PropertyDecorator => Transform(toBoolean);
