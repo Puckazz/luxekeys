@@ -4,18 +4,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/index.js';
-import { PaginatedResponse } from '../../common/interfaces';
-import { toSlug } from '../../common/utils/slugify.util';
-import { buildOrderBy } from '../../common/utils/query.util';
-import { PrismaService } from '../database/prisma.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { GetCategoriesQueryDto } from './dto/get-categories-query.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { PaginatedResponse } from '../../common/interfaces/index.js';
+import { toSlug } from '../../common/utils/slugify.util.js';
+import { buildOrderBy } from '../../common/utils/query.util.js';
+import { PrismaService } from '../database/prisma.service.js';
+import { CreateCategoryDto } from './dto/create-category.dto.js';
+import { GetCategoriesQueryDto } from './dto/get-categories-query.dto.js';
+import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import {
   CATEGORY_DETAIL_INCLUDE,
   CATEGORY_LIST_INCLUDE,
   CategoryWithChildren,
-} from './interfaces/category.interface';
+} from './interfaces/category.interface.js';
 
 @Injectable()
 export class CategoriesService {
@@ -69,7 +69,7 @@ export class CategoriesService {
       query.sortOrder,
     );
 
-    const [total, data] = await Promise.all([
+    const [total, data] = await this.prisma.$transaction([
       this.prisma.category.count({ where }),
       this.prisma.category.findMany({
         where,
@@ -131,7 +131,7 @@ export class CategoriesService {
       status: 'ACTIVE',
     };
 
-    const [total, products] = await Promise.all([
+    const [total, products] = await this.prisma.$transaction([
       this.prisma.product.count({ where }),
       this.prisma.product.findMany({
         where,

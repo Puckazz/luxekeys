@@ -5,10 +5,10 @@ import {
 } from '@nestjs/common';
 import type {} from 'multer';
 import { ProductImage } from '../../generated/prisma/index.js';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { PrismaService } from '../database/prisma.service';
-import { ProductsService } from './products.service';
-import { UpdateProductImageDto } from './dto/update-product-image.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
+import { PrismaService } from '../database/prisma.service.js';
+import { ProductsService } from './products.service.js';
+import { UpdateProductImageDto } from './dto/update-product-image.dto.js';
 
 @Injectable()
 export class ProductImagesService {

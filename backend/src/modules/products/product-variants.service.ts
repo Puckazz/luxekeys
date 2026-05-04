@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, ProductVariant } from '../../generated/prisma/index.js';
-import { PrismaService } from '../database/prisma.service';
-import { ProductsService } from './products.service';
-import { CreateProductVariantDto } from './dto/create-product-variant.dto';
-import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
+import { PrismaService } from '../database/prisma.service.js';
+import { ProductsService } from './products.service.js';
+import { CreateProductVariantDto } from './dto/create-product-variant.dto.js';
+import { UpdateProductVariantDto } from './dto/update-product-variant.dto.js';
 
 @Injectable()
 export class ProductVariantsService {

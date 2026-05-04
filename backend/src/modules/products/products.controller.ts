@@ -1,4 +1,4 @@
-﻿import {
+import {
   Body,
   Controller,
   DefaultValuePipe,
@@ -23,10 +23,10 @@ import {
 import { UserRole } from '../../generated/prisma/index.js';
 import { Roles } from '../../common/decorators/index.js';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
-import { CreateProductDto } from './dto/create-product.dto';
-import { GetProductsQueryDto } from './dto/get-products-query.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { ProductsService } from './products.service';
+import { CreateProductDto } from './dto/create-product.dto.js';
+import { GetProductsQueryDto } from './dto/get-products-query.dto.js';
+import { UpdateProductDto } from './dto/update-product.dto.js';
+import { ProductsService } from './products.service.js';
 
 @ApiTags('Products')
 @Controller('products')

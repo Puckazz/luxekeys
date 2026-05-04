@@ -23,10 +23,18 @@ export const PRODUCT_LIST_INCLUDE = {
   _count: { select: { reviews: true } },
 } satisfies Prisma.ProductInclude;
 
+export const PRODUCT_REVIEW_INCLUDE = {
+  user: { select: { id: true, fullName: true, avatarUrl: true } },
+} satisfies Prisma.ReviewInclude;
+
 export type ProductDetail = Prisma.ProductGetPayload<{
   include: typeof PRODUCT_DETAIL_INCLUDE;
 }>;
 
 export type ProductSummary = Prisma.ProductGetPayload<{
   include: typeof PRODUCT_LIST_INCLUDE;
+}>;
+
+export type ProductReview = Prisma.ReviewGetPayload<{
+  include: typeof PRODUCT_REVIEW_INCLUDE;
 }>;

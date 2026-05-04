@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
-import { CloudinaryModule } from '../cloudinary/cloudinary.module';
-import { JwtAuthGuard, RolesGuard } from '../../common/guards';
-import { ProductImagesController } from './product-images.controller';
-import { ProductImagesService } from './product-images.service';
-import { ProductSpecsController } from './product-specs.controller';
-import { ProductSpecsService } from './product-specs.service';
-import { ProductVariantsController } from './product-variants.controller';
-import { ProductVariantsService } from './product-variants.service';
-import { ProductsController } from './products.controller';
-import { ProductsService } from './products.service';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module.js';
+import { ProductImagesController } from './product-images.controller.js';
+import { ProductImagesService } from './product-images.service.js';
+import { ProductSpecsController } from './product-specs.controller.js';
+import { ProductSpecsService } from './product-specs.service.js';
+import { ProductVariantsController } from './product-variants.controller.js';
+import { ProductVariantsService } from './product-variants.service.js';
+import { ProductsController } from './products.controller.js';
+import { ProductsService } from './products.service.js';
 
 @Module({
   imports: [CloudinaryModule],
@@ -23,14 +22,6 @@ import { ProductsService } from './products.service';
     ProductVariantsService,
     ProductSpecsService,
     ProductImagesService,
-    {
-      provide: 'APP_GUARD_JWT',
-      useClass: JwtAuthGuard,
-    },
-    {
-      provide: 'APP_GUARD_ROLES',
-      useClass: RolesGuard,
-    },
   ],
   exports: [ProductsService],
 })

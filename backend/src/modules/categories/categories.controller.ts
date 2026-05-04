@@ -1,4 +1,4 @@
-﻿import {
+import {
   Body,
   Controller,
   DefaultValuePipe,
@@ -23,10 +23,10 @@ import {
 import { UserRole } from '../../generated/prisma/index.js';
 import { Roles } from '../../common/decorators/index.js';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
-import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { GetCategoriesQueryDto } from './dto/get-categories-query.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoriesService } from './categories.service.js';
+import { CreateCategoryDto } from './dto/create-category.dto.js';
+import { GetCategoriesQueryDto } from './dto/get-categories-query.dto.js';
+import { UpdateCategoryDto } from './dto/update-category.dto.js';
 
 @ApiTags('Categories')
 @Controller('categories')

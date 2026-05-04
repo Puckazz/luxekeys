@@ -4,19 +4,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/index.js';
-import { PaginatedResponse } from '../../common/interfaces';
-import { toSlug } from '../../common/utils/slugify.util';
-import { buildOrderBy } from '../../common/utils/query.util';
-import { PrismaService } from '../database/prisma.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { GetProductsQueryDto } from './dto/get-products-query.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { PaginatedResponse } from '../../common/interfaces/index.js';
+import { toSlug } from '../../common/utils/slugify.util.js';
+import { buildOrderBy } from '../../common/utils/query.util.js';
+import { PrismaService } from '../database/prisma.service.js';
+import { CreateProductDto } from './dto/create-product.dto.js';
+import { GetProductsQueryDto } from './dto/get-products-query.dto.js';
+import { UpdateProductDto } from './dto/update-product.dto.js';
 import {
   PRODUCT_DETAIL_INCLUDE,
   PRODUCT_LIST_INCLUDE,
+  PRODUCT_REVIEW_INCLUDE,
   ProductDetail,
+  ProductReview,
   ProductSummary,
-} from './interfaces/product.interface';
+} from './interfaces/product.interface.js';
 
 @Injectable()
 export class ProductsService {
@@ -83,7 +85,7 @@ export class ProductsService {
       query.sortOrder,
     );
 
-    const [total, data] = await Promise.all([
+    const [total, data] = await this.prisma.$transaction([
       this.prisma.product.count({ where }),
       this.prisma.product.findMany({
         where,
@@ -149,35 +151,25 @@ export class ProductsService {
     id: string,
     page = 1,
     limit = 10,
-  ): Promise<
-    PaginatedResponse<
-      Prisma.ReviewGetPayload<{
-        include: {
-          user: { select: { id: true; fullName: true; avatarUrl: true } };
-        };
-      }>
-    >
-  > {
+  ): Promise<PaginatedResponse<ProductReview>> {
     await this.findOne(id);
 
     const skip = (page - 1) * limit;
     const where: Prisma.ReviewWhereInput = { productId: id, deletedAt: null };
 
-    const [total, data] = await Promise.all([
+    const [total, data] = await this.prisma.$transaction([
       this.prisma.review.count({ where }),
       this.prisma.review.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
-        include: {
-          user: { select: { id: true, fullName: true, avatarUrl: true } },
-        },
+        include: PRODUCT_REVIEW_INCLUDE,
       }),
     ]);
 
     return {
-      data,
+      data: data as ProductReview[],
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
   }
