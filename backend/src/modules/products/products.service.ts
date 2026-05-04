@@ -1,4 +1,4 @@
-﻿import {
+import {
   ConflictException,
   Injectable,
   NotFoundException,
@@ -83,7 +83,7 @@ export class ProductsService {
       query.sortOrder,
     );
 
-    const [total, data] = await this.prisma.$transaction([
+    const [total, data] = await Promise.all([
       this.prisma.product.count({ where }),
       this.prisma.product.findMany({
         where,
@@ -163,7 +163,7 @@ export class ProductsService {
     const skip = (page - 1) * limit;
     const where: Prisma.ReviewWhereInput = { productId: id, deletedAt: null };
 
-    const [total, data] = await this.prisma.$transaction([
+    const [total, data] = await Promise.all([
       this.prisma.review.count({ where }),
       this.prisma.review.findMany({
         where,

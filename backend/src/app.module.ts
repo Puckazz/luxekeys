@@ -1,10 +1,20 @@
-﻿import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './modules/database/database.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ProductsModule } from './modules/products/products.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [DatabaseModule, ProductsModule, CategoriesModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
+    CloudinaryModule,
+    AuthModule,
+    ProductsModule,
+    CategoriesModule,
+  ],
   controllers: [],
   providers: [],
 })

@@ -372,20 +372,20 @@ async function main() {
     data: [
       {
         productId: prodQ3Pro.id,
-        url: 'https://cdn.luxekeys.com/products/q3-pro/gallery-1.jpg',
+        imageUrl: 'https://cdn.luxekeys.com/products/q3-pro/gallery-1.jpg',
         altText: 'Q3 Pro front view',
         sortOrder: 1,
         isPrimary: true,
       },
       {
         productId: prodQ3Pro.id,
-        url: 'https://cdn.luxekeys.com/products/q3-pro/gallery-2.jpg',
+        imageUrl: 'https://cdn.luxekeys.com/products/q3-pro/gallery-2.jpg',
         altText: 'Q3 Pro side view',
         sortOrder: 2,
       },
       {
         productId: prodQ3Pro.id,
-        url: 'https://cdn.luxekeys.com/products/q3-pro/gallery-3.jpg',
+        imageUrl: 'https://cdn.luxekeys.com/products/q3-pro/gallery-3.jpg',
         altText: 'Q3 Pro RGB lighting',
         sortOrder: 3,
       },
@@ -523,14 +523,16 @@ async function main() {
     data: [
       {
         productId: prodDuckyOne3.id,
-        url: 'https://cdn.luxekeys.com/products/ducky-one3-sf/gallery-1.jpg',
+        imageUrl:
+          'https://cdn.luxekeys.com/products/ducky-one3-sf/gallery-1.jpg',
         altText: 'Ducky One 3 SF Daybreak',
         sortOrder: 1,
         isPrimary: true,
       },
       {
         productId: prodDuckyOne3.id,
-        url: 'https://cdn.luxekeys.com/products/ducky-one3-sf/gallery-2.jpg',
+        imageUrl:
+          'https://cdn.luxekeys.com/products/ducky-one3-sf/gallery-2.jpg',
         altText: 'Ducky One 3 SF Fuji',
         sortOrder: 2,
       },
@@ -650,7 +652,8 @@ async function main() {
     data: [
       {
         productId: prodGateronYellow.id,
-        url: 'https://cdn.luxekeys.com/products/gateron-yellow/gallery-1.jpg',
+        imageUrl:
+          'https://cdn.luxekeys.com/products/gateron-yellow/gallery-1.jpg',
         altText: 'Gateron Yellow pack of 110',
         sortOrder: 1,
         isPrimary: true,
@@ -749,14 +752,16 @@ async function main() {
     data: [
       {
         productId: prodGMKNightCity.id,
-        url: 'https://cdn.luxekeys.com/products/gmk-nightcity/gallery-1.jpg',
+        imageUrl:
+          'https://cdn.luxekeys.com/products/gmk-nightcity/gallery-1.jpg',
         altText: 'GMK NightCity base kit',
         sortOrder: 1,
         isPrimary: true,
       },
       {
         productId: prodGMKNightCity.id,
-        url: 'https://cdn.luxekeys.com/products/gmk-nightcity/gallery-2.jpg',
+        imageUrl:
+          'https://cdn.luxekeys.com/products/gmk-nightcity/gallery-2.jpg',
         altText: 'GMK NightCity numpad kit',
         sortOrder: 2,
       },
@@ -867,14 +872,14 @@ async function main() {
     data: [
       {
         productId: prodTofu65.id,
-        url: 'https://cdn.luxekeys.com/products/tofu65/gallery-1.jpg',
+        imageUrl: 'https://cdn.luxekeys.com/products/tofu65/gallery-1.jpg',
         altText: 'TOFU65 Silver',
         sortOrder: 1,
         isPrimary: true,
       },
       {
         productId: prodTofu65.id,
-        url: 'https://cdn.luxekeys.com/products/tofu65/gallery-2.jpg',
+        imageUrl: 'https://cdn.luxekeys.com/products/tofu65/gallery-2.jpg',
         altText: 'TOFU65 Black',
         sortOrder: 2,
       },
@@ -983,7 +988,7 @@ async function main() {
     data: [
       {
         productId: prodK8Pro.id,
-        url: 'https://cdn.luxekeys.com/products/k8-pro/gallery-1.jpg',
+        imageUrl: 'https://cdn.luxekeys.com/products/k8-pro/gallery-1.jpg',
         altText: 'K8 Pro Space Gray',
         sortOrder: 1,
         isPrimary: true,
@@ -1070,7 +1075,8 @@ async function main() {
     data: [
       {
         productId: prodDeskMat.id,
-        url: 'https://cdn.luxekeys.com/products/desk-mat-midnight/gallery-1.jpg',
+        imageUrl:
+          'https://cdn.luxekeys.com/products/desk-mat-midnight/gallery-1.jpg',
         altText: 'LuxeKeys Midnight Desk Mat',
         sortOrder: 1,
         isPrimary: true,

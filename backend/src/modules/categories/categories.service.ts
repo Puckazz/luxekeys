@@ -69,7 +69,7 @@ export class CategoriesService {
       query.sortOrder,
     );
 
-    const [total, data] = await this.prisma.$transaction([
+    const [total, data] = await Promise.all([
       this.prisma.category.count({ where }),
       this.prisma.category.findMany({
         where,
@@ -131,7 +131,7 @@ export class CategoriesService {
       status: 'ACTIVE',
     };
 
-    const [total, products] = await this.prisma.$transaction([
+    const [total, products] = await Promise.all([
       this.prisma.product.count({ where }),
       this.prisma.product.findMany({
         where,
