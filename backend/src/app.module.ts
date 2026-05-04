@@ -5,6 +5,8 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ProductsModule } from './modules/products/products.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { CartModule } from './modules/cart/cart.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { AuthModule } from './modules/auth/auth.module';
     DatabaseModule,
     CloudinaryModule,
     AuthModule,
+    UsersModule,
+    CartModule,
     ProductsModule,
     CategoriesModule,
   ],

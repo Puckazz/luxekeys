@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { ProductImagesController } from './product-images.controller';
 import { ProductImagesService } from './product-images.service';
 import { ProductSpecsController } from './product-specs.controller';
@@ -22,6 +23,14 @@ import { ProductsService } from './products.service';
     ProductVariantsService,
     ProductSpecsService,
     ProductImagesService,
+    {
+      provide: 'APP_GUARD_JWT',
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: 'APP_GUARD_ROLES',
+      useClass: RolesGuard,
+    },
   ],
   exports: [ProductsService],
 })

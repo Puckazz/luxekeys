@@ -9,6 +9,7 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type {} from 'multer';
@@ -21,6 +22,9 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { UserRole } from '../../generated/prisma/index.js';
+import { Roles } from '../../common/decorators/index.js';
+import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
 import { UpdateProductImageDto } from './dto/update-product-image.dto';
 import { ProductImagesService } from './product-images.service';
 
@@ -38,6 +42,8 @@ export class ProductImagesController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Upload an image for a product (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -64,6 +70,8 @@ export class ProductImagesController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update image order or primary flag (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -77,6 +85,8 @@ export class ProductImagesController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Delete an image and remove from Cloudinary (Admin)',

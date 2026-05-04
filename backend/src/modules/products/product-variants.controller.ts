@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,6 +16,9 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { UserRole } from '../../generated/prisma/index.js';
+import { Roles } from '../../common/decorators/index.js';
+import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
 import { ProductVariantsService } from './product-variants.service';
@@ -35,6 +39,8 @@ export class ProductVariantsController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a product variant (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -49,6 +55,8 @@ export class ProductVariantsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product variant (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -66,6 +74,8 @@ export class ProductVariantsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a product variant (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })

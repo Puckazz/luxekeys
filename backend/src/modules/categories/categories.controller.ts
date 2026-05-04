@@ -10,6 +10,7 @@
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,6 +20,9 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { UserRole } from '../../generated/prisma/index.js';
+import { Roles } from '../../common/decorators/index.js';
+import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { GetCategoriesQueryDto } from './dto/get-categories-query.dto';
@@ -30,6 +34,8 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new category (Admin)' })
   create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -75,6 +81,8 @@ export class CategoriesController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a category (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -86,6 +94,8 @@ export class CategoriesController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Soft-delete a category (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })

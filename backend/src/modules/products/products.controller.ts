@@ -10,6 +10,7 @@
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,6 +20,9 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { UserRole } from '../../generated/prisma/index.js';
+import { Roles } from '../../common/decorators/index.js';
+import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
 import { CreateProductDto } from './dto/create-product.dto';
 import { GetProductsQueryDto } from './dto/get-products-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -30,6 +34,8 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new product (Admin)' })
   create(@Body() createProductDto: CreateProductDto) {
@@ -83,6 +89,8 @@ export class ProductsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -94,6 +102,8 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Soft-delete a product (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
