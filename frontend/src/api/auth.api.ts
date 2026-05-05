@@ -1,94 +1,120 @@
 import {
-  AuthApiError,
+  ApiError,
   AuthResponse,
-  AuthUserRecord,
   AuthUser,
   LoginRequest,
   RegisterRequest,
 } from '@/features/auth/types';
-import usersData from '@/features/auth/mocks/users.json';
 import { USER_ROLES, type UserRole } from '@/lib/rbac';
+import { apiRequest, authFetch, configureAuthRefresh } from '@/api/http-client';
 
-const MOCK_DELAY = 1000;
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const isUserRole = (value: string): value is UserRole => {
-  return USER_ROLES.includes(value as UserRole);
+type BackendAuthUser = {
+  id: string;
+  email: string;
+  fullName: string;
+  role: string;
 };
 
-const mockUsers: AuthUserRecord[] = usersData.users.map((user) => ({
-  ...user,
-  password: user.password,
-  role: isUserRole(user.role) ? user.role : 'customer',
-}));
+type BackendAuthResponse = {
+  user: BackendAuthUser;
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresIn: number;
+};
 
-const toPublicAuthUser = (user: AuthUserRecord): AuthUser => {
+const mapBackendRole = (role: string): UserRole => {
+  const normalizedRole = role.toLowerCase();
+  return USER_ROLES.includes(normalizedRole as UserRole)
+    ? (normalizedRole as UserRole)
+    : 'customer';
+};
+
+const mapBackendUser = (user: BackendAuthUser): AuthUser => {
   return {
     id: user.id,
-    name: user.name,
     email: user.email,
-    role: user.role,
+    name: user.fullName,
+    role: mapBackendRole(user.role),
   };
+};
+
+const toAuthResponse = (
+  response: BackendAuthResponse,
+  message?: string
+): AuthResponse => {
+  return {
+    success: true,
+    user: mapBackendUser(response.user),
+    accessToken: response.accessToken,
+    tokenType: response.tokenType,
+    expiresIn: response.expiresIn,
+    message,
+  };
+};
+
+const withAuthFieldErrors = (
+  error: unknown,
+  fieldErrors: Record<string, string>
+): never => {
+  if (!(error instanceof ApiError)) {
+    throw error;
+  }
+
+  throw new ApiError(
+    error.message,
+    { ...fieldErrors, ...error.fieldErrors },
+    error.statusCode
+  );
+};
+
+const requestAuth = async (
+  path: string,
+  body?: unknown,
+  authToken?: string
+): Promise<AuthResponse> => {
+  const response = await apiRequest<BackendAuthResponse>(path, {
+    method: 'POST',
+    ...(body !== undefined && { body: JSON.stringify(body) }),
+    ...(authToken && { authToken }),
+  });
+
+  return toAuthResponse(response);
 };
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    await delay(MOCK_DELAY);
-
-    const userByEmail = mockUsers.find((u) => u.email === data.email);
-
-    if (!userByEmail) {
-      throw new AuthApiError('User not found', {
-        email: 'Email does not exist',
+    try {
+      return await requestAuth('/auth/login', data);
+    } catch (error) {
+      return withAuthFieldErrors(error, {
+        password: 'Invalid email or password',
       });
     }
-
-    if (userByEmail.password !== data.password) {
-      throw new AuthApiError('Invalid password', {
-        password: 'Incorrect password',
-      });
-    }
-
-    const userWithoutPassword = toPublicAuthUser(userByEmail);
-    return {
-      success: true,
-      user: userWithoutPassword,
-      message: 'Login successful',
-    };
   },
 
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
-    await delay(MOCK_DELAY);
-
-    if (data.password !== data.confirmpassword) {
-      throw new AuthApiError('Validation failed', {
-        confirmpassword: 'Passwords do not match',
+    try {
+      return await requestAuth('/auth/register', {
+        fullName: data.name,
+        email: data.email,
+        password: data.password,
+      });
+    } catch (error) {
+      return withAuthFieldErrors(error, {
+        email: 'Email is already registered',
       });
     }
+  },
 
-    const existingUser = mockUsers.find((u) => u.email === data.email);
-    if (existingUser) {
-      throw new AuthApiError('Email already registered', {
-        email: 'Email already registered',
-      });
-    }
+  refresh: (): Promise<AuthResponse> => {
+    return requestAuth('/auth/refresh');
+  },
 
-    const newUser: AuthUserRecord = {
-      id: String(mockUsers.length + 1),
-      name: data.name,
-      email: data.email,
-      password: data.password,
-      role: 'customer',
-    };
-
-    mockUsers.push(newUser);
-    const userWithoutPassword = toPublicAuthUser(newUser);
-
-    return {
-      success: true,
-      user: userWithoutPassword,
-      message: 'Registration successful',
-    };
+  logout: (): Promise<{ loggedOut: boolean }> => {
+    return authFetch<{ loggedOut: boolean }>('/auth/logout', {
+      method: 'POST',
+    });
   },
 };
+
+configureAuthRefresh(authApi.refresh);

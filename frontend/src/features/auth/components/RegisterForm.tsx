@@ -10,10 +10,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRegister } from '@/features/auth/hooks/auth.hooks';
-import { AuthApiError, RegisterRequest } from '@/features/auth/types';
+import { ApiError, RegisterRequest } from '@/features/auth/types';
 import { registerSchema } from '@/features/auth/schemas/auth.schema';
 import { useRouter } from 'next/navigation';
-import { persistAuthSession } from '@/lib/auth-session';
+import { useAuthStore } from '@/features/auth/stores/auth.store';
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -39,6 +39,7 @@ export default function RegisterForm() {
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const { mutate: registerUser, isPending, error, reset } = useRegister();
+  const setAuthSession = useAuthStore((state) => state.setSession);
   const isSubmitting = isPending || isRedirecting;
   const [name, email, password, confirmpassword] = watch([
     'name',
@@ -48,7 +49,7 @@ export default function RegisterForm() {
   ]);
   const hasServerError = useRef(false);
   const serverFieldErrors =
-    error instanceof AuthApiError ? error.fieldErrors : undefined;
+    error instanceof ApiError ? error.fieldErrors : undefined;
 
   useEffect(() => {
     hasServerError.current = Boolean(error);
@@ -70,7 +71,7 @@ export default function RegisterForm() {
           return;
         }
 
-        persistAuthSession(response.user);
+        setAuthSession(response);
         setIsRedirecting(true);
         router.replace('/');
       },

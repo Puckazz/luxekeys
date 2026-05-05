@@ -1,9 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, Package2, UserRound, MapPinHouse, UserCog } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  LogOut,
+  Menu,
+  Package2,
+  UserRound,
+  MapPinHouse,
+  UserCog,
+} from 'lucide-react';
+import { useState } from 'react';
 
+import { authApi } from '@/api/auth.api';
+import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { cn } from '@/lib/utils';
 import type { AccountNavItem } from '@/features/profile/types';
 import { Button } from '@/shared/components/ui/button';
@@ -72,8 +82,48 @@ const AccountNavLinks = ({
   );
 };
 
+const AccountLogoutButton = ({
+  isLoggingOut,
+  onLogout,
+}: {
+  isLoggingOut: boolean;
+  onLogout: () => void;
+}) => {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive w-full justify-start gap-2"
+      disabled={isLoggingOut}
+      onClick={onLogout}
+    >
+      <LogOut className="size-4" />
+      {isLoggingOut ? 'Logging out...' : 'Log out'}
+    </Button>
+  );
+};
+
 export default function AccountSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const clearSession = useAuthStore((state) => state.clearSession);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+
+    try {
+      await authApi.logout();
+    } catch {
+    } finally {
+      clearSession();
+      router.replace('/login');
+    }
+  };
 
   return (
     <>
@@ -91,7 +141,17 @@ export default function AccountSidebar() {
             </div>
           </div>
 
-          <AccountNavLinks pathname={pathname} />
+          <div className="space-y-4">
+            <AccountNavLinks pathname={pathname} />
+            <div className="border-border/70 border-t pt-4">
+              <AccountLogoutButton
+                isLoggingOut={isLoggingOut}
+                onLogout={() => {
+                  void handleLogout();
+                }}
+              />
+            </div>
+          </div>
         </div>
       </aside>
 
@@ -108,7 +168,17 @@ export default function AccountSidebar() {
               <SheetTitle>My Account</SheetTitle>
             </SheetHeader>
             <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <AccountNavLinks pathname={pathname} />
+              <div className="space-y-4">
+                <AccountNavLinks pathname={pathname} />
+                <div className="border-border/70 border-t pt-4">
+                  <AccountLogoutButton
+                    isLoggingOut={isLoggingOut}
+                    onLogout={() => {
+                      void handleLogout();
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </SheetContent>
         </Sheet>

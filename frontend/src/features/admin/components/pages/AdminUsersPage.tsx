@@ -25,7 +25,7 @@ import {
 } from '@/features/admin/hooks';
 import type { AdminUser } from '@/features/admin/types/admin-users.types';
 import type { UpsertAdminUserInput } from '@/features/admin/types/admin-users.types';
-import { getAuthSession } from '@/lib/auth-session';
+import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { canManageUsersCrud, type UserRole } from '@/lib/rbac';
 
 export function AdminUsersPage() {
@@ -48,7 +48,7 @@ export function AdminUsersPage() {
   const summary = usersQuery.data?.summary;
   const meta = usersQuery.data?.meta;
 
-  const actorRole = getAuthSession()?.role ?? 'customer';
+  const actorRole = useAuthStore((state) => state.user?.role) ?? 'customer';
   const canManageCrud = canManageUsersCrud(actorRole);
   const mode = editingUser ? 'edit' : 'create';
 

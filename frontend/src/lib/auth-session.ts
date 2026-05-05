@@ -1,34 +1,61 @@
-import type { AuthUser } from '@/features/auth/types';
-import {
-  AUTH_ROLE_COOKIE_KEY,
-  AUTH_SESSION_STORAGE_KEY,
-  ROLE_COOKIE_MAX_AGE_SECONDS,
-} from '@/lib/auth-constants';
+import type { AuthResponse, AuthSession, AuthUser } from '@/features/auth/types';
+import { AUTH_SESSION_STORAGE_KEY } from '@/lib/auth-constants';
 
-export { AUTH_ROLE_COOKIE_KEY, AUTH_SESSION_STORAGE_KEY };
+export { AUTH_SESSION_STORAGE_KEY };
 
 const isClient = () => typeof window !== 'undefined';
 
-export const persistAuthSession = (user: AuthUser): void => {
+let accessTokenMemory: string | null = null;
+let accessTokenExpiresAtMemory = 0;
+const authSessionListeners = new Set<(user: AuthUser | null) => void>();
+
+const notifyAuthSessionChange = (user: AuthUser | null): void => {
+  authSessionListeners.forEach((listener) => {
+    listener(user);
+  });
+};
+
+export const subscribeAuthSession = (
+  listener: (user: AuthUser | null) => void
+): (() => void) => {
+  authSessionListeners.add(listener);
+  return () => {
+    authSessionListeners.delete(listener);
+  };
+};
+
+export const persistAuthSession = (response: AuthResponse): void => {
   if (!isClient()) {
     return;
   }
 
-  window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(user));
+  accessTokenMemory = response.accessToken;
+  accessTokenExpiresAtMemory = Date.now() + response.expiresIn * 1000;
 
-  document.cookie = `${AUTH_ROLE_COOKIE_KEY}=${user.role}; Path=/; Max-Age=${ROLE_COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
+  const session: AuthSession = {
+    user: response.user,
+    tokenType: response.tokenType,
+    expiresAt: accessTokenExpiresAtMemory,
+  };
+
+  window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session));
+
+  notifyAuthSessionChange(response.user);
 };
 
 export const clearAuthSession = (): void => {
+  accessTokenMemory = null;
+  accessTokenExpiresAtMemory = 0;
+
   if (!isClient()) {
     return;
   }
 
   window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
-  document.cookie = `${AUTH_ROLE_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`;
+  notifyAuthSessionChange(null);
 };
 
-export const getAuthSession = (): AuthUser | null => {
+export const getStoredAuthSession = (): AuthSession | null => {
   if (!isClient()) {
     return null;
   }
@@ -40,8 +67,30 @@ export const getAuthSession = (): AuthUser | null => {
   }
 
   try {
-    return JSON.parse(raw) as AuthUser;
+    const parsed = JSON.parse(raw) as Partial<AuthSession>;
+
+    if (
+      !parsed.user ||
+      parsed.tokenType !== 'Bearer' ||
+      typeof parsed.expiresAt !== 'number'
+    ) {
+      return null;
+    }
+
+    return parsed as AuthSession;
   } catch {
     return null;
   }
+};
+
+export const getAuthSession = (): AuthUser | null => {
+  return getStoredAuthSession()?.user ?? null;
+};
+
+export const getAuthAccessToken = (): string | null => {
+  if (!accessTokenMemory || accessTokenExpiresAtMemory <= Date.now()) {
+    return null;
+  }
+
+  return accessTokenMemory;
 };

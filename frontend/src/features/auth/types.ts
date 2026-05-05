@@ -7,31 +7,45 @@ export interface AuthUser {
   role: UserRole;
 }
 
-export interface AuthUserRecord extends AuthUser {
-  password: string;
-}
 export interface LoginRequest {
   email: string;
   password: string;
 }
+
 export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
   confirmpassword: string;
 }
+
 export interface AuthResponse {
   success: boolean;
-  user?: AuthUser;
+  user: AuthUser;
   message?: string;
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresIn: number;
 }
 
-export class AuthApiError extends Error {
+export interface AuthSession {
+  user: AuthUser;
+  tokenType: 'Bearer';
+  expiresAt: number;
+}
+
+export class ApiError extends Error {
+  statusCode?: number;
   fieldErrors?: Record<string, string>;
 
-  constructor(message: string, fieldErrors?: Record<string, string>) {
+  constructor(
+    message: string,
+    fieldErrors?: Record<string, string>,
+    statusCode?: number
+  ) {
     super(message);
-    this.name = 'AuthApiError';
+    this.name = 'ApiError';
     this.fieldErrors = fieldErrors;
+    this.statusCode = statusCode;
   }
 }

@@ -7,17 +7,19 @@ import { Checkbox } from '@/shared/components/ui/checkbox';
 import { PrimaryButton } from '@/shared/components/ui/primary-button';
 import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { AuthApiError, LoginRequest } from '@/features/auth/types';
+import { ApiError, LoginRequest } from '@/features/auth/types';
 import { useLogin } from '@/features/auth/hooks/auth.hooks';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/features/auth/schemas/auth.schema';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { canAccessAdminPanel } from '@/lib/rbac';
-import { persistAuthSession } from '@/lib/auth-session';
+import { useAuthStore } from '@/features/auth/stores/auth.store';
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     register,
@@ -37,11 +39,12 @@ export default function LoginForm() {
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const { mutate: login, isPending, error, reset } = useLogin();
+  const setAuthSession = useAuthStore((state) => state.setSession);
   const isSubmitting = isPending || isRedirecting;
   const [email, password] = watch(['email', 'password']);
   const hasServerError = useRef(false);
   const serverFieldErrors =
-    error instanceof AuthApiError ? error.fieldErrors : undefined;
+    error instanceof ApiError ? error.fieldErrors : undefined;
 
   useEffect(() => {
     hasServerError.current = Boolean(error);
@@ -60,11 +63,20 @@ export default function LoginForm() {
           return;
         }
 
-        persistAuthSession(response.user);
+        setAuthSession(response);
         setIsRedirecting(true);
-        router.replace(
-          canAccessAdminPanel(response.user.role) ? '/admin' : '/'
-        );
+        const nextPath = searchParams.get('next');
+        const canAccessAdmin = canAccessAdminPanel(response.user.role);
+        const safeNextPath =
+          nextPath?.startsWith('/') && !nextPath.startsWith('//')
+            ? nextPath
+            : undefined;
+        const destination =
+          safeNextPath?.startsWith('/admin') && !canAccessAdmin
+            ? '/'
+            : safeNextPath ?? (canAccessAdmin ? '/admin' : '/');
+
+        router.replace(destination);
       },
     });
   };

@@ -39,7 +39,9 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/shared/components/ui/sidebar';
-import { clearAuthSession, getAuthSession } from '@/lib/auth-session';
+import { authApi } from '@/api/auth.api';
+import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { canAccessAdminPanel } from '@/lib/rbac';
 
 type AdminLayoutShellProps = {
   children: React.ReactNode;
@@ -116,7 +118,10 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { isMobile, setMobileOpen } = useSidebar();
-  const sessionUser = getAuthSession();
+  const sessionUser = useAuthStore((state) => state.user);
+  const authStatus = useAuthStore((state) => state.status);
+  const clearSession = useAuthStore((state) => state.clearSession);
+  const canAccessAdmin = canAccessAdminPanel(sessionUser?.role);
   const displayName = sessionUser?.name ?? 'Admin Keys';
   const displayEmail = sessionUser?.email ?? 'admin@luxekeys.io';
   const displayInitials =
@@ -127,11 +132,47 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
       .slice(0, 2)
       .toUpperCase() || 'AK';
 
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+    } finally {
+      clearSession();
+      router.push('/login');
+    }
+  };
+
   useEffect(() => {
     if (isMobile) {
       setMobileOpen(false);
     }
   }, [isMobile, pathname, setMobileOpen]);
+
+  useEffect(() => {
+    if (authStatus === 'idle' || authStatus === 'loading') {
+      return;
+    }
+
+    if (!sessionUser) {
+      const params = new URLSearchParams({ next: pathname });
+      router.replace(`/login?${params.toString()}`);
+      return;
+    }
+
+    if (!canAccessAdmin) {
+      router.replace('/403');
+    }
+  }, [authStatus, canAccessAdmin, pathname, router, sessionUser]);
+
+  if (authStatus === 'idle' || authStatus === 'loading' || !canAccessAdmin) {
+    return (
+      <section className="bg-background flex min-h-screen items-center justify-center">
+        <div className="text-muted-foreground text-sm font-medium">
+          Loading admin console...
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full">
@@ -229,8 +270,7 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
 
                 <DropdownMenuItem
                   onClick={() => {
-                    clearAuthSession();
-                    router.push('/login');
+                    void handleLogout();
                   }}
                 >
                   <LogOut className="size-4" />

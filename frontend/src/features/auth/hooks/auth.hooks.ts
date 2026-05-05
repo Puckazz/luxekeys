@@ -1,6 +1,6 @@
 import { authApi } from '@/api/auth.api';
 import {
-  AuthApiError,
+  ApiError,
   AuthResponse,
   LoginRequest,
   RegisterRequest,
@@ -8,13 +8,13 @@ import {
 import { useMutation } from '@tanstack/react-query';
 
 export const useLogin = () => {
-  return useMutation<AuthResponse, AuthApiError, LoginRequest>({
+  return useMutation<AuthResponse, ApiError, LoginRequest>({
     mutationFn: authApi.login,
   });
 };
 
 export const useRegister = () => {
-  return useMutation<AuthResponse, AuthApiError, RegisterRequest>({
+  return useMutation<AuthResponse, ApiError, RegisterRequest>({
     mutationFn: authApi.register,
   });
 };
