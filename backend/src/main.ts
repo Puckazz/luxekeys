@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { TransformResponseInterceptor } from './common/interceptors';
+import { GlobalExceptionFilter } from './common/filters';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
@@ -25,6 +26,7 @@ async function bootstrap() {
   );
 
   app.useGlobalInterceptors(new TransformResponseInterceptor());
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle('My API')
