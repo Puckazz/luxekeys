@@ -9,7 +9,9 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { ProductsModule } from './modules/products/products.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { UsersModule } from './modules/users/users.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { LoggerMiddleware } from './common/middleware';
 
 @Module({
@@ -24,6 +26,8 @@ import { LoggerMiddleware } from './common/middleware';
     CartModule,
     OrdersModule,
     ProductsModule,
+    ReviewsModule,
+    WishlistModule,
     CategoriesModule,
   ],
   controllers: [],

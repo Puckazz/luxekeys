@@ -1,11 +1,9 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   ParseUUIDPipe,
   Patch,
   Post,
@@ -17,7 +15,6 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { UserRole } from '../../generated/prisma/index.js';
@@ -72,20 +69,6 @@ export class ProductsController {
   })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.findOne(id);
-  }
-
-  @Get(':id/reviews')
-  @ApiOperation({ summary: 'List reviews for a product (paginated)' })
-  @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiOkResponse({ description: 'Paginated list of product reviews' })
-  findReviews(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ) {
-    return this.productsService.findReviews(id, page, limit);
   }
 
   @Patch(':id')
