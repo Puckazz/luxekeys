@@ -14,14 +14,17 @@ import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import {
   CATEGORY_DETAIL_INCLUDE,
   CATEGORY_LIST_INCLUDE,
-  CategoryWithChildren,
+  CATEGORY_TREE_INCLUDE,
+  CategoryDetail,
+  CategorySummary,
+  CategoryTree,
 } from './interfaces/category.interface.js';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreateCategoryDto): Promise<CategoryWithChildren> {
+  async create(dto: CreateCategoryDto): Promise<CategoryDetail> {
     const slug = dto.slug ?? toSlug(dto.name);
 
     const existing = await this.prisma.category.findUnique({
@@ -44,7 +47,7 @@ export class CategoriesService {
 
   async findAll(
     query: GetCategoriesQueryDto,
-  ): Promise<PaginatedResponse<CategoryWithChildren>> {
+  ): Promise<PaginatedResponse<CategorySummary>> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
@@ -86,29 +89,15 @@ export class CategoriesService {
     };
   }
 
-  async findTree(): Promise<CategoryWithChildren[]> {
+  async findTree(): Promise<CategoryTree[]> {
     return this.prisma.category.findMany({
       where: { parentId: null, deletedAt: null },
       orderBy: { name: 'asc' },
-      include: {
-        children: {
-          where: { deletedAt: null },
-          orderBy: { name: 'asc' },
-          include: {
-            children: {
-              where: { deletedAt: null },
-              orderBy: { name: 'asc' },
-              include: { _count: { select: { products: true } } },
-            },
-            _count: { select: { products: true } },
-          },
-        },
-        _count: { select: { products: true } },
-      },
+      include: CATEGORY_TREE_INCLUDE,
     });
   }
 
-  async findOne(id: string): Promise<CategoryWithChildren> {
+  async findOne(id: string): Promise<CategoryDetail> {
     const category = await this.prisma.category.findFirst({
       where: { id, deletedAt: null },
       include: CATEGORY_DETAIL_INCLUDE,
@@ -152,10 +141,7 @@ export class CategoriesService {
     };
   }
 
-  async update(
-    id: string,
-    dto: UpdateCategoryDto,
-  ): Promise<CategoryWithChildren> {
+  async update(id: string, dto: UpdateCategoryDto): Promise<CategoryDetail> {
     await this.findOne(id);
 
     if (dto.slug) {
@@ -183,7 +169,7 @@ export class CategoriesService {
     });
   }
 
-  async remove(id: string): Promise<CategoryWithChildren> {
+  async remove(id: string): Promise<CategoryDetail> {
     await this.findOne(id);
 
     return this.prisma.category.update({

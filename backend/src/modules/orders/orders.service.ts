@@ -12,7 +12,11 @@ import {
   GetOrdersQueryDto,
   UpdateOrderStatusDto,
 } from './dto/index.js';
-import { OrderResponse, OrderWithItems } from './interfaces/index.js';
+import {
+  OrderResponse,
+  OrderWithItems,
+  ORDER_WITH_ITEMS_INCLUDE,
+} from './interfaces/index.js';
 
 @Injectable()
 export class OrdersService {
@@ -57,28 +61,10 @@ export class OrdersService {
     return `LK-${timestamp}-${random}`;
   }
 
-  private buildOrderInclude() {
-    return {
-      items: true,
-      address: {
-        select: {
-          fullName: true,
-          phone: true,
-          line1: true,
-          line2: true,
-          ward: true,
-          district: true,
-          city: true,
-          country: true,
-        },
-      },
-    } satisfies Prisma.OrderInclude;
-  }
-
   async findOne(id: string): Promise<OrderResponse> {
     const order = await this.prisma.order.findFirst({
       where: { id },
-      include: this.buildOrderInclude(),
+      include: ORDER_WITH_ITEMS_INCLUDE,
     });
 
     if (!order) {
@@ -91,7 +77,7 @@ export class OrdersService {
   async findByCode(orderCode: string): Promise<OrderResponse> {
     const order = await this.prisma.order.findFirst({
       where: { orderCode },
-      include: this.buildOrderInclude(),
+      include: ORDER_WITH_ITEMS_INCLUDE,
     });
 
     if (!order) {
@@ -128,7 +114,7 @@ export class OrdersService {
       this.prisma.order.count({ where }),
       this.prisma.order.findMany({
         where,
-        include: this.buildOrderInclude(),
+        include: ORDER_WITH_ITEMS_INCLUDE,
         orderBy: { placedAt: 'desc' },
         skip,
         take: limit,
@@ -172,7 +158,7 @@ export class OrdersService {
       this.prisma.order.count({ where }),
       this.prisma.order.findMany({
         where,
-        include: this.buildOrderInclude(),
+        include: ORDER_WITH_ITEMS_INCLUDE,
         orderBy: { placedAt: 'desc' },
         skip,
         take: limit,
@@ -260,7 +246,7 @@ export class OrdersService {
             })),
           },
         },
-        include: this.buildOrderInclude(),
+        include: ORDER_WITH_ITEMS_INCLUDE,
       });
 
       await Promise.all(
@@ -283,7 +269,7 @@ export class OrdersService {
   async cancelOrder(id: string, userId: string): Promise<OrderResponse> {
     const order = await this.prisma.order.findFirst({
       where: { id },
-      include: this.buildOrderInclude(),
+      include: ORDER_WITH_ITEMS_INCLUDE,
     });
 
     if (!order) {
@@ -307,7 +293,7 @@ export class OrdersService {
       const cancelled = await tx.order.update({
         where: { id },
         data: { status: OrderStatus.CANCELLED },
-        include: this.buildOrderInclude(),
+        include: ORDER_WITH_ITEMS_INCLUDE,
       });
 
       await Promise.all(
@@ -344,7 +330,7 @@ export class OrdersService {
         ...(dto.paymentStatus && { paymentStatus: dto.paymentStatus }),
         ...(dto.paymentMethod && { paymentMethod: dto.paymentMethod }),
       },
-      include: this.buildOrderInclude(),
+      include: ORDER_WITH_ITEMS_INCLUDE,
     });
 
     return this.mapToResponse(updated as OrderWithItems);

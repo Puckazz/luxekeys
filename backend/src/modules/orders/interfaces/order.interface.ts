@@ -1,6 +1,5 @@
 import {
-  Order,
-  OrderItem,
+  Prisma,
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
@@ -50,16 +49,22 @@ export interface OrderResponse {
   items: OrderItemResponse[];
 }
 
-export type OrderWithItems = Order & {
-  items: OrderItem[];
+export const ORDER_WITH_ITEMS_INCLUDE = {
+  items: true,
   address: {
-    fullName: string;
-    phone: string;
-    line1: string;
-    line2: string | null;
-    ward: string | null;
-    district: string | null;
-    city: string;
-    country: string;
-  } | null;
-};
+    select: {
+      fullName: true,
+      phone: true,
+      line1: true,
+      line2: true,
+      ward: true,
+      district: true,
+      city: true,
+      country: true,
+    },
+  },
+} satisfies Prisma.OrderInclude;
+
+export type OrderWithItems = Prisma.OrderGetPayload<{
+  include: typeof ORDER_WITH_ITEMS_INCLUDE;
+}>;
