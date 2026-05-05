@@ -1,4 +1,125 @@
-﻿import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from '../database/prisma.service.js';
+import { CreateAddressDto } from './dto/create-address.dto.js';
+import { UpdateAddressDto } from './dto/update-address.dto.js';
+import {
+  ADDRESS_INCLUDE,
+  AddressDetail,
+} from './interfaces/address.interface.js';
 
 @Injectable()
-export class AddressesService {}
+export class AddressesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAllByUser(userId: string): Promise<AddressDetail[]> {
+    return this.prisma.address.findMany({
+      where: { userId, deletedAt: null },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+      include: ADDRESS_INCLUDE,
+    });
+  }
+
+  async create(userId: string, dto: CreateAddressDto): Promise<AddressDetail> {
+    if (dto.isDefault) {
+      await this.clearDefaultAddress(userId);
+    }
+
+    return this.prisma.address.create({
+      data: {
+        userId,
+        fullName: dto.fullName,
+        phone: dto.phone,
+        line1: dto.line1,
+        line2: dto.line2 ?? null,
+        ward: dto.ward ?? null,
+        district: dto.district ?? null,
+        city: dto.city,
+        country: dto.country ?? 'United States',
+        isDefault: dto.isDefault ?? false,
+      },
+      include: ADDRESS_INCLUDE,
+    });
+  }
+
+  async findOne(id: string, userId: string): Promise<AddressDetail> {
+    const address = await this.prisma.address.findFirst({
+      where: { id, deletedAt: null },
+      include: ADDRESS_INCLUDE,
+    });
+
+    if (!address) {
+      throw new NotFoundException(`Address with ID "${id}" not found`);
+    }
+
+    this.assertOwnership(address.userId, userId);
+
+    return address;
+  }
+
+  async update(
+    id: string,
+    userId: string,
+    dto: UpdateAddressDto,
+  ): Promise<AddressDetail> {
+    await this.findOne(id, userId);
+
+    if (dto.isDefault) {
+      await this.clearDefaultAddress(userId);
+    }
+
+    return this.prisma.address.update({
+      where: { id },
+      data: {
+        ...(dto.fullName !== undefined && { fullName: dto.fullName }),
+        ...(dto.phone !== undefined && { phone: dto.phone }),
+        ...(dto.line1 !== undefined && { line1: dto.line1 }),
+        ...(dto.line2 !== undefined && { line2: dto.line2 }),
+        ...(dto.ward !== undefined && { ward: dto.ward }),
+        ...(dto.district !== undefined && { district: dto.district }),
+        ...(dto.city !== undefined && { city: dto.city }),
+        ...(dto.country !== undefined && { country: dto.country }),
+        ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
+      },
+      include: ADDRESS_INCLUDE,
+    });
+  }
+
+  async remove(id: string, userId: string): Promise<AddressDetail> {
+    await this.findOne(id, userId);
+
+    return this.prisma.address.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+      include: ADDRESS_INCLUDE,
+    });
+  }
+
+  async setDefault(id: string, userId: string): Promise<AddressDetail> {
+    await this.findOne(id, userId);
+
+    await this.clearDefaultAddress(userId);
+
+    return this.prisma.address.update({
+      where: { id },
+      data: { isDefault: true },
+      include: ADDRESS_INCLUDE,
+    });
+  }
+
+  private assertOwnership(ownerId: string, requesterId: string): void {
+    if (ownerId !== requesterId) {
+      throw new ForbiddenException('You do not have access to this address');
+    }
+  }
+
+  private async clearDefaultAddress(userId: string): Promise<void> {
+    await this.prisma.address.updateMany({
+      where: { userId, isDefault: true, deletedAt: null },
+      data: { isDefault: false },
+    });
+  }
+}

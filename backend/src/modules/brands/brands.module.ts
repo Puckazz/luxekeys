@@ -1,9 +1,8 @@
-﻿import { Module } from '@nestjs/common';
-import { BrandsService } from './brands.service';
-import { BrandsController } from './brands.controller';
+import { Module } from '@nestjs/common';
+import { BrandsService } from './brands.service.js';
+import { BrandsController } from './brands.controller.js';
 
 @Module({
-  imports: [],
   controllers: [BrandsController],
   providers: [BrandsService],
   exports: [BrandsService],
