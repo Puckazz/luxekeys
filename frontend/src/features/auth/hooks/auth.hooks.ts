@@ -1,4 +1,4 @@
-import { authApi } from '@/api/auth.api';
+import { authApi } from '@/features/auth/api/auth.api';
 import {
   ApiError,
   AuthResponse,

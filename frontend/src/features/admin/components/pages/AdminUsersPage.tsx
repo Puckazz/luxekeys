@@ -25,8 +25,8 @@ import {
 } from '@/features/admin/hooks';
 import type { AdminUser } from '@/features/admin/types/admin-users.types';
 import type { UpsertAdminUserInput } from '@/features/admin/types/admin-users.types';
-import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { canManageUsersCrud, type UserRole } from '@/lib/rbac';
+import { useAuthStore } from '@/stores/auth/auth.store';
 
 export function AdminUsersPage() {
   const { queryState, setSearch, setRole, setStatus, setSort, setPage } =

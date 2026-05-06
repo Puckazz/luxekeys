@@ -8,7 +8,7 @@ import type {
   BulkUpdateAdminOrderStatusResponse,
   UpdateAdminOrderStatusInput,
 } from '@/features/admin/types/admin-orders.types';
-import { createSeedOrders } from '@/api/mocks/admin-orders.mock';
+import { createSeedOrders } from '@/features/admin/mocks/admin-orders.mock';
 
 const MOCK_NETWORK_DELAY = 160;
 

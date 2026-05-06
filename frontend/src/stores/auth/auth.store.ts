@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { authApi } from '@/api/auth.api';
+import { authApi } from '@/features/auth/api/auth.api';
 import type { AuthResponse, AuthUser } from '@/features/auth/types';
 import {
   clearAuthSession,

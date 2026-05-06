@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { adminProductsApi } from '@/api/admin-products.api';
+import { adminProductsApi } from '@/features/admin/api/admin-products.api';
 import { ADMIN_PRODUCTS_QUERY_KEYS } from '@/features/admin/hooks/products.key';
 import type { UpsertAdminProductInput } from '@/features/admin/types/admin-products.types';
 

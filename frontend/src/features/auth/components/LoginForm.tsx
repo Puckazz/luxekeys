@@ -15,7 +15,7 @@ import { loginSchema } from '@/features/auth/schemas/auth.schema';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { canAccessAdminPanel } from '@/lib/rbac';
-import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { useAuthStore } from '@/stores/auth/auth.store';
 
 export default function LoginForm() {
   const router = useRouter();

@@ -12,9 +12,9 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-import { authApi } from '@/api/auth.api';
-import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { authApi } from '@/features/auth/api/auth.api';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores/auth/auth.store';
 import type { AccountNavItem } from '@/features/profile/types';
 import { Button } from '@/shared/components/ui/button';
 import {

@@ -1,5 +1,5 @@
-import { adminOrdersApi } from '@/api/admin-orders.api';
-import { adminProductsApi } from '@/api/admin-products.api';
+import { adminOrdersApi } from '@/features/admin/api/admin-orders.api';
+import { adminProductsApi } from '@/features/admin/api/admin-products.api';
 import type {
   AdminDashboardPeriod,
   AdminDashboardSummary,

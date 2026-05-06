@@ -3,9 +3,9 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { useAuthStore } from '@/features/auth/stores/auth.store';
 import { useCartSync } from '@/features/shop/hooks/useCartSync';
 import { queryClient } from '@/lib/queryClient';
+import { useAuthStore } from '@/stores/auth/auth.store';
 
 function AuthBootstrapBridge() {
   const bootstrap = useAuthStore((state) => state.bootstrap);

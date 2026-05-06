@@ -8,7 +8,7 @@ import {
   type UpsertAdminUserInput,
   type UpdateAdminUserRoleInput,
 } from '@/features/admin/types/admin-users.types';
-import { createSeedUsers } from '@/api/mocks/admin-users.mock';
+import { createSeedUsers } from '@/features/admin/mocks/admin-users.mock';
 import {
   canManageUsersCrud,
   canManageUsersFully,

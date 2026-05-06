@@ -1,4 +1,4 @@
-import { homepageApi } from '@/api/homepage.api';
+import { homepageApi } from '@/features/shop/api/homepage.api';
 import {
   CommunityShowcaseSection,
   GroupBuySection,

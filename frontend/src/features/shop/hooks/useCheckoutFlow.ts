@@ -6,7 +6,7 @@ import {
   checkoutApi,
   checkoutPaymentOptions,
   checkoutShippingOptions,
-} from '@/api/checkout.api';
+} from '@/features/shop/api/checkout.api';
 import { useCartStore } from '@/stores/shop/cart.store';
 import { useCheckoutStore } from '@/stores/shop/checkout.store';
 import type {

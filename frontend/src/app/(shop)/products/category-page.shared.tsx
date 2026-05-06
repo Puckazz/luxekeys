@@ -1,4 +1,4 @@
-import { productsApi } from '@/api/products.api';
+import { productsApi } from '@/features/shop/api/products.api';
 import { ProductListPage } from '@/features/shop/components/pages';
 import { productsCatalog } from '@/features/shop/mocks/products.data';
 import { ProductCategory } from '@/features/shop/types';

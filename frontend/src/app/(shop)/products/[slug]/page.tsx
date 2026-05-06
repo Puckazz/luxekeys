@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { productsApi } from '@/api/products.api';
+import { productsApi } from '@/features/shop/api/products.api';
 import { ProductDetailPage } from '@/features/shop/components/pages';
 
 type ProductDetailRoutePageProps = {

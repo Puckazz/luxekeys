@@ -8,7 +8,7 @@ import type {
   BulkUpdateAdminReviewStatusResponse,
   UpdateAdminReviewStatusInput,
 } from '@/features/admin/types/admin-reviews.types';
-import { createSeedReviews } from '@/api/mocks/admin-reviews.mock';
+import { createSeedReviews } from '@/features/admin/mocks/admin-reviews.mock';
 
 const MOCK_NETWORK_DELAY = 160;
 

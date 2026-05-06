@@ -39,9 +39,10 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/shared/components/ui/sidebar';
-import { authApi } from '@/api/auth.api';
-import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { authApi } from '@/features/auth/api/auth.api';
 import { canAccessAdminPanel } from '@/lib/rbac';
+import { useAuthStore } from '@/stores/auth/auth.store';
+import { RouteTopLoader } from '@/shared/components/ui/route-top-loader';
 
 type AdminLayoutShellProps = {
   children: React.ReactNode;
@@ -165,13 +166,7 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
   }, [authStatus, canAccessAdmin, pathname, router, sessionUser]);
 
   if (authStatus === 'idle' || authStatus === 'loading' || !canAccessAdmin) {
-    return (
-      <section className="bg-background flex min-h-screen items-center justify-center">
-        <div className="text-muted-foreground text-sm font-medium">
-          Loading admin console...
-        </div>
-      </section>
-    );
+    return <RouteTopLoader />;
   }
 
   return (

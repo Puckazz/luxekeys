@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { cartApi } from '@/api/cart.api';
+import { cartApi } from '@/features/shop/api/cart.api';
 
 const cartRecommendationsQueryKey = ['cart-recommendations'] as const;
 

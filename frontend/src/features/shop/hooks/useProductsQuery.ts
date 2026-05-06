@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { productsApi } from '@/api/products.api';
+import { productsApi } from '@/features/shop/api/products.api';
 import {
   ProductListApiResponse,
   ProductListQueryState,

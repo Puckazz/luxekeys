@@ -13,7 +13,7 @@ import { useRegister } from '@/features/auth/hooks/auth.hooks';
 import { ApiError, RegisterRequest } from '@/features/auth/types';
 import { registerSchema } from '@/features/auth/schemas/auth.schema';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { useAuthStore } from '@/stores/auth/auth.store';
 
 export default function RegisterForm() {
   const router = useRouter();

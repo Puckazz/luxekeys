@@ -9,7 +9,7 @@ import type {
   AdminCategoryStatusSummary,
   UpsertAdminCategoryInput,
 } from '@/features/admin/types/admin-categories.types';
-import { createSeedCategories } from '@/api/mocks/admin-categories.mock';
+import { createSeedCategories } from '@/features/admin/mocks/admin-categories.mock';
 
 const MOCK_NETWORK_DELAY = 160;
 

@@ -6,7 +6,11 @@ import {
   RegisterRequest,
 } from '@/features/auth/types';
 import { USER_ROLES, type UserRole } from '@/lib/rbac';
-import { apiRequest, authFetch, configureAuthRefresh } from '@/api/http-client';
+import {
+  apiRequest,
+  authFetch,
+  configureAuthRefresh,
+} from '@/shared/api/http-client';
 
 type BackendAuthUser = {
   id: string;

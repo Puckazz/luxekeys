@@ -20,7 +20,7 @@ import type {
   AdminInventoryStatusSummary,
   AdminInventoryStatusFilter,
 } from '@/features/admin/types/admin-inventory.types';
-import { createSeedProducts } from '@/api/mocks/admin-products.mock';
+import { createSeedProducts } from '@/features/admin/mocks/admin-products.mock';
 import { getInventoryStockStatus } from '@/features/admin/utils/admin-products.utils';
 
 const MOCK_NETWORK_DELAY = 160;
