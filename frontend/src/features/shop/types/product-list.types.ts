@@ -36,7 +36,7 @@ export type ProductCardProps = {
 
 export type ProductListPageProps = {
   category: ProductCategory;
-  initialData: ProductListApiResponse;
+  initialData?: ProductListApiResponse;
   initialQueryState: ProductListQueryState;
   initialPriceBounds: ProductPriceRange;
 };

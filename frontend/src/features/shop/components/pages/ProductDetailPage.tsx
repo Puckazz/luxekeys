@@ -64,7 +64,7 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   const [selectedColor, setSelectedColor] = useState(product.defaultColor);
   const [quantity, setQuantity] = useState(1);
   const [visibleReviews, setVisibleReviews] = useState(() => {
-    return Math.min(2, product.reviews.length);
+    return Math.min(2, product.reviewCount);
   });
 
   const productReviewsQuery = useProductReviewsQuery(
@@ -78,11 +78,17 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     setSelectedSwitch(product.defaultSwitch);
     setSelectedColor(product.defaultColor);
     setQuantity(1);
-    setVisibleReviews(Math.min(2, product.reviews.length));
+    setVisibleReviews(Math.min(2, product.reviewCount));
   }, [product]);
 
   const increaseQuantity = () => {
-    setQuantity((previous) => previous + 1);
+    setQuantity((previous) => {
+      if (product.quantityLimit <= 0) {
+        return 1;
+      }
+
+      return Math.min(previous + 1, product.quantityLimit);
+    });
   };
 
   const decreaseQuantity = () => {
@@ -90,6 +96,10 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   };
 
   const handleAddToCart = () => {
+    if (product.quantityLimit <= 0) {
+      return;
+    }
+
     const discountedUnitPrice = calculateDiscountedPrice(
       product.price,
       product.discountPercentage
@@ -113,7 +123,7 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   };
 
   const reviews = productReviewsQuery.data ?? [];
-  const canLoadMore = visibleReviews < product.reviews.length;
+  const canLoadMore = visibleReviews < product.reviewCount;
 
   return (
     <div className="bg-background">
@@ -141,16 +151,24 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
         specs={product.technicalSpecs}
       />
 
-      <ProductMaterialsSection showcase={product.materialShowcase} />
+      {product.materialShowcase ? (
+        <ProductMaterialsSection showcase={product.materialShowcase} />
+      ) : null}
 
-      <ProductVideoTourSection videoTour={product.videoTour} />
+      {product.videoTour ? (
+        <ProductVideoTourSection videoTour={product.videoTour} />
+      ) : null}
 
       <ProductReviewsSection
         heading={product.reviewsHeading}
         reviews={reviews}
         isLoading={productReviewsQuery.isPending}
         canLoadMore={canLoadMore}
-        onLoadMore={() => setVisibleReviews((current) => current + 2)}
+        onLoadMore={() =>
+          setVisibleReviews((current) =>
+            Math.min(current + 2, product.reviewCount)
+          )
+        }
       />
     </div>
   );

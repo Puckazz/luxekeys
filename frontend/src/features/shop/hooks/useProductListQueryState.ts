@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTopLoader } from 'nextjs-toploader';
 
 import {
   KeycapProfile,
@@ -54,6 +55,7 @@ export const useProductListQueryState = ({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const loader = useTopLoader();
 
   const queryState = useMemo(() => {
     return parseProductListQueryState(category, searchParams, priceBounds);
@@ -61,11 +63,16 @@ export const useProductListQueryState = ({
 
   const capabilities = PRODUCT_CATEGORY_FILTER_CAPABILITIES[category];
 
+  useEffect(() => {
+    loader.done();
+  }, [loader, pathname, searchParams]);
+
   const updateSearchParams = (updater: (params: URLSearchParams) => void) => {
     const next = new URLSearchParams(searchParams.toString());
     updater(next);
 
     const query = next.toString();
+    loader.start();
     router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 

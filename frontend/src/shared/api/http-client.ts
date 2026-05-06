@@ -16,6 +16,11 @@ type BackendSuccessResponse<T> = {
   meta?: unknown;
 };
 
+export type ApiResponseWithMeta<T, TMeta = unknown> = {
+  data: T;
+  meta?: TMeta;
+};
+
 type BackendErrorResponse = {
   statusCode?: number;
   message?: string | string[];
@@ -132,6 +137,37 @@ export const apiRequest = async <T>(
   }
 
   return (payload as BackendSuccessResponse<T>).data;
+};
+
+export const apiRequestWithMeta = async <T, TMeta = unknown>(
+  path: string,
+  options: ApiRequestOptions = {}
+): Promise<ApiResponseWithMeta<T, TMeta>> => {
+  const response = await fetch(buildApiUrl(path), {
+    ...createFetchOptions(options),
+    headers: createHeaders(options),
+    credentials: 'include',
+  });
+  const payload = await parseJson(response);
+
+  if (!response.ok) {
+    throw new ApiError(
+      getErrorMessage(payload, response.statusText),
+      getFieldErrors(payload),
+      response.status
+    );
+  }
+
+  if (!isRecord(payload) || !('data' in payload)) {
+    throw new ApiError('Unexpected API response', undefined, response.status);
+  }
+
+  const successPayload = payload as BackendSuccessResponse<T>;
+
+  return {
+    data: successPayload.data,
+    meta: successPayload.meta as TMeta | undefined,
+  };
 };
 
 export const configureAuthRefresh = (

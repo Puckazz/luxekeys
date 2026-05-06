@@ -70,6 +70,7 @@ export default function ProductDetailHeroSection({
     typeof product.discountPercentage === 'number' &&
     product.discountPercentage > 0;
   const showsKeyboardSelectors = product.category === 'keyboards';
+  const canPurchase = product.quantityLimit > 0;
   const discountedPrice = calculateDiscountedPrice(
     product.price,
     product.discountPercentage
@@ -365,6 +366,7 @@ export default function ProductDetailHeroSection({
                       variant="ghost"
                       size="icon-sm"
                       onClick={onQuantityIncrease}
+                      disabled={!canPurchase || quantity >= product.quantityLimit}
                       aria-label="Increase quantity"
                     >
                       <Plus className="size-4" />
@@ -378,6 +380,7 @@ export default function ProductDetailHeroSection({
               <Button
                 className="h-12 flex-1 rounded-full text-sm font-semibold sm:text-base"
                 onClick={onAddToCart}
+                disabled={!canPurchase}
               >
                 <ShoppingCart className="mr-2 size-4" />
                 Add to Cart

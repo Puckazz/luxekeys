@@ -1,4 +1,5 @@
 import { SlidersHorizontal } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/ui/button';
@@ -17,13 +18,226 @@ import {
   ProductCaseMaterial,
   ProductCategory,
 } from '@/features/shop/types';
-import type { ProductFiltersProps } from '@/features/shop/types/product-list.types';
+import type {
+  ProductFiltersProps,
+  ProductPriceRange,
+} from '@/features/shop/types/product-list.types';
 import { useProductFiltersStore } from '@/stores/shop/productFilters.store';
 import { formatCurrency } from '@/lib/formatters';
 
 const toInputId = (prefix: string, value: string): string => {
   return `${prefix}-${value.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 };
+
+const clamp = (value: number, min: number, max: number): number => {
+  return Math.min(Math.max(value, min), max);
+};
+
+const normalizePriceRange = (
+  range: ProductPriceRange,
+  bounds: ProductPriceRange
+): ProductPriceRange => {
+  const min = clamp(range.min, bounds.min, bounds.max);
+  const max = clamp(range.max, bounds.min, bounds.max);
+
+  return {
+    min: Math.min(min, max),
+    max: Math.max(min, max),
+  };
+};
+
+type PriceRangeFilterProps = {
+  selectedPrice: ProductPriceRange;
+  priceBounds: ProductPriceRange;
+  onPriceChange: (next: ProductPriceRange) => void;
+};
+
+function PriceRangeFilter({
+  selectedPrice,
+  priceBounds,
+  onPriceChange,
+}: PriceRangeFilterProps) {
+  const [draftPrice, setDraftPrice] = useState(() =>
+    normalizePriceRange(selectedPrice, priceBounds)
+  );
+  const [minInput, setMinInput] = useState(String(selectedPrice.min));
+  const [maxInput, setMaxInput] = useState(String(selectedPrice.max));
+  const draftPriceRef = useRef(draftPrice);
+  const selectedPriceRef = useRef(selectedPrice);
+
+  useEffect(() => {
+    const nextPrice = normalizePriceRange(selectedPrice, priceBounds);
+    draftPriceRef.current = nextPrice;
+    selectedPriceRef.current = nextPrice;
+    setDraftPrice(nextPrice);
+    setMinInput(String(nextPrice.min));
+    setMaxInput(String(nextPrice.max));
+  }, [selectedPrice, priceBounds]);
+
+  const inputDraftPrice = useMemo(() => {
+    const parsedMin = Number(minInput);
+    const parsedMax = Number(maxInput);
+
+    if (!Number.isFinite(parsedMin) || !Number.isFinite(parsedMax)) {
+      return null;
+    }
+
+    return normalizePriceRange(
+      {
+        min: parsedMin,
+        max: parsedMax,
+      },
+      priceBounds
+    );
+  }, [maxInput, minInput, priceBounds]);
+
+  const hasInputChanges =
+    inputDraftPrice !== null &&
+    (inputDraftPrice.min !== selectedPrice.min ||
+      inputDraftPrice.max !== selectedPrice.max);
+
+  const commitPriceChange = (nextPrice: ProductPriceRange) => {
+    const normalizedPrice = normalizePriceRange(nextPrice, priceBounds);
+    const currentSelectedPrice = selectedPriceRef.current;
+    draftPriceRef.current = normalizedPrice;
+    setDraftPrice(normalizedPrice);
+    setMinInput(String(normalizedPrice.min));
+    setMaxInput(String(normalizedPrice.max));
+
+    if (
+      normalizedPrice.min !== currentSelectedPrice.min ||
+      normalizedPrice.max !== currentSelectedPrice.max
+    ) {
+      onPriceChange(normalizedPrice);
+    }
+  };
+
+  const handleSliderValueChange = (value: number[]) => {
+    const [min, max] = value;
+    if (typeof min !== 'number' || typeof max !== 'number') {
+      return;
+    }
+
+    const nextPrice = normalizePriceRange({ min, max }, priceBounds);
+    draftPriceRef.current = nextPrice;
+    setDraftPrice(nextPrice);
+    setMinInput(String(nextPrice.min));
+    setMaxInput(String(nextPrice.max));
+  };
+
+  const handleSliderValueCommit = (value: number[]) => {
+    const [min, max] = value;
+
+    if (typeof min === 'number' && typeof max === 'number') {
+      commitPriceChange({ min, max });
+      return;
+    }
+
+    commitPriceChange(draftPriceRef.current);
+  };
+
+  const handleInputApply = () => {
+    if (!inputDraftPrice) {
+      return;
+    }
+
+    commitPriceChange(inputDraftPrice);
+  };
+
+  return (
+    <section className="border-border/50 border-t pt-5">
+      <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
+        Price Range
+      </h3>
+
+      <div className="space-y-3">
+        <Slider
+          min={priceBounds.min}
+          max={priceBounds.max}
+          step={1}
+          value={[draftPrice.min, draftPrice.max]}
+          onValueChange={handleSliderValueChange}
+          onValueCommit={handleSliderValueCommit}
+          aria-label="Price range"
+        />
+        <div className="text-muted-foreground flex items-center justify-between text-xs">
+          <span>
+            Min:{' '}
+            {formatCurrency(draftPrice.min, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })}
+          </span>
+          <span>
+            Max:{' '}
+            {formatCurrency(draftPrice.max, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <div>
+          <label
+            htmlFor="price-min-input"
+            className="text-muted-foreground mb-1 block text-xs"
+          >
+            Min
+          </label>
+          <Input
+            id="price-min-input"
+            type="number"
+            min={priceBounds.min}
+            max={priceBounds.max}
+            value={minInput}
+            onChange={(event) => setMinInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                handleInputApply();
+              }
+            }}
+            className="h-10"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="price-max-input"
+            className="text-muted-foreground mb-1 block text-xs"
+          >
+            Max
+          </label>
+          <Input
+            id="price-max-input"
+            type="number"
+            min={priceBounds.min}
+            max={priceBounds.max}
+            value={maxInput}
+            onChange={(event) => setMaxInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                handleInputApply();
+              }
+            }}
+            className="h-10"
+          />
+        </div>
+      </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-3 w-full rounded-full"
+        onClick={handleInputApply}
+        disabled={!hasInputChanges}
+      >
+        Apply price
+      </Button>
+    </section>
+  );
+}
 
 export default function ProductFilters({ className }: ProductFiltersProps) {
   const controller = useProductFiltersStore((state) => state.controller);
@@ -76,30 +290,6 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
 
   const isCategoryValue = (value: string): value is ProductCategory => {
     return categoryOptions.some((option) => option.value === value);
-  };
-
-  const handlePriceMinInput = (value: string) => {
-    const parsed = Number(value);
-    if (Number.isNaN(parsed)) {
-      return;
-    }
-
-    onPriceChange({
-      min: Math.max(priceBounds.min, Math.min(parsed, selectedPrice.max)),
-      max: selectedPrice.max,
-    });
-  };
-
-  const handlePriceMaxInput = (value: string) => {
-    const parsed = Number(value);
-    if (Number.isNaN(parsed)) {
-      return;
-    }
-
-    onPriceChange({
-      min: selectedPrice.min,
-      max: Math.min(priceBounds.max, Math.max(parsed, selectedPrice.min)),
-    });
   };
 
   return (
@@ -347,83 +537,11 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
           </section>
         ) : null}
 
-        <section className="border-border/50 border-t pt-5">
-          <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-            Price Range
-          </h3>
-
-          <div className="space-y-3">
-            <Slider
-              min={priceBounds.min}
-              max={priceBounds.max}
-              step={1}
-              minStepsBetweenThumbs={5}
-              value={[selectedPrice.min, selectedPrice.max]}
-              onValueChange={(value) => {
-                const [min, max] = value;
-                if (typeof min !== 'number' || typeof max !== 'number') {
-                  return;
-                }
-
-                onPriceChange({ min, max });
-              }}
-              aria-label="Price range"
-            />
-            <div className="text-muted-foreground flex items-center justify-between text-xs">
-              <span>
-                Min:{' '}
-                {formatCurrency(selectedPrice.min, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </span>
-              <span>
-                Max:{' '}
-                {formatCurrency(selectedPrice.max, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <div>
-              <label
-                htmlFor="price-min-input"
-                className="text-muted-foreground mb-1 block text-xs"
-              >
-                Min
-              </label>
-              <Input
-                id="price-min-input"
-                type="number"
-                min={priceBounds.min}
-                max={selectedPrice.max}
-                value={selectedPrice.min}
-                onChange={(event) => handlePriceMinInput(event.target.value)}
-                className="h-10"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="price-max-input"
-                className="text-muted-foreground mb-1 block text-xs"
-              >
-                Max
-              </label>
-              <Input
-                id="price-max-input"
-                type="number"
-                min={selectedPrice.min}
-                max={priceBounds.max}
-                value={selectedPrice.max}
-                onChange={(event) => handlePriceMaxInput(event.target.value)}
-                className="h-10"
-              />
-            </div>
-          </div>
-        </section>
+        <PriceRangeFilter
+          selectedPrice={selectedPrice}
+          priceBounds={priceBounds}
+          onPriceChange={onPriceChange}
+        />
       </div>
     </div>
   );

@@ -12,14 +12,6 @@ import {
   ProductCategoryPageMeta,
   ProductSortOptionItem,
 } from '@/features/shop/types/product-list.types';
-import { accessoriesProductsCatalogRaw } from '@/features/shop/mocks/products.accessories.data';
-import { keyboardProductsCatalogRaw } from '@/features/shop/mocks/products.keyboards.data';
-import { keycapsProductsCatalogRaw } from '@/features/shop/mocks/products.keycaps.data';
-import { switchesProductsCatalogRaw } from '@/features/shop/mocks/products.switches.data';
-
-const getBrandOptions = (brands: string[]): string[] => {
-  return [...new Set(brands)].sort((a, b) => a.localeCompare(b));
-};
 
 export const PRODUCT_CATEGORY_SLUGS: ProductCategory[] = [
   'keyboards',
@@ -69,13 +61,13 @@ export const PRODUCT_CATEGORY_FILTER_CAPABILITIES: Record<
   keyboards: {
     showBrandFilter: false,
     showProfileFilter: false,
-    showLayoutFilter: true,
-    showSwitchTypeFilter: true,
-    showFeaturesFilter: true,
-    showCaseMaterialFilter: true,
+    showLayoutFilter: false,
+    showSwitchTypeFilter: false,
+    showFeaturesFilter: false,
+    showCaseMaterialFilter: false,
   },
   accessories: {
-    showBrandFilter: true,
+    showBrandFilter: false,
     showProfileFilter: false,
     showLayoutFilter: false,
     showSwitchTypeFilter: false,
@@ -83,7 +75,7 @@ export const PRODUCT_CATEGORY_FILTER_CAPABILITIES: Record<
     showCaseMaterialFilter: false,
   },
   switches: {
-    showBrandFilter: true,
+    showBrandFilter: false,
     showProfileFilter: false,
     showLayoutFilter: false,
     showSwitchTypeFilter: false,
@@ -91,8 +83,8 @@ export const PRODUCT_CATEGORY_FILTER_CAPABILITIES: Record<
     showCaseMaterialFilter: false,
   },
   keycaps: {
-    showBrandFilter: true,
-    showProfileFilter: true,
+    showBrandFilter: false,
+    showProfileFilter: false,
     showLayoutFilter: false,
     showSwitchTypeFilter: false,
     showFeaturesFilter: false,
@@ -113,18 +105,10 @@ export const PRODUCT_BRAND_OPTIONS_BY_CATEGORY: Record<
   ProductCategory,
   string[]
 > = {
-  keyboards: getBrandOptions(
-    keyboardProductsCatalogRaw.map((product) => product.brand)
-  ),
-  accessories: getBrandOptions(
-    accessoriesProductsCatalogRaw.map((product) => product.brand)
-  ),
-  switches: getBrandOptions(
-    switchesProductsCatalogRaw.map((product) => product.brand)
-  ),
-  keycaps: getBrandOptions(
-    keycapsProductsCatalogRaw.map((product) => product.brand)
-  ),
+  keyboards: [],
+  accessories: [],
+  switches: [],
+  keycaps: [],
 };
 
 export const isProductCategory = (value: string): value is ProductCategory => {
@@ -163,9 +147,7 @@ export const PRODUCT_CASE_MATERIAL_OPTIONS: ProductCaseMaterial[] = [
 ];
 
 export const PRODUCT_SORT_OPTIONS: ProductSortOptionItem[] = [
-  { value: 'popularity', label: 'Popularity' },
   { value: 'newest', label: 'Newest Arrivals' },
-  { value: 'rating', label: 'Top Rated' },
   { value: 'price', label: 'Price: Low to High' },
 ];
 

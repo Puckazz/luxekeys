@@ -48,7 +48,7 @@ export type ProductCaseMaterial =
 
 export type ProductCardBadge = 'new' | 'in-stock' | 'limited';
 
-export type ProductSortOption = 'popularity' | 'newest' | 'rating' | 'price';
+export type ProductSortOption = 'newest' | 'price';
 
 export type ProductListViewMode = 'grid' | 'list';
 
@@ -175,8 +175,8 @@ export interface ProductDetail extends ProductListItem {
   specsHeading: string;
   specsDescription: string;
   technicalSpecs: ProductDetailSpec[];
-  materialShowcase: ProductMaterialShowcase;
-  videoTour: ProductVideoTour;
+  materialShowcase?: ProductMaterialShowcase;
+  videoTour?: ProductVideoTour;
   reviewsHeading: string;
   reviews: ProductReviewItem[];
 }

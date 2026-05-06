@@ -38,3 +38,31 @@ export type ProductSummary = Prisma.ProductGetPayload<{
 export type ProductReview = Prisma.ReviewGetPayload<{
   include: typeof PRODUCT_REVIEW_INCLUDE;
 }>;
+
+export type ProductWithAverageRating = {
+  averageRating: number;
+};
+
+export type ProductDetailWithAverageRating = ProductDetail &
+  ProductWithAverageRating;
+
+export type ProductSummaryWithAverageRating = ProductSummary &
+  ProductWithAverageRating;
+
+export type ProductPriceBounds = {
+  min: number;
+  max: number;
+};
+
+export type ProductListResponse = {
+  data: {
+    items: ProductSummaryWithAverageRating[];
+    priceBounds: ProductPriceBounds;
+  };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};

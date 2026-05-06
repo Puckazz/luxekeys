@@ -16,13 +16,58 @@ import {
   PRODUCT_LIST_INCLUDE,
   PRODUCT_REVIEW_INCLUDE,
   ProductDetail,
+  ProductDetailWithAverageRating,
+  ProductListResponse,
   ProductReview,
-  ProductSummary,
+  ProductSummaryWithAverageRating,
 } from './interfaces/product.interface.js';
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private async getAverageRatings(
+    productIds: string[],
+  ): Promise<Map<string, number>> {
+    if (productIds.length === 0) {
+      return new Map();
+    }
+
+    const groupedRatings = await this.prisma.review.groupBy({
+      by: ['productId'],
+      where: {
+        deletedAt: null,
+        productId: { in: productIds },
+      },
+      _avg: { rating: true },
+    });
+
+    return new Map(
+      groupedRatings.map((item) => [
+        item.productId,
+        item._avg.rating ? Number(item._avg.rating) : 0,
+      ]),
+    );
+  }
+
+  private attachAverageRating<T extends { id: string }>(
+    product: T,
+    ratings: Map<string, number>,
+  ): T & { averageRating: number } {
+    return {
+      ...product,
+      averageRating: ratings.get(product.id) ?? 0,
+    };
+  }
+
+  private attachAverageRatings<T extends { id: string }>(
+    products: T[],
+    ratings: Map<string, number>,
+  ): Array<T & { averageRating: number }> {
+    return products.map((product) =>
+      this.attachAverageRating(product, ratings),
+    );
+  }
 
   async create(dto: CreateProductDto): Promise<ProductDetail> {
     const slug = dto.slug ?? toSlug(dto.name);
@@ -51,20 +96,24 @@ export class ProductsService {
     });
   }
 
-  async findAll(
-    query: GetProductsQueryDto,
-  ): Promise<PaginatedResponse<ProductSummary>> {
+  async findAll(query: GetProductsQueryDto): Promise<ProductListResponse> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 6;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.ProductWhereInput = { deletedAt: null };
+    const baseWhere: Prisma.ProductWhereInput = { deletedAt: null };
 
-    if (query.type) where.type = query.type;
-    if (query.status) where.status = query.status;
-    if (query.brandId) where.brandId = query.brandId;
-    if (query.categoryId) where.categoryId = query.categoryId;
-    if (query.isFeatured !== undefined) where.isFeatured = query.isFeatured;
+    if (query.type) baseWhere.type = query.type;
+    if (query.status) baseWhere.status = query.status;
+    if (query.brandId) baseWhere.brandId = query.brandId;
+    if (query.categoryId) baseWhere.categoryId = query.categoryId;
+    if (query.isFeatured !== undefined) baseWhere.isFeatured = query.isFeatured;
+
+    if (query.search) {
+      baseWhere.name = { contains: query.search, mode: 'insensitive' };
+    }
+
+    const where: Prisma.ProductWhereInput = { ...baseWhere };
 
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
       where.basePrice = {};
@@ -74,10 +123,6 @@ export class ProductsService {
         where.basePrice.lte = query.maxPrice.toString();
     }
 
-    if (query.search) {
-      where.name = { contains: query.search, mode: 'insensitive' };
-    }
-
     const orderBy = buildOrderBy<Prisma.ProductOrderByWithRelationInput>(
       ['basePrice', 'name', 'createdAt'],
       'createdAt',
@@ -85,7 +130,7 @@ export class ProductsService {
       query.sortOrder,
     );
 
-    const [total, data] = await this.prisma.$transaction([
+    const [total, data, priceAggregate] = await this.prisma.$transaction([
       this.prisma.product.count({ where }),
       this.prisma.product.findMany({
         where,
@@ -94,25 +139,47 @@ export class ProductsService {
         take: limit,
         include: PRODUCT_LIST_INCLUDE,
       }),
+      this.prisma.product.aggregate({
+        where: baseWhere,
+        _max: { basePrice: true },
+      }),
     ]);
 
+    const maxPrice = priceAggregate._max.basePrice
+      ? Number(priceAggregate._max.basePrice)
+      : 0;
+
+    const ratings = await this.getAverageRatings(
+      data.map((product) => product.id),
+    );
+
     return {
-      data,
+      data: {
+        items: this.attachAverageRatings(data, ratings),
+        priceBounds: {
+          min: 0,
+          max: Number.isFinite(maxPrice) ? Math.ceil(maxPrice) : 0,
+        },
+      },
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
   }
 
-  async findFeatured(): Promise<{ data: ProductSummary[] }> {
+  async findFeatured(): Promise<{ data: ProductSummaryWithAverageRating[] }> {
     const data = await this.prisma.product.findMany({
       where: { isFeatured: true, status: 'ACTIVE', deletedAt: null },
       orderBy: { createdAt: 'desc' },
       take: 20,
       include: PRODUCT_LIST_INCLUDE,
     });
-    return { data };
+    const ratings = await this.getAverageRatings(
+      data.map((product) => product.id),
+    );
+
+    return { data: this.attachAverageRatings(data, ratings) };
   }
 
-  async findOne(id: string): Promise<ProductDetail> {
+  async findOne(id: string): Promise<ProductDetailWithAverageRating> {
     const product = await this.prisma.product.findFirst({
       where: { id, deletedAt: null },
       include: PRODUCT_DETAIL_INCLUDE,
@@ -122,10 +189,12 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID "${id}" not found`);
     }
 
-    return product;
+    const ratings = await this.getAverageRatings([product.id]);
+
+    return this.attachAverageRating(product, ratings);
   }
 
-  async findBySlug(slug: string): Promise<ProductDetail> {
+  async findBySlug(slug: string): Promise<ProductDetailWithAverageRating> {
     const product = await this.prisma.product.findFirst({
       where: { slug, deletedAt: null },
       include: PRODUCT_DETAIL_INCLUDE,
@@ -135,7 +204,9 @@ export class ProductsService {
       throw new NotFoundException(`Product with slug "${slug}" not found`);
     }
 
-    return product;
+    const ratings = await this.getAverageRatings([product.id]);
+
+    return this.attachAverageRating(product, ratings);
   }
 
   async findVariants(id: string) {

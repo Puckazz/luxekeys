@@ -17,13 +17,10 @@ const sortProducts = (
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
       });
-    case 'rating':
-      return copied.sort((a, b) => b.rating - a.rating);
     case 'price':
       return copied.sort((a, b) => a.price - b.price);
-    case 'popularity':
     default:
-      return copied.sort((a, b) => b.popularity - a.popularity);
+      return copied;
   }
 };
 

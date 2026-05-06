@@ -33,7 +33,6 @@ export type ShopProductCardProps = {
   viewMode?: ProductListViewMode;
   brand?: string;
   description?: string;
-  subtitle?: string;
   tags?: string[];
   priceLabel: string;
   originalPriceLabel?: string;

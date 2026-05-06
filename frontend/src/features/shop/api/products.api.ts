@@ -1,72 +1,98 @@
 import {
-  PRODUCT_LIST_PAGE_SIZE,
-  productDetailsBySlug,
-  productsCatalog,
-} from '@/features/shop/mocks/products.data';
-import {
+  mapApiProductToDetail,
+  mapApiProductToListItem,
+  mapApiReviewToReviewItem,
+  mapProductQueryStateToApiParams,
+} from '@/features/shop/mappers/product-api.mapper';
+import type {
   ProductDetail,
   ProductListApiResponse,
   ProductListQueryState,
   ProductReviewItem,
 } from '@/features/shop/types';
-import {
-  applyProductFilters,
-  paginateProducts,
-} from '@/features/shop/utils/product-list.utils';
+import type {
+  CustomerProductApiPaginationMeta,
+  CustomerProductDetailApiItem,
+  CustomerProductListApiData,
+  CustomerReviewApiItem,
+} from '@/features/shop/types/product-api.types';
+import { apiRequest, apiRequestWithMeta } from '@/shared/api/http-client';
 
-const MOCK_NETWORK_DELAY = 120;
+export const PRODUCT_LIST_PAGE_SIZE = 6;
 
-const delay = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+const toQueryString = (params: Record<string, string | number>): string => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    searchParams.set(key, String(value));
+  });
+
+  return searchParams.toString();
 };
 
-const PRODUCT_PRICE_BOUNDS = {
-  min: Math.min(...productsCatalog.map((product) => product.price)),
-  max: Math.max(...productsCatalog.map((product) => product.price)),
+const mapPaginationMeta = (
+  meta: CustomerProductApiPaginationMeta | undefined,
+  fallbackPage: number
+) => {
+  return {
+    page: meta?.page ?? fallbackPage,
+    pageSize: meta?.limit ?? PRODUCT_LIST_PAGE_SIZE,
+    totalItems: meta?.total ?? 0,
+    totalPages: meta?.totalPages ?? 1,
+  };
 };
 
 export const productsApi = {
   getProducts: async (
     queryState: ProductListQueryState
   ): Promise<ProductListApiResponse> => {
-    await delay(MOCK_NETWORK_DELAY);
-
-    const filtered = applyProductFilters(productsCatalog, queryState);
-    const paginated = paginateProducts(
-      filtered,
-      queryState.page,
+    const apiParams = mapProductQueryStateToApiParams(
+      queryState,
       PRODUCT_LIST_PAGE_SIZE
     );
+    const query = toQueryString(apiParams);
+    const response = await apiRequestWithMeta<
+      CustomerProductListApiData,
+      CustomerProductApiPaginationMeta
+    >(`/products?${query}`);
+    const items = response.data.items.map(mapApiProductToListItem);
 
     return {
-      items: paginated.items,
-      meta: paginated.meta,
-      priceBounds: PRODUCT_PRICE_BOUNDS,
+      items,
+      meta: mapPaginationMeta(response.meta, queryState.page),
+      priceBounds: {
+        min: 0,
+        max: response.data.priceBounds.max,
+      },
     };
   },
+
   getProductDetailBySlug: async (slug: string): Promise<ProductDetail> => {
-    await delay(MOCK_NETWORK_DELAY);
+    const product = await apiRequest<CustomerProductDetailApiItem>(
+      `/products/slug/${slug}`
+    );
 
-    const productDetail = productDetailsBySlug[slug];
-
-    if (!productDetail) {
-      throw new Error('Product not found');
-    }
-
-    return productDetail;
+    return mapApiProductToDetail(product);
   },
+
   getProductReviews: async (
     slug: string,
     limit: number
   ): Promise<ProductReviewItem[]> => {
-    await delay(MOCK_NETWORK_DELAY);
+    const product = await apiRequest<CustomerProductDetailApiItem>(
+      `/products/slug/${slug}`
+    );
+    const query = toQueryString({
+      page: 1,
+      limit,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+    const response = await apiRequestWithMeta<
+      CustomerReviewApiItem[],
+      CustomerProductApiPaginationMeta
+    >(`/products/${product.id}/reviews?${query}`);
 
-    const productDetail = productDetailsBySlug[slug];
-
-    if (!productDetail) {
-      throw new Error('Product not found');
-    }
-
-    return productDetail.reviews.slice(0, limit);
+    return response.data.map(mapApiReviewToReviewItem);
   },
 };

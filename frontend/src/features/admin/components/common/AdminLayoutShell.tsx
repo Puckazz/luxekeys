@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Package,
   PackageSearch,
+  ShieldAlert,
   Tag,
   Users,
   User,
@@ -43,6 +44,7 @@ import { authApi } from '@/features/auth/api/auth.api';
 import { canAccessAdminPanel } from '@/lib/rbac';
 import { useAuthStore } from '@/stores/auth/auth.store';
 import { RouteTopLoader } from '@/shared/components/ui/route-top-loader';
+import { AppErrorState } from '@/shared/components/layout/AppErrorState';
 
 type AdminLayoutShellProps = {
   children: React.ReactNode;
@@ -159,14 +161,22 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
       router.replace(`/login?${params.toString()}`);
       return;
     }
+  }, [authStatus, pathname, router, sessionUser]);
 
-    if (!canAccessAdmin) {
-      router.replace('/403');
-    }
-  }, [authStatus, canAccessAdmin, pathname, router, sessionUser]);
-
-  if (authStatus === 'idle' || authStatus === 'loading' || !canAccessAdmin) {
+  if (authStatus === 'idle' || authStatus === 'loading') {
     return <RouteTopLoader />;
+  }
+
+  if (!canAccessAdmin) {
+    return (
+      <AppErrorState
+        code="403"
+        title="Access denied"
+        description="You do not have permission to access the admin console."
+        icon={ShieldAlert}
+        tone="destructive"
+      />
+    );
   }
 
   return (

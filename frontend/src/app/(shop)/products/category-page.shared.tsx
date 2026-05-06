@@ -1,6 +1,5 @@
 import { productsApi } from '@/features/shop/api/products.api';
 import { ProductListPage } from '@/features/shop/components/pages';
-import { productsCatalog } from '@/features/shop/mocks/products.data';
 import { ProductCategory } from '@/features/shop/types';
 import { parseProductListQueryState } from '@/features/shop/utils/product-list-query.utils';
 
@@ -23,9 +22,9 @@ const toURLSearchParams = (params: SearchParams): URLSearchParams => {
   return resolved;
 };
 
-const initialPriceBounds = {
-  min: Math.min(...productsCatalog.map((product) => product.price)),
-  max: Math.max(...productsCatalog.map((product) => product.price)),
+const DEFAULT_PRICE_BOUNDS = {
+  min: 0,
+  max: 500,
 };
 
 export const renderCategoryProductsPage = async (
@@ -36,16 +35,18 @@ export const renderCategoryProductsPage = async (
   const initialQueryState = parseProductListQueryState(
     category,
     parsedSearchParams,
-    initialPriceBounds
+    DEFAULT_PRICE_BOUNDS
   );
-  const initialData = await productsApi.getProducts(initialQueryState);
+  const initialData = await productsApi
+    .getProducts(initialQueryState)
+    .catch(() => undefined);
 
   return (
     <ProductListPage
       category={category}
       initialData={initialData}
       initialQueryState={initialQueryState}
-      initialPriceBounds={initialPriceBounds}
+      initialPriceBounds={initialData?.priceBounds ?? DEFAULT_PRICE_BOUNDS}
     />
   );
 };

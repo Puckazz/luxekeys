@@ -15,7 +15,6 @@ export default function ShopProductCard({
   viewMode = 'grid',
   brand,
   description,
-  subtitle,
   tags,
   priceLabel,
   originalPriceLabel,
@@ -81,21 +80,18 @@ export default function ShopProductCard({
 
       <CardContent className="flex-1">
         <div className="mb-3 flex items-start justify-between gap-4">
-          <div>
+          <div className="min-w-0 flex-1">
             {brand ? (
               <p className="text-primary text-xs font-semibold tracking-wider uppercase">
                 {brand}
               </p>
             ) : null}
-            <h3 className="text-foreground mt-1 text-xl font-bold tracking-tight">
+            <h3 className="text-foreground mt-1 truncate text-xl font-bold tracking-tight">
               {name}
             </h3>
-            {subtitle ? (
-              <p className="text-muted-foreground mt-1 text-sm">{subtitle}</p>
-            ) : null}
           </div>
 
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             <p className="text-primary text-xl font-bold">{priceLabel}</p>
             {originalPriceLabel ? (
               <p className="text-muted-foreground text-xs line-through">
