@@ -15,16 +15,6 @@ export const createSeedUsers = (): AdminUser[] => {
       lastLoginAt: createdAt,
     },
     {
-      id: 'usr_staff_001',
-      name: 'Staff Ops',
-      email: 'staff@luxekeys.io',
-      role: 'staff',
-      status: 'active',
-      createdAt,
-      updatedAt: createdAt,
-      lastLoginAt: createdAt,
-    },
-    {
       id: 'usr_customer_001',
       name: 'John Doe',
       email: 'john@example.com',

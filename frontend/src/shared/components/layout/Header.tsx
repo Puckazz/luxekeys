@@ -39,6 +39,7 @@ import {
   selectWishlistCount,
   useWishlistStore,
 } from '@/stores/shop/wishlist.store';
+import { useAuthStore } from '@/stores/auth/auth.store';
 
 const navLinkClass =
   'group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent! min-[1400px]:px-4 px-2 py-2 text-base font-bold outline-none transition-[color,background-color] hover:text-accent-foreground hover:bg-transparent! focus:bg-transparent! disabled:pointer-events-none disabled:opacity-50 data-active:bg-transparent data-state-open:bg-transparent';
@@ -104,8 +105,12 @@ export default function Header() {
   const router = useRouter();
   const cartCount = useCartStore(selectCartTotalQuantity);
   const wishlistCount = useWishlistStore(selectWishlistCount);
+  const isAuthenticated = useAuthStore(
+    (state) => state.status === 'authenticated'
+  );
   const [isSearchSheetOpen, setIsSearchSheetOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const accountHref = isAuthenticated ? '/account' : '/login?next=/account';
 
   const openSearchSheet = () => {
     setIsSearchSheetOpen(true);
@@ -140,7 +145,11 @@ export default function Header() {
       <header className="border-border bg-background/85 sticky top-0 z-40 border-b backdrop-blur-md">
         <div className="relative mx-auto flex h-20 w-full max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-1.5 lg:hidden">
-            <MobileNavMenu navLinks={navLinks} navSections={navSections} />
+            <MobileNavMenu
+              accountHref={accountHref}
+              navLinks={navLinks}
+              navSections={navSections}
+            />
             <Button
               variant="ghost"
               size="icon-sm"
@@ -269,10 +278,11 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon-sm"
+              asChild
               aria-label="Account"
               className="hidden hover:bg-transparent! focus:bg-transparent! md:block"
             >
-              <Link href="/login">
+              <Link href={accountHref}>
                 <UserCircle className="size-5" />
               </Link>
             </Button>

@@ -71,7 +71,7 @@ export function AdminUsersTable({
 
       <TableBody>
         {users.map((user) => {
-          const assignableRoles = getAssignableUserRoles(actorRole, user.role);
+          const assignableRoles = getAssignableUserRoles(actorRole);
           const canEditRole = assignableRoles.length > 0;
           const roleOptions = canEditRole ? assignableRoles : [user.role];
 

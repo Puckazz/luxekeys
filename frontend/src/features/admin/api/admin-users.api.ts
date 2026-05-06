@@ -9,13 +9,7 @@ import {
   type UpdateAdminUserRoleInput,
 } from '@/features/admin/types/admin-users.types';
 import { createSeedUsers } from '@/features/admin/mocks/admin-users.mock';
-import {
-  canManageUsersCrud,
-  canManageUsersFully,
-  canStaffAssignUserRole,
-  canStaffEditTargetRole,
-  type UserRole,
-} from '@/lib/rbac';
+import { canManageUsersCrud, type UserRole } from '@/lib/rbac';
 
 const MOCK_NETWORK_DELAY = 180;
 
@@ -128,19 +122,8 @@ const paginate = (
 
 let usersStore: AdminUser[] = createSeedUsers();
 
-const canUpdateUserRole = (
-  actorRole: UserRole,
-  targetRole: UserRole,
-  nextRole: UserRole
-) => {
-  if (canManageUsersFully(actorRole)) {
-    return true;
-  }
-
-  return (
-    canStaffEditTargetRole(actorRole, targetRole) &&
-    canStaffAssignUserRole(actorRole, nextRole)
-  );
+const canUpdateUserRole = (actorRole: UserRole) => {
+  return canManageUsersCrud(actorRole);
 };
 
 const assertCanManageUsersCrud = (actorRole: UserRole) => {
@@ -188,7 +171,7 @@ export const adminUsersApi = {
       throw new Error('User not found.');
     }
 
-    if (!canUpdateUserRole(input.actorRole, target.role, input.nextRole)) {
+    if (!canUpdateUserRole(input.actorRole)) {
       throw new Error('You do not have permission to update this role.');
     }
 

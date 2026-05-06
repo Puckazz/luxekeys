@@ -2,17 +2,10 @@ import type {
   AdminUserListQueryState,
   AdminUserStatus,
 } from '@/features/admin/types/admin-users.types';
-import {
-  canManageUsersFully,
-  canStaffAssignUserRole,
-  canStaffEditTargetRole,
-  type UserRole,
-  USER_ROLES,
-} from '@/lib/rbac';
+import { canManageUsersCrud, type UserRole, USER_ROLES } from '@/lib/rbac';
 
 export const adminUserRoleLabelByValue: Record<UserRole, string> = {
   admin: 'Admin',
-  staff: 'Staff',
   customer: 'Customer',
 };
 
@@ -33,19 +26,10 @@ export const adminUserSortLabelByValue: Record<
   'email-asc': 'Email (A-Z)',
 };
 
-export const getAssignableUserRoles = (
-  actorRole: UserRole,
-  targetRole: UserRole
-): UserRole[] => {
-  if (canManageUsersFully(actorRole)) {
+export const getAssignableUserRoles = (actorRole: UserRole): UserRole[] => {
+  if (canManageUsersCrud(actorRole)) {
     return [...USER_ROLES];
   }
 
-  if (!canStaffEditTargetRole(actorRole, targetRole)) {
-    return [];
-  }
-
-  return USER_ROLES.filter((nextRole) => {
-    return canStaffAssignUserRole(actorRole, nextRole);
-  });
+  return [];
 };

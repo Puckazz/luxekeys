@@ -25,11 +25,13 @@ type NavSection = {
 };
 
 type MobileNavMenuProps = {
+  accountHref: string;
   navLinks: NavLinkItem[];
   navSections: NavSection[];
 };
 
 export default function MobileNavMenu({
+  accountHref,
   navLinks,
   navSections,
 }: MobileNavMenuProps) {
@@ -200,7 +202,7 @@ export default function MobileNavMenu({
 
                   <div className="border-border border-t p-2">
                     <Link
-                      href="/login"
+                      href={accountHref}
                       onClick={closeMenu}
                       className="text-foreground hover:bg-muted flex items-center gap-2 rounded-md px-3 py-2.5 text-base font-semibold transition-colors"
                     >

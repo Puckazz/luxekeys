@@ -64,7 +64,7 @@ export function AdminUsersToolbar({
     <div className="space-y-4">
       <AdminToolbarHeader
         title="User management"
-        description="Manage admin, staff, and customer accounts with role-based access control."
+        description="Manage admin and customer accounts with role-based access control."
         actions={
           canManageUsersCrud(actorRole) ? (
             <Button type="button" size="lg" onClick={onCreateClick}>
