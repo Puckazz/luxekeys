@@ -99,6 +99,16 @@ export class GetProductsQueryDto extends PaginationQueryDto {
   @IsString({ each: true })
   switchType?: string[];
 
+  @ApiPropertyOptional({
+    description: 'Filter by keycap profile',
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseStringListQueryParam(value))
+  @IsString({ each: true })
+  keycapProfile?: string[];
+
   @ApiPropertyOptional({ description: 'Filter featured products' })
   @IsOptional()
   @ToBoolean()

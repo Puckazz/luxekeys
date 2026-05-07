@@ -212,7 +212,40 @@ async function main() {
     },
   });
 
-  console.log(`   ✅  Created ${5} brands\n`);
+  const brandDrop = await prisma.brand.upsert({
+    where: { slug: 'drop' },
+    update: {},
+    create: {
+      name: 'Drop',
+      slug: 'drop',
+      logoUrl: 'https://cdn.luxekeys.com/brands/drop.svg',
+      isActive: true,
+    },
+  });
+
+  await prisma.brand.upsert({
+    where: { slug: 'glorious' },
+    update: {},
+    create: {
+      name: 'Glorious',
+      slug: 'glorious',
+      logoUrl: 'https://cdn.luxekeys.com/brands/glorious.svg',
+      isActive: true,
+    },
+  });
+
+  const brandKailh = await prisma.brand.upsert({
+    where: { slug: 'kailh' },
+    update: {},
+    create: {
+      name: 'Kailh',
+      slug: 'kailh',
+      logoUrl: 'https://cdn.luxekeys.com/brands/kailh.svg',
+      isActive: true,
+    },
+  });
+
+  console.log(`   ✅  Created ${9} brands\n`);
 
   // ── 4. Categories ─────────────────────────────────────────────────────────
   console.log('📁  Seeding categories...');
@@ -1077,6 +1110,258 @@ async function main() {
     },
   });
 
+  // ── New Keyboard: Anne Pro 2 (60%) ───────────────────────────────────────
+  const prodAnnePro2 = await prisma.product.upsert({
+    where: { slug: 'anne-pro-2-60' },
+    update: { tags: ['60% Layout', 'Wireless', 'RGB', 'PBT'] },
+    create: {
+      name: 'Anne Pro 2 60%',
+      slug: 'anne-pro-2-60',
+      type: ProductType.KEYBOARD,
+      status: ProductStatus.ACTIVE,
+      brandId: brandDucky.id,
+      categoryId: catKeyboards.id,
+      basePrice: 89.99,
+      compareAtPrice: 99.99,
+      thumbnailUrl: 'https://cdn.luxekeys.com/products/anne-pro-2/thumb.jpg',
+      tags: ['60% Layout', 'Wireless', 'RGB', 'PBT'],
+      isFeatured: false,
+      shortDescription: 'Compact 60% wireless mechanical keyboard.',
+      description:
+        'The Anne Pro 2 is a legendary 60% mechanical keyboard known for its excellent build quality, wireless capabilities, and extensive software customization.',
+    },
+  });
+
+  await prisma.productVariant.createMany({
+    data: [
+      {
+        productId: prodAnnePro2.id,
+        sku: 'ANNE2-WHT-BRN',
+        name: 'White / Gateron Brown',
+        price: 89.99,
+        color: 'White',
+        layout: '60%',
+        switchType: 'Gateron Brown (Tactile)',
+        stock: 50,
+        isDefault: true,
+      },
+      {
+        productId: prodAnnePro2.id,
+        sku: 'ANNE2-BLK-BLU',
+        name: 'Black / Gateron Blue',
+        price: 89.99,
+        color: 'Black',
+        layout: '60%',
+        switchType: 'Gateron Blue (Clicky)',
+        stock: 30,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  // ── New Keyboard: Keychron Q1 (75%) ──────────────────────────────────────
+  const prodQ1 = await prisma.product.upsert({
+    where: { slug: 'keychron-q1-75' },
+    update: { tags: ['75% Layout', 'Gasket', 'QMK/VIA'] },
+    create: {
+      name: 'Keychron Q1 75%',
+      slug: 'keychron-q1-75',
+      type: ProductType.KEYBOARD,
+      status: ProductStatus.ACTIVE,
+      brandId: brandKeychron.id,
+      categoryId: cat75.id,
+      basePrice: 169.99,
+      thumbnailUrl: 'https://cdn.luxekeys.com/products/q1/thumb.jpg',
+      tags: ['75% Layout', 'Gasket', 'QMK/VIA'],
+      isFeatured: true,
+      shortDescription: '75% Gasket Mount QMK/VIA Mechanical Keyboard.',
+    },
+  });
+
+  await prisma.productVariant.create({
+    data: {
+      productId: prodQ1.id,
+      sku: 'KQ1-GRY-YLW',
+      name: 'Space Gray / Gateron Yellow',
+      price: 169.99,
+      color: 'Space Gray',
+      layout: '75%',
+      switchType: 'Gateron Yellow (Linear)',
+      stock: 25,
+      isDefault: true,
+    },
+  });
+
+  // ── New Keycap: PBT Notion (OEM Profile) ──────────────────────────────────
+  const prodPBTNotion = await prisma.product.upsert({
+    where: { slug: 'pbt-notion-keycaps' },
+    update: { tags: ['OEM Profile', 'PBT', 'Dye-sub'] },
+    create: {
+      name: 'PBT Notion Keycaps',
+      slug: 'pbt-notion-keycaps',
+      type: ProductType.KEYCAP,
+      status: ProductStatus.ACTIVE,
+      brandId: brandKBDfans.id,
+      categoryId: catKeycaps.id,
+      basePrice: 79.99,
+      thumbnailUrl: 'https://cdn.luxekeys.com/products/pbt-notion/thumb.jpg',
+      tags: ['OEM Profile', 'PBT', 'Dye-sub'],
+      shortDescription:
+        'OEM profile PBT dye-sub keycaps inspired by productivity apps.',
+    },
+  });
+
+  await prisma.productSpec.create({
+    data: {
+      productId: prodPBTNotion.id,
+      specKey: 'Profile',
+      specValue: 'OEM',
+    },
+  });
+
+  await prisma.productVariant.create({
+    data: {
+      productId: prodPBTNotion.id,
+      sku: 'PBT-NOTION-BASE',
+      name: 'Base Kit',
+      price: 79.99,
+      stock: 40,
+      isDefault: true,
+    },
+  });
+
+  // ── New Keycap: MT3 3277 (SA Profile) ───────────────────────────────────
+  const prodMT33277 = await prisma.product.upsert({
+    where: { slug: 'mt3-3277-keycaps' },
+    update: { tags: ['SA Profile', 'ABS', 'Hi-profile'] },
+    create: {
+      name: 'Drop + Matt3o MT3 3277 Keycaps',
+      slug: 'mt3-3277-keycaps',
+      type: ProductType.KEYCAP,
+      status: ProductStatus.ACTIVE,
+      brandId: brandDrop.id,
+      categoryId: catKeycaps.id,
+      basePrice: 110.0,
+      thumbnailUrl: 'https://cdn.luxekeys.com/products/mt3-3277/thumb.jpg',
+      tags: ['SA Profile', 'ABS', 'Hi-profile'],
+      shortDescription: 'Vintage inspired MT3 (SA-like) profile keycaps.',
+    },
+  });
+
+  await prisma.productSpec.create({
+    data: {
+      productId: prodMT33277.id,
+      specKey: 'Profile',
+      specValue: 'SA',
+    },
+  });
+
+  await prisma.productVariant.create({
+    data: {
+      productId: prodMT33277.id,
+      sku: 'MT3-3277-BASE',
+      name: 'Base Kit',
+      price: 110.0,
+      stock: 15,
+      isDefault: true,
+    },
+  });
+
+  // ── New Switch: Holy Panda (Tactile) ─────────────────────────────────────
+  const prodHolyPanda = await prisma.product.upsert({
+    where: { slug: 'drop-holy-panda-tactile' },
+    update: { tags: ['Tactile', 'Premium'] },
+    create: {
+      name: 'Drop Holy Panda Tactile Switches',
+      slug: 'drop-holy-panda-tactile',
+      type: ProductType.SWITCH,
+      status: ProductStatus.ACTIVE,
+      brandId: brandDrop.id,
+      categoryId: catSwitches.id,
+      basePrice: 75.0,
+      thumbnailUrl: 'https://cdn.luxekeys.com/products/holy-panda/thumb.jpg',
+      tags: ['Tactile', 'Premium'],
+      shortDescription: 'The original tactile masterpiece.',
+    },
+  });
+
+  await prisma.productVariant.create({
+    data: {
+      productId: prodHolyPanda.id,
+      sku: 'HP-35PK',
+      name: '35-pack',
+      price: 35.0,
+      stock: 100,
+      switchType: 'Tactile',
+      isDefault: true,
+    },
+  });
+
+  // ── New Switch: Kailh Box Navy (Clicky) ──────────────────────────────────
+  const prodKailhNavy = await prisma.product.upsert({
+    where: { slug: 'kailh-box-navy-clicky' },
+    update: { tags: ['Clicky', 'Heavy'] },
+    create: {
+      name: 'Kailh Box Navy Clicky Switches',
+      slug: 'kailh-box-navy-clicky',
+      type: ProductType.SWITCH,
+      status: ProductStatus.ACTIVE,
+      brandId: brandKailh.id,
+      categoryId: catSwitches.id,
+      basePrice: 32.0,
+      thumbnailUrl: 'https://cdn.luxekeys.com/products/kailh-navy/thumb.jpg',
+      tags: ['Clicky', 'Heavy'],
+      shortDescription: 'Thick-click bar switches for ultimate tactility.',
+    },
+  });
+
+  await prisma.productVariant.create({
+    data: {
+      productId: prodKailhNavy.id,
+      sku: 'KBN-36PK',
+      name: '36-pack',
+      price: 16.0,
+      stock: 80,
+      switchType: 'Clicky',
+      isDefault: true,
+    },
+  });
+
+  // ── New Keyboard: Ducky One 3 Full-size (100%) ───────────────────────────
+  const prodDuckyFull = await prisma.product.upsert({
+    where: { slug: 'ducky-one-3-full-size' },
+    update: { tags: ['100% Layout', 'RGB', 'Hot-swap'] },
+    create: {
+      name: 'Ducky One 3 Full-size 100%',
+      slug: 'ducky-one-3-full-size',
+      type: ProductType.KEYBOARD,
+      status: ProductStatus.ACTIVE,
+      brandId: brandDucky.id,
+      categoryId: catKeyboards.id,
+      basePrice: 139.99,
+      thumbnailUrl:
+        'https://cdn.luxekeys.com/products/ducky-one3-full/thumb.jpg',
+      tags: ['100% Layout', 'RGB', 'Hot-swap'],
+      isFeatured: false,
+      shortDescription:
+        'Classic full-size keyboard with modern hot-swap capabilities.',
+    },
+  });
+
+  await prisma.productVariant.create({
+    data: {
+      productId: prodDuckyFull.id,
+      sku: 'D13-FULL-BLK-RED',
+      name: 'Black / Cherry MX Red',
+      price: 139.99,
+      color: 'Black',
+      layout: '100%',
+      switchType: 'Cherry MX Red (Linear)',
+      stock: 20,
+      isDefault: true,
+    },
+  });
+
   // ── Product 7: Desk Mat (Accessory) ──────────────────────────────────────
   const prodDeskMat = await prisma.product.upsert({
     where: { slug: 'luxekeys-xl-desk-mat-midnight' },
@@ -1165,10 +1450,28 @@ async function main() {
     },
   });
 
-  console.log(`   ✅  Created 7 products with variants, specs, and images\n`);
+  console.log(
+    `   ✅  Created ${14} products with variants, specs, and images\n`,
+  );
 
   // ── 6. Carts ──────────────────────────────────────────────────────────────
   console.log('🛒  Seeding carts...');
+
+  const varAnnePro2White = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'ANNE2-WHT-BRN' },
+  });
+  const varQ1 = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'KQ1-GRY-YLW' },
+  });
+  const varPBTNotion = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'PBT-NOTION-BASE' },
+  });
+  const varHolyPanda = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'HP-35PK' },
+  });
+  const varDuckyFull = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'D13-FULL-BLK-RED' },
+  });
 
   const cartAlice = await prisma.cart.upsert({
     where: { userId: customer1.id },
@@ -1199,6 +1502,21 @@ async function main() {
     create: { cartId: cartAlice.id, variantId: varGMKBaseKit.id, quantity: 1 },
   });
 
+  await prisma.cartItem.upsert({
+    where: {
+      cartId_variantId: {
+        cartId: cartAlice.id,
+        variantId: varAnnePro2White.id,
+      },
+    },
+    update: { quantity: 1 },
+    create: {
+      cartId: cartAlice.id,
+      variantId: varAnnePro2White.id,
+      quantity: 1,
+    },
+  });
+
   const cartBob = await prisma.cart.upsert({
     where: { userId: customer2.id },
     update: {},
@@ -1220,7 +1538,21 @@ async function main() {
     },
   });
 
-  console.log(`   ✅  Created carts for Alice and Bob\n`);
+  const cartCarol = await prisma.cart.upsert({
+    where: { userId: customer3.id },
+    update: {},
+    create: { userId: customer3.id },
+  });
+
+  await prisma.cartItem.upsert({
+    where: {
+      cartId_variantId: { cartId: cartCarol.id, variantId: varPBTNotion.id },
+    },
+    update: { quantity: 2 },
+    create: { cartId: cartCarol.id, variantId: varPBTNotion.id, quantity: 2 },
+  });
+
+  console.log(`   ✅  Created carts for Alice, Bob, and Carol\n`);
 
   // ── 7. Wishlist ───────────────────────────────────────────────────────────
   console.log('❤️   Seeding wishlists...');
@@ -1252,7 +1584,23 @@ async function main() {
     create: { userId: customer3.id, productId: prodQ3Pro.id },
   });
 
-  console.log(`   ✅  Created 3 wishlist items\n`);
+  await prisma.wishlistItem.upsert({
+    where: {
+      userId_productId: { userId: customer2.id, productId: prodDuckyFull.id },
+    },
+    update: {},
+    create: { userId: customer2.id, productId: prodDuckyFull.id },
+  });
+
+  await prisma.wishlistItem.upsert({
+    where: {
+      userId_productId: { userId: customer3.id, productId: prodAnnePro2.id },
+    },
+    update: {},
+    create: { userId: customer3.id, productId: prodAnnePro2.id },
+  });
+
+  console.log(`   ✅  Created 5 wishlist items\n`);
 
   // ── 8. Orders ─────────────────────────────────────────────────────────────
   console.log('📦  Seeding orders...');
@@ -1436,7 +1784,53 @@ async function main() {
     },
   });
 
-  console.log(`   ✅  Created 5 orders across all statuses\n`);
+  // Order 6: Carol — DELIVERED (With newly seeded products)
+  const order6 = await prisma.order.create({
+    data: {
+      orderCode: 'LK-2025-000006',
+      userId: customer3.id,
+      addressId: addr3.id,
+      status: OrderStatus.DELIVERED,
+      paymentMethod: PaymentMethod.PAYPAL,
+      paymentStatus: PaymentStatus.PAID,
+      subtotalAmount: 239.99,
+      discountAmount: 0,
+      shippingAmount: 0,
+      totalAmount: 239.99,
+      placedAt: new Date('2025-04-10T10:00:00Z'),
+    },
+  });
+
+  await prisma.orderItem.createMany({
+    data: [
+      {
+        orderId: order6.id,
+        productId: prodQ1.id,
+        variantId: varQ1.id,
+        productName: prodQ1.name,
+        variantName: varQ1.name,
+        sku: varQ1.sku,
+        thumbnailUrl: prodQ1.thumbnailUrl,
+        unitPrice: 169.99,
+        quantity: 1,
+        subtotalAmount: 169.99,
+      },
+      {
+        orderId: order6.id,
+        productId: prodHolyPanda.id,
+        variantId: varHolyPanda.id,
+        productName: prodHolyPanda.name,
+        variantName: varHolyPanda.name,
+        sku: varHolyPanda.sku,
+        thumbnailUrl: prodHolyPanda.thumbnailUrl,
+        unitPrice: 35.0,
+        quantity: 2,
+        subtotalAmount: 70.0,
+      },
+    ],
+  });
+
+  console.log(`   ✅  Created 6 orders across all statuses\n`);
 
   // ── 9. Reviews ────────────────────────────────────────────────────────────
   console.log('⭐  Seeding reviews...');
@@ -1483,11 +1877,27 @@ async function main() {
         content:
           'Great value for money. The wireless works well and QMK support is fantastic. Build quality is slightly below the Q series but still very good.',
       },
+      {
+        userId: customer3.id,
+        productId: prodHolyPanda.id,
+        rating: 5,
+        title: 'The classic tactile experience',
+        content:
+          'Holy Pandas are legendary for a reason. The tactile bump is incredible and the sound profile is deeply satisfying. A must-have for tactile lovers.',
+      },
+      {
+        userId: customer3.id,
+        productId: prodQ1.id,
+        rating: 5,
+        title: 'Amazing custom pre-built',
+        content:
+          'The Keychron Q1 feels and sounds premium right out of the box. The aluminum chassis is heavy and the gasket mount provides a very comfortable typing experience.',
+      },
     ],
     skipDuplicates: true,
   });
 
-  console.log(`   ✅  Created 5 reviews\n`);
+  console.log(`   ✅  Created 7 reviews\n`);
 
   // ─────────────────────────────────────────────────────────────────────────
   console.log('✨  Seed completed successfully!\n');

@@ -84,7 +84,7 @@ export const PRODUCT_CATEGORY_FILTER_CAPABILITIES: Record<
   },
   keycaps: {
     showBrandFilter: true,
-    showProfileFilter: false,
+    showProfileFilter: true,
     showLayoutFilter: false,
     showSwitchTypeFilter: false,
   },
@@ -98,20 +98,6 @@ export const KEYCAP_PROFILE_OPTIONS: KeycapProfile[] = [
   'DSA',
   'KAT',
 ];
-
-export const PRODUCT_BRAND_OPTIONS_BY_CATEGORY: Record<
-  ProductCategory,
-  string[]
-> = {
-  keyboards: [],
-  accessories: [],
-  switches: [],
-  keycaps: [],
-};
-
-export const isProductCategory = (value: string): value is ProductCategory => {
-  return PRODUCT_CATEGORY_SLUGS.some((category) => category === value);
-};
 
 export const PRODUCT_LAYOUT_OPTIONS: ProductLayout[] = [
   '60%',

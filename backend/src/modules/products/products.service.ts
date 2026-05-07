@@ -114,6 +114,13 @@ export class ProductsService {
       };
     }
     if (query.isFeatured !== undefined) baseWhere.isFeatured = query.isFeatured;
+
+    if (query.keycapProfile?.length) {
+      baseWhere.tags = {
+        hasSome: query.keycapProfile.map((p) => `${p} Profile`),
+      };
+    }
+
     if (query.layout?.length || query.switchType?.length) {
       const variantWhere: Prisma.ProductVariantWhereInput = {
         deletedAt: null,

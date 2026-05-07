@@ -36,6 +36,9 @@ export const mapProductQueryStateToApiParams = (
     ...(queryState.switchTypes.length > 0 && {
       switchType: queryState.switchTypes.join(','),
     }),
+    ...(queryState.keycapProfiles.length > 0 && {
+      keycapProfile: queryState.keycapProfiles.join(','),
+    }),
     minPrice: queryState.price.min,
     maxPrice: queryState.price.max,
     page: queryState.page,

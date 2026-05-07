@@ -378,47 +378,28 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
             <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
               Profile
             </h3>
-            <Select
-              value={selectedKeycapProfiles[0] ?? 'All'}
-              disabled={disableProfileFilter}
-              onValueChange={(value) => {
-                if (value === 'All') {
-                  selectedKeycapProfiles.forEach((profile) => {
-                    onToggleKeycapProfile(profile);
-                  });
-                  return;
-                }
-
-                if (!isKeycapProfileValue(value)) {
-                  return;
-                }
-
-                selectedKeycapProfiles
-                  .filter((profile) => profile !== value)
-                  .forEach((profile) => {
-                    onToggleKeycapProfile(profile);
-                  });
-
-                if (!selectedKeycapProfiles.includes(value)) {
-                  onToggleKeycapProfile(value);
-                }
-              }}
-            >
-              <SelectTrigger
-                id="keycap-profile"
-                className="w-full min-w-full rounded-full"
-              >
-                <SelectValue placeholder="All Profiles" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Profiles</SelectItem>
-                {keycapProfileOptions.map((profile) => (
-                  <SelectItem key={profile} value={profile}>
-                    {profile}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-3">
+              {keycapProfileOptions.map((profile) => {
+                const id = toInputId('profile', profile);
+                return (
+                  <label
+                    key={profile}
+                    htmlFor={id}
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <Checkbox
+                      id={id}
+                      checked={selectedKeycapProfiles.includes(profile)}
+                      onCheckedChange={() => onToggleKeycapProfile(profile)}
+                      disabled={disableProfileFilter}
+                    />
+                    <span className="text-muted-foreground text-sm">
+                      {profile}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
           </section>
         ) : null}
 
