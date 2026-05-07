@@ -9,13 +9,12 @@ import {
 const createProductsQueryKey = (queryState: ProductListQueryState) => {
   return [
     'products',
-    queryState.category,
+    queryState.categories.join(','),
     queryState.brands.join(','),
+    queryState.categorySlugs.join(','),
     queryState.keycapProfiles.join(','),
     queryState.layouts.join(','),
     queryState.switchTypes.join(','),
-    queryState.features.join(','),
-    queryState.caseMaterial,
     queryState.price.min,
     queryState.price.max,
     queryState.sort,

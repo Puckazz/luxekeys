@@ -1,6 +1,7 @@
 ﻿import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsArray,
   IsDecimal,
   IsEnum,
   IsOptional,
@@ -71,6 +72,16 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   thumbnailUrl?: string;
+
+  @ApiPropertyOptional({
+    example: ['Hotswap', 'Wireless'],
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 
   @ApiPropertyOptional({ example: false })
   @IsOptional()

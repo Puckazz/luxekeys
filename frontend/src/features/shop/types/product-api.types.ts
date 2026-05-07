@@ -3,6 +3,7 @@ import type {
   ProductListApiResponse,
   ProductListQueryState,
 } from '@/features/shop/types';
+import type { ProductBrandOptionItem } from '@/features/shop/types/product-list.types';
 
 export type CustomerProductApiType =
   | 'KEYBOARD'
@@ -85,6 +86,7 @@ export type CustomerProductSummaryApiItem = {
   basePrice: string | number;
   compareAtPrice?: string | number | null;
   thumbnailUrl?: string | null;
+  tags?: string[];
   isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
@@ -134,8 +136,12 @@ export type CustomerProductListApiData = {
 };
 
 export type ProductApiQueryParams = {
-  type: CustomerProductApiType;
+  type?: string;
   status: CustomerProductApiStatus;
+  brandId?: string;
+  categorySlug?: string;
+  layout?: string;
+  switchType?: string;
   minPrice: number;
   maxPrice: number;
   page: number;
@@ -153,4 +159,5 @@ export type ProductApiAdapter = {
   getProducts: (
     queryState: ProductListQueryState
   ) => Promise<ProductListApiResponse>;
+  getBrandOptions: () => Promise<ProductBrandOptionItem[]>;
 };

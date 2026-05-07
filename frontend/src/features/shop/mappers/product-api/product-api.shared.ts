@@ -2,7 +2,6 @@ import type {
   ProductCardBadge,
   ProductCategory,
   ProductCaseMaterial,
-  ProductFeature,
   ProductGalleryImage,
   ProductLayout,
   ProductStockStatus,
@@ -16,8 +15,6 @@ import type {
   CustomerProductVariantApiItem,
 } from '@/features/shop/types/product-api.types';
 import {
-  PRODUCT_CASE_MATERIAL_OPTIONS,
-  PRODUCT_FEATURE_OPTIONS,
   PRODUCT_LAYOUT_OPTIONS,
   PRODUCT_SWITCH_TYPE_OPTIONS,
 } from '@/features/shop/utils/product-list-options.utils';
@@ -84,16 +81,6 @@ export const isProductSwitchType = (
   value: string | null | undefined
 ): value is ProductSwitchType => {
   return PRODUCT_SWITCH_TYPE_OPTIONS.some((switchType) => switchType === value);
-};
-
-export const isProductFeature = (value: string): value is ProductFeature => {
-  return PRODUCT_FEATURE_OPTIONS.some((feature) => feature === value);
-};
-
-export const isProductCaseMaterial = (
-  value: string | null | undefined
-): value is ProductCaseMaterial => {
-  return PRODUCT_CASE_MATERIAL_OPTIONS.some((material) => material === value);
 };
 
 export const getDefaultVariant = (

@@ -46,37 +46,47 @@ const navLinkClass =
 
 const keyboardItems = [
   {
+    label: 'All Keyboards',
+    description: 'Browse every keyboard layout and build style.',
+    href: '/products/keyboards',
+  },
+  {
     label: '65% Keyboards',
     description: 'Compact layout for desk setup and portability.',
-    href: '/products/keyboards',
+    href: '/products/keyboards?layouts=65%25',
   },
   {
     label: '75% Keyboards',
     description: 'Balanced layout with function row for daily use.',
-    href: '/products/keyboards',
+    href: '/products/keyboards?layouts=75%25',
   },
   {
     label: 'TKL Keyboards',
     description: 'Full nav cluster without numpad for more mouse room.',
-    href: '/products/keyboards',
+    href: '/products/keyboards?layouts=TKL',
   },
 ];
 
 const accessoryItems = [
   {
+    label: 'All Accessories',
+    description: 'Browse every desk mat, cable, and typing add-on.',
+    href: '/products/accessories',
+  },
+  {
     label: 'Desk Mats',
     description: 'Premium mats with stitched edges and unique artwork.',
-    href: '/products/accessories',
+    href: '/products/accessories?categorySlugs=desk-mats',
   },
   {
     label: 'Wrist Rests',
     description: 'Wood and resin rests for long typing sessions.',
-    href: '/products/accessories',
+    href: '/products/accessories?categorySlugs=wrist-rests',
   },
   {
     label: 'Cables',
     description: 'Coiled and straight cables for custom keyboard builds.',
-    href: '/products/accessories',
+    href: '/products/accessories?categorySlugs=cables',
   },
 ];
 
@@ -176,7 +186,7 @@ export default function Header() {
               <NavigationMenuList className="gap-1">
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navLinkClass}>
-                    <Link href="/">Home</Link>
+                    <Link href="/products">All products</Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
 
@@ -280,7 +290,7 @@ export default function Header() {
               size="icon-sm"
               asChild
               aria-label="Account"
-              className="hidden hover:bg-transparent! focus:bg-transparent! md:block"
+              className="hidden hover:bg-transparent! focus:bg-transparent! md:inline-flex"
             >
               <Link href={accountHref}>
                 <UserCircle className="size-5" />

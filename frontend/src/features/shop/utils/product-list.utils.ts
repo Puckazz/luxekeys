@@ -29,7 +29,10 @@ export const applyProductFilters = (
   filterState: ProductListQueryState
 ): ProductListItem[] => {
   const filtered = products.filter((product) => {
-    if (product.category !== filterState.category) {
+    if (
+      filterState.categories.length > 0 &&
+      !filterState.categories.includes(product.category)
+    ) {
       return false;
     }
 
@@ -58,22 +61,6 @@ export const applyProductFilters = (
     if (
       filterState.switchTypes.length > 0 &&
       !filterState.switchTypes.includes(product.switchType)
-    ) {
-      return false;
-    }
-
-    if (
-      filterState.features.length > 0 &&
-      !filterState.features.every((feature) =>
-        product.features.includes(feature)
-      )
-    ) {
-      return false;
-    }
-
-    if (
-      filterState.caseMaterial !== 'All' &&
-      product.caseMaterial !== filterState.caseMaterial
     ) {
       return false;
     }

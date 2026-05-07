@@ -105,6 +105,7 @@ model Product {
   basePrice        Decimal          @db.Decimal(12, 2)
   compareAtPrice   Decimal?         @db.Decimal(12, 2)
   thumbnailUrl     String?
+  tags             String[]         @default([])
   isFeatured       Boolean          @default(false)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt

@@ -46,7 +46,7 @@ export const mapApiProductToListItem = (
     switchType,
     features: [],
     caseMaterial: DEFAULT_CASE_MATERIAL,
-    tags: [],
+    tags: product.tags ?? [],
     rating: product.averageRating ?? 0,
     popularity: product._count?.wishlistItems ?? 0,
     createdAt: product.createdAt,

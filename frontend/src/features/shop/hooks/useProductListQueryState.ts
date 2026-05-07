@@ -3,12 +3,12 @@
 import { useEffect, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTopLoader } from 'nextjs-toploader';
+import { useQuery } from '@tanstack/react-query';
 
+import { productsApi } from '@/features/shop/api/products.api';
 import {
   KeycapProfile,
   ProductCategory,
-  ProductCaseMaterial,
-  ProductFeature,
   ProductLayout,
   ProductSortOption,
   ProductSwitchType,
@@ -19,10 +19,8 @@ import {
 } from '@/features/shop/utils/product-list-query.utils';
 import {
   KEYCAP_PROFILE_OPTIONS,
-  PRODUCT_BRAND_OPTIONS_BY_CATEGORY,
-  PRODUCT_CASE_MATERIAL_OPTIONS,
   PRODUCT_CATEGORY_FILTER_CAPABILITIES,
-  PRODUCT_FEATURE_OPTIONS,
+  PRODUCT_CATEGORY_SLUGS,
   PRODUCT_LAYOUT_OPTIONS,
   PRODUCT_SORT_OPTIONS,
   PRODUCT_SWITCH_TYPE_OPTIONS,
@@ -34,7 +32,7 @@ type PriceRange = {
 };
 
 type UseProductListQueryStateOptions = {
-  category: ProductCategory;
+  defaultCategories: ProductCategory[];
   priceBounds: PriceRange;
 };
 
@@ -49,7 +47,7 @@ const toggleListItem = <T extends string>(items: T[], value: T): T[] => {
 };
 
 export const useProductListQueryState = ({
-  category,
+  defaultCategories,
   priceBounds,
 }: UseProductListQueryStateOptions) => {
   const pathname = usePathname();
@@ -58,10 +56,45 @@ export const useProductListQueryState = ({
   const loader = useTopLoader();
 
   const queryState = useMemo(() => {
-    return parseProductListQueryState(category, searchParams, priceBounds);
-  }, [category, searchParams, priceBounds]);
+    return parseProductListQueryState(
+      defaultCategories,
+      searchParams,
+      priceBounds
+    );
+  }, [defaultCategories, searchParams, priceBounds]);
 
-  const capabilities = PRODUCT_CATEGORY_FILTER_CAPABILITIES[category];
+  const capabilities = useMemo(() => {
+    const capabilityCategories =
+      queryState.categories.length > 0
+        ? queryState.categories
+        : PRODUCT_CATEGORY_SLUGS;
+
+    return capabilityCategories.reduce(
+      (acc, selectedCategory) => {
+        const next = PRODUCT_CATEGORY_FILTER_CAPABILITIES[selectedCategory];
+
+        return {
+          showBrandFilter: acc.showBrandFilter || next.showBrandFilter,
+          showProfileFilter: acc.showProfileFilter || next.showProfileFilter,
+          showLayoutFilter: acc.showLayoutFilter || next.showLayoutFilter,
+          showSwitchTypeFilter:
+            acc.showSwitchTypeFilter || next.showSwitchTypeFilter,
+        };
+      },
+      {
+        showBrandFilter: false,
+        showProfileFilter: false,
+        showLayoutFilter: false,
+        showSwitchTypeFilter: false,
+      }
+    );
+  }, [queryState.categories]);
+  const brandOptionsQuery = useQuery({
+    queryKey: ['product-brand-options'],
+    queryFn: productsApi.getBrandOptions,
+    staleTime: 60_000,
+    enabled: capabilities.showBrandFilter,
+  });
 
   useEffect(() => {
     loader.done();
@@ -97,17 +130,6 @@ export const useProductListQueryState = ({
     });
   };
 
-  const setCaseMaterial = (caseMaterial: ProductCaseMaterial | 'All') => {
-    updateSearchParams((params) => {
-      if (caseMaterial === 'All') {
-        params.delete(productListQueryKeys.caseMaterial);
-      } else {
-        params.set(productListQueryKeys.caseMaterial, caseMaterial);
-      }
-      resetPage(params);
-    });
-  };
-
   const setPriceRange = (min: number, max: number) => {
     updateSearchParams((params) => {
       params.set(productListQueryKeys.priceMin, String(min));
@@ -123,6 +145,18 @@ export const useProductListQueryState = ({
         params.delete(productListQueryKeys.brands);
       } else {
         params.set(productListQueryKeys.brands, serializeList(next));
+      }
+      resetPage(params);
+    });
+  };
+
+  const toggleCategories = (category: ProductCategory) => {
+    updateSearchParams((params) => {
+      const next = toggleListItem(queryState.categories, category);
+      if (next.length === 0) {
+        params.delete(productListQueryKeys.categories);
+      } else {
+        params.set(productListQueryKeys.categories, serializeList(next));
       }
       resetPage(params);
     });
@@ -164,20 +198,10 @@ export const useProductListQueryState = ({
     });
   };
 
-  const toggleFeatures = (feature: ProductFeature) => {
-    updateSearchParams((params) => {
-      const next = toggleListItem(queryState.features, feature);
-      if (next.length === 0) {
-        params.delete(productListQueryKeys.features);
-      } else {
-        params.set(productListQueryKeys.features, serializeList(next));
-      }
-      resetPage(params);
-    });
-  };
-
   const resetFilters = () => {
     updateSearchParams((params) => {
+      params.delete(productListQueryKeys.categories);
+
       if (capabilities.showBrandFilter) {
         params.delete(productListQueryKeys.brands);
       }
@@ -194,14 +218,7 @@ export const useProductListQueryState = ({
         params.delete(productListQueryKeys.switchTypes);
       }
 
-      if (capabilities.showFeaturesFilter) {
-        params.delete(productListQueryKeys.features);
-      }
-
-      if (capabilities.showCaseMaterialFilter) {
-        params.delete(productListQueryKeys.caseMaterial);
-      }
-
+      params.delete(productListQueryKeys.categorySlugs);
       params.delete(productListQueryKeys.priceMin);
       params.delete(productListQueryKeys.priceMax);
       params.delete(productListQueryKeys.sort);
@@ -213,23 +230,20 @@ export const useProductListQueryState = ({
     queryState,
     filterOptions: {
       capabilities,
-      brandOptions: PRODUCT_BRAND_OPTIONS_BY_CATEGORY[category],
+      brandOptions: brandOptionsQuery.data ?? [],
       keycapProfileOptions: KEYCAP_PROFILE_OPTIONS,
       layoutOptions: PRODUCT_LAYOUT_OPTIONS,
       switchTypeOptions: PRODUCT_SWITCH_TYPE_OPTIONS,
-      featureOptions: PRODUCT_FEATURE_OPTIONS,
-      caseMaterialOptions: PRODUCT_CASE_MATERIAL_OPTIONS,
     },
     sortOptions: PRODUCT_SORT_OPTIONS,
     setPage,
     setSort,
-    setCaseMaterial,
     setPriceRange,
+    toggleCategories,
     toggleBrands,
     toggleKeycapProfiles,
     toggleLayouts,
     toggleSwitchTypes,
-    toggleFeatures,
     resetFilters,
   };
 };

@@ -2,10 +2,8 @@ import { z } from 'zod';
 
 import {
   KEYCAP_PROFILE_OPTIONS,
-  PRODUCT_BRAND_OPTIONS_BY_CATEGORY,
   PRODUCT_CATEGORY_FILTER_CAPABILITIES,
-  PRODUCT_CASE_MATERIAL_OPTIONS,
-  PRODUCT_FEATURE_OPTIONS,
+  PRODUCT_CATEGORY_SLUGS,
   PRODUCT_LAYOUT_OPTIONS,
   PRODUCT_SORT_VALUES,
   PRODUCT_SWITCH_TYPE_OPTIONS,
@@ -13,21 +11,20 @@ import {
 import {
   KeycapProfile,
   ProductCategory,
-  ProductCaseMaterial,
-  ProductFeature,
   ProductLayout,
   ProductListQueryState,
   ProductSortOption,
   ProductSwitchType,
 } from '@/features/shop/types';
+import type { ProductCategoryFilterCapabilities } from '@/features/shop/types/product-list.types';
 
 export const productListQueryKeys = {
+  categories: 'categories',
   brands: 'brands',
+  categorySlugs: 'categorySlugs',
   keycapProfiles: 'keycapProfiles',
   layouts: 'layouts',
   switchTypes: 'switchTypes',
-  features: 'features',
-  caseMaterial: 'caseMaterial',
   priceMin: 'priceMin',
   priceMax: 'priceMax',
   sort: 'sort',
@@ -84,18 +81,41 @@ const parseNumberParamOrDefault = (
   return z.coerce.number().catch(fallback).parse(value);
 };
 
+const mergeCategoryCapabilities = (
+  categories: ProductCategory[]
+): ProductCategoryFilterCapabilities => {
+  return categories.reduce<ProductCategoryFilterCapabilities>(
+    (acc, category) => {
+      const next = PRODUCT_CATEGORY_FILTER_CAPABILITIES[category];
+
+      return {
+        showBrandFilter: acc.showBrandFilter || next.showBrandFilter,
+        showProfileFilter: acc.showProfileFilter || next.showProfileFilter,
+        showLayoutFilter: acc.showLayoutFilter || next.showLayoutFilter,
+        showSwitchTypeFilter:
+          acc.showSwitchTypeFilter || next.showSwitchTypeFilter,
+      };
+    },
+    {
+      showBrandFilter: false,
+      showProfileFilter: false,
+      showLayoutFilter: false,
+      showSwitchTypeFilter: false,
+    }
+  );
+};
+
 export const getDefaultProductListQueryState = (
-  category: ProductCategory,
+  defaultCategories: ProductCategory[],
   priceBounds: PriceBounds
 ): ProductListQueryState => {
   return {
-    category,
+    categories: defaultCategories,
     brands: [],
+    categorySlugs: [],
     keycapProfiles: [],
     layouts: [],
     switchTypes: [],
-    features: [],
-    caseMaterial: 'All',
     price: {
       min: priceBounds.min,
       max: priceBounds.max,
@@ -106,12 +126,24 @@ export const getDefaultProductListQueryState = (
 };
 
 export const parseProductListQueryState = (
-  category: ProductCategory,
+  defaultCategories: ProductCategory[],
   searchParams: SearchParamReader,
   priceBounds: PriceBounds
 ): ProductListQueryState => {
-  const defaults = getDefaultProductListQueryState(category, priceBounds);
-  const capabilities = PRODUCT_CATEGORY_FILTER_CAPABILITIES[category];
+  const defaults = getDefaultProductListQueryState(
+    defaultCategories,
+    priceBounds
+  );
+
+  const parsedCategories = parseEnumList(
+    searchParams.get(productListQueryKeys.categories),
+    PRODUCT_CATEGORY_SLUGS
+  ) as ProductCategory[];
+  const resolvedCategories =
+    parsedCategories.length > 0 ? parsedCategories : defaults.categories;
+  const capabilityCategories =
+    resolvedCategories.length > 0 ? resolvedCategories : PRODUCT_CATEGORY_SLUGS;
+  const capabilities = mergeCategoryCapabilities(capabilityCategories);
 
   const parsedMin = parseNumberParamOrDefault(
     searchParams.get(productListQueryKeys.priceMin),
@@ -125,19 +157,8 @@ export const parseProductListQueryState = (
   const clampedMin = clamp(parsedMin, priceBounds.min, priceBounds.max);
   const clampedMax = clamp(parsedMax, priceBounds.min, priceBounds.max);
 
-  const rawCaseMaterial = searchParams.get(productListQueryKeys.caseMaterial);
-  const caseMaterialOptions = new Set(PRODUCT_CASE_MATERIAL_OPTIONS);
-  const caseMaterial: ProductCaseMaterial | 'All' =
-    rawCaseMaterial &&
-    caseMaterialOptions.has(rawCaseMaterial as ProductCaseMaterial)
-      ? (rawCaseMaterial as ProductCaseMaterial)
-      : 'All';
-
-  const brandOptions = PRODUCT_BRAND_OPTIONS_BY_CATEGORY[category];
-
-  const parsedBrands = parseEnumList(
-    searchParams.get(productListQueryKeys.brands),
-    brandOptions
+  const parsedBrands = parseCsvParam(
+    searchParams.get(productListQueryKeys.brands)
   );
 
   const parsedProfiles = parseEnumList(
@@ -146,8 +167,11 @@ export const parseProductListQueryState = (
   ) as KeycapProfile[];
 
   return {
-    category,
+    categories: resolvedCategories,
     brands: capabilities.showBrandFilter ? parsedBrands : [],
+    categorySlugs: parseCsvParam(
+      searchParams.get(productListQueryKeys.categorySlugs)
+    ),
     keycapProfiles: capabilities.showProfileFilter ? parsedProfiles : [],
     layouts: capabilities.showLayoutFilter
       ? (parseEnumList(
@@ -161,13 +185,6 @@ export const parseProductListQueryState = (
           PRODUCT_SWITCH_TYPE_OPTIONS
         ) as ProductSwitchType[])
       : [],
-    features: capabilities.showFeaturesFilter
-      ? (parseEnumList(
-          searchParams.get(productListQueryKeys.features),
-          PRODUCT_FEATURE_OPTIONS
-        ) as ProductFeature[])
-      : [],
-    caseMaterial: capabilities.showCaseMaterialFilter ? caseMaterial : 'All',
     price: {
       min: Math.min(clampedMin, clampedMax),
       max: Math.max(clampedMin, clampedMax),

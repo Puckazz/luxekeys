@@ -10,6 +10,7 @@ import type {
   ProductListQueryState,
   ProductReviewItem,
 } from '@/features/shop/types';
+import type { ProductBrandOptionItem } from '@/features/shop/types/product-list.types';
 import type {
   CustomerProductApiPaginationMeta,
   CustomerProductDetailApiItem,
@@ -20,10 +21,22 @@ import { apiRequest, apiRequestWithMeta } from '@/shared/api/http-client';
 
 export const PRODUCT_LIST_PAGE_SIZE = 6;
 
-const toQueryString = (params: Record<string, string | number>): string => {
+type CustomerBrandApiItem = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+const toQueryString = (
+  params: Record<string, string | number | undefined>
+): string => {
   const searchParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined) {
+      return;
+    }
+
     searchParams.set(key, String(value));
   });
 
@@ -43,12 +56,34 @@ const mapPaginationMeta = (
 };
 
 export const productsApi = {
+  getBrandOptions: async (): Promise<ProductBrandOptionItem[]> => {
+    const query = toQueryString({
+      isActive: 'true',
+      page: 1,
+      limit: 100,
+      sortBy: 'name',
+      sortOrder: 'asc',
+    });
+    const response = await apiRequestWithMeta<CustomerBrandApiItem[]>(
+      `/brands?${query}`
+    );
+
+    return response.data.map((brand) => ({
+      id: brand.id,
+      name: brand.name,
+      slug: brand.slug,
+    }));
+  },
+
   getProducts: async (
     queryState: ProductListQueryState
   ): Promise<ProductListApiResponse> => {
+    const brandOptions =
+      queryState.brands.length > 0 ? await productsApi.getBrandOptions() : [];
     const apiParams = mapProductQueryStateToApiParams(
       queryState,
-      PRODUCT_LIST_PAGE_SIZE
+      PRODUCT_LIST_PAGE_SIZE,
+      brandOptions
     );
     const query = toQueryString(apiParams);
     const response = await apiRequestWithMeta<

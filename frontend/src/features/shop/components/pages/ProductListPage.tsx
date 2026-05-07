@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ProductListViewMode } from '@/features/shop/types';
-import { useRouter } from 'next/navigation';
 import type {
   ProductFiltersController,
   ProductListPageProps,
@@ -28,13 +27,12 @@ import { cn } from '@/lib/utils';
 
 const getQueryStateKey = (query: ProductListPageProps['initialQueryState']) => {
   return [
-    query.category,
+    query.categories.join(','),
     query.brands.join(','),
+    query.categorySlugs.join(','),
     query.keycapProfiles.join(','),
     query.layouts.join(','),
     query.switchTypes.join(','),
-    query.features.join(','),
-    query.caseMaterial,
     query.price.min,
     query.price.max,
     query.sort,
@@ -42,14 +40,15 @@ const getQueryStateKey = (query: ProductListPageProps['initialQueryState']) => {
   ].join('|');
 };
 export default function ProductListPage({
-  category,
+  pageMeta,
+  defaultCategories,
+  showCategoryFilter = true,
   initialData,
   initialQueryState,
   initialPriceBounds,
 }: ProductListPageProps) {
   const [viewMode, setViewMode] = useState<ProductListViewMode>('grid');
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
-  const router = useRouter();
   const setFilterController = useProductFiltersStore(
     (state) => state.setController
   );
@@ -63,20 +62,17 @@ export default function ProductListPage({
     sortOptions,
     setPage,
     setSort,
-    setCaseMaterial,
     setPriceRange,
+    toggleCategories,
     toggleBrands,
     toggleKeycapProfiles,
     toggleLayouts,
     toggleSwitchTypes,
-    toggleFeatures,
     resetFilters,
   } = useProductListQueryState({
-    category,
+    defaultCategories,
     priceBounds: initialPriceBounds,
   });
-
-  const categoryMeta = PRODUCT_CATEGORY_PAGE_META[category];
   const categoryOptions = PRODUCT_CATEGORY_SLUGS.map((categorySlug) => {
     return {
       value: categorySlug,
@@ -117,68 +113,52 @@ export default function ProductListPage({
 
   const filterController: ProductFiltersController = useMemo(
     () => ({
+      showCategoryFilter,
       capabilities: filterOptions.capabilities,
       brandOptions: filterOptions.brandOptions,
       keycapProfileOptions: filterOptions.keycapProfileOptions,
       layoutOptions: filterOptions.layoutOptions,
       switchTypeOptions: filterOptions.switchTypeOptions,
-      featureOptions: filterOptions.featureOptions,
-      caseMaterialOptions: filterOptions.caseMaterialOptions,
       selectedBrands: queryState.brands,
       selectedKeycapProfiles: queryState.keycapProfiles,
       selectedLayouts: queryState.layouts,
       selectedSwitchTypes: queryState.switchTypes,
-      selectedFeatures: queryState.features,
-      selectedCaseMaterial: queryState.caseMaterial,
       selectedPrice: queryState.price,
       priceBounds,
       categoryOptions,
-      selectedCategory: category,
+      selectedCategories: queryState.categories,
+      onToggleCategory: toggleCategories,
       onToggleBrand: toggleBrands,
       onToggleKeycapProfile: toggleKeycapProfiles,
       onToggleLayout: toggleLayouts,
       onToggleSwitchType: toggleSwitchTypes,
-      onToggleFeature: toggleFeatures,
-      onCaseMaterialChange: setCaseMaterial,
       onPriceChange: (nextPrice: ProductPriceRange) => {
         setPriceRange(nextPrice.min, nextPrice.max);
       },
       onReset: resetFilters,
-      onCategoryChange: (nextCategory: ProductListPageProps['category']) => {
-        if (nextCategory === category) {
-          return;
-        }
-
-        router.push(`/products/${nextCategory}`);
-      },
     }),
     [
+      showCategoryFilter,
       filterOptions.capabilities,
       filterOptions.brandOptions,
       filterOptions.keycapProfileOptions,
       filterOptions.layoutOptions,
       filterOptions.switchTypeOptions,
-      filterOptions.featureOptions,
-      filterOptions.caseMaterialOptions,
       queryState.brands,
       queryState.keycapProfiles,
       queryState.layouts,
       queryState.switchTypes,
-      queryState.features,
-      queryState.caseMaterial,
       queryState.price,
+      queryState.categories,
       priceBounds,
       categoryOptions,
-      category,
+      toggleCategories,
       toggleBrands,
       toggleKeycapProfiles,
       toggleLayouts,
       toggleSwitchTypes,
-      toggleFeatures,
-      setCaseMaterial,
       setPriceRange,
       resetFilters,
-      router,
     ]
   );
 
@@ -196,17 +176,14 @@ export default function ProductListPage({
         <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <PageBreadcrumb
             className="mb-4 text-sm"
-            items={[
-              { label: 'Home', href: '/' },
-              { label: categoryMeta.label },
-            ]}
+            items={[{ label: 'Home', href: '/' }, { label: pageMeta.label }]}
           />
 
           <h1 className="text-foreground text-3xl font-black tracking-tight sm:text-4xl">
-            {categoryMeta.heading}
+            {pageMeta.heading}
           </h1>
           <p className="text-muted-foreground mt-3 max-w-2xl text-sm leading-relaxed sm:text-base">
-            {categoryMeta.description}
+            {pageMeta.description}
           </p>
         </div>
       </section>

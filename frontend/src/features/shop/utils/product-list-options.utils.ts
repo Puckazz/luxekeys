@@ -1,8 +1,6 @@
 import {
   KeycapProfile,
   ProductCategory,
-  ProductCaseMaterial,
-  ProductFeature,
   ProductLayout,
   ProductSortOption,
   ProductSwitchType,
@@ -10,6 +8,7 @@ import {
 import {
   ProductCategoryFilterCapabilities,
   ProductCategoryPageMeta,
+  ProductCategoryPageMetaKey,
   ProductSortOptionItem,
 } from '@/features/shop/types/product-list.types';
 
@@ -21,9 +20,16 @@ export const PRODUCT_CATEGORY_SLUGS: ProductCategory[] = [
 ];
 
 export const PRODUCT_CATEGORY_PAGE_META: Record<
-  ProductCategory,
+  ProductCategoryPageMetaKey,
   ProductCategoryPageMeta
 > = {
+  all: {
+    category: 'all',
+    label: 'All Products',
+    heading: 'Shop All Products',
+    description:
+      'Browse every keyboard, switch, keycap, and accessory in one place.',
+  },
   keyboards: {
     category: 'keyboards',
     label: 'Keyboards',
@@ -59,36 +65,28 @@ export const PRODUCT_CATEGORY_FILTER_CAPABILITIES: Record<
   ProductCategoryFilterCapabilities
 > = {
   keyboards: {
-    showBrandFilter: false,
+    showBrandFilter: true,
     showProfileFilter: false,
-    showLayoutFilter: false,
-    showSwitchTypeFilter: false,
-    showFeaturesFilter: false,
-    showCaseMaterialFilter: false,
+    showLayoutFilter: true,
+    showSwitchTypeFilter: true,
   },
   accessories: {
-    showBrandFilter: false,
+    showBrandFilter: true,
     showProfileFilter: false,
     showLayoutFilter: false,
     showSwitchTypeFilter: false,
-    showFeaturesFilter: false,
-    showCaseMaterialFilter: false,
   },
   switches: {
-    showBrandFilter: false,
+    showBrandFilter: true,
     showProfileFilter: false,
     showLayoutFilter: false,
-    showSwitchTypeFilter: false,
-    showFeaturesFilter: false,
-    showCaseMaterialFilter: false,
+    showSwitchTypeFilter: true,
   },
   keycaps: {
-    showBrandFilter: false,
+    showBrandFilter: true,
     showProfileFilter: false,
     showLayoutFilter: false,
     showSwitchTypeFilter: false,
-    showFeaturesFilter: false,
-    showCaseMaterialFilter: false,
   },
 };
 
@@ -128,22 +126,6 @@ export const PRODUCT_SWITCH_TYPE_OPTIONS: ProductSwitchType[] = [
   'Linear',
   'Tactile',
   'Clicky',
-];
-
-export const PRODUCT_FEATURE_OPTIONS: ProductFeature[] = [
-  'Hotswap PCB',
-  'RGB Lighting',
-  'QMK/VIA Support',
-  'Wireless',
-  'Low Profile',
-  'LCD Screen',
-];
-
-export const PRODUCT_CASE_MATERIAL_OPTIONS: ProductCaseMaterial[] = [
-  'Aluminum',
-  'Polycarbonate',
-  'ABS Plastic',
-  'Carbon Fiber',
 ];
 
 export const PRODUCT_SORT_OPTIONS: ProductSortOptionItem[] = [

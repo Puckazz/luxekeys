@@ -3,8 +3,6 @@ import type { ReactNode } from 'react';
 import type {
   KeycapProfile,
   ProductCategory,
-  ProductCaseMaterial,
-  ProductFeature,
   ProductListApiResponse,
   ProductLayout,
   ProductListItem,
@@ -29,13 +27,21 @@ export type ProductCategoryOptionItem = {
   label: string;
 };
 
+export type ProductBrandOptionItem = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
 export type ProductCardProps = {
   product: ProductListItem;
   viewMode: ProductListViewMode;
 };
 
 export type ProductListPageProps = {
-  category: ProductCategory;
+  pageMeta: ProductCategoryPageMeta;
+  defaultCategories: ProductCategory[];
+  showCategoryFilter?: boolean;
   initialData?: ProductListApiResponse;
   initialQueryState: ProductListQueryState;
   initialPriceBounds: ProductPriceRange;
@@ -46,42 +52,37 @@ export type ProductCategoryFilterCapabilities = {
   showProfileFilter: boolean;
   showLayoutFilter: boolean;
   showSwitchTypeFilter: boolean;
-  showFeaturesFilter: boolean;
-  showCaseMaterialFilter: boolean;
 };
 
+export type ProductCategoryPageMetaKey = ProductCategory | 'all';
+
 export type ProductCategoryPageMeta = {
-  category: ProductCategory;
+  category: ProductCategoryPageMetaKey;
   label: string;
   heading: string;
   description: string;
 };
 
 export type ProductFiltersController = {
+  showCategoryFilter: boolean;
   categoryOptions: ProductCategoryOptionItem[];
-  selectedCategory: ProductCategory;
+  selectedCategories: ProductCategory[];
   capabilities: ProductCategoryFilterCapabilities;
-  brandOptions: string[];
+  brandOptions: ProductBrandOptionItem[];
   keycapProfileOptions: KeycapProfile[];
   layoutOptions: ProductLayout[];
   switchTypeOptions: ProductSwitchType[];
-  featureOptions: ProductFeature[];
-  caseMaterialOptions: ProductCaseMaterial[];
   selectedBrands: string[];
   selectedKeycapProfiles: KeycapProfile[];
   selectedLayouts: ProductLayout[];
   selectedSwitchTypes: ProductSwitchType[];
-  selectedFeatures: ProductFeature[];
-  selectedCaseMaterial: ProductCaseMaterial | 'All';
   selectedPrice: ProductPriceRange;
   priceBounds: ProductPriceRange;
-  onToggleBrand: (brand: string) => void;
-  onCategoryChange: (category: ProductCategory) => void;
+  onToggleBrand: (brandSlug: string) => void;
+  onToggleCategory: (category: ProductCategory) => void;
   onToggleKeycapProfile: (profile: KeycapProfile) => void;
   onToggleLayout: (layout: ProductLayout) => void;
   onToggleSwitchType: (switchType: ProductSwitchType) => void;
-  onToggleFeature: (feature: ProductFeature) => void;
-  onCaseMaterialChange: (material: ProductCaseMaterial | 'All') => void;
   onPriceChange: (next: ProductPriceRange) => void;
   onReset: () => void;
 };

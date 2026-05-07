@@ -28,6 +28,28 @@ function hashPassword(plain: string): string {
 async function main() {
   console.log('🌱  Starting seed...\n');
 
+  console.log('🧹  Clearing existing data...');
+
+  await prisma.$transaction([
+    prisma.orderItem.deleteMany(),
+    prisma.order.deleteMany(),
+    prisma.cartItem.deleteMany(),
+    prisma.cart.deleteMany(),
+    prisma.wishlistItem.deleteMany(),
+    prisma.review.deleteMany(),
+    prisma.productImage.deleteMany(),
+    prisma.productSpec.deleteMany(),
+    prisma.productVariant.deleteMany(),
+    prisma.product.deleteMany(),
+    prisma.category.deleteMany(),
+    prisma.brand.deleteMany(),
+    prisma.address.deleteMany(),
+    prisma.refreshToken.deleteMany(),
+    prisma.user.deleteMany(),
+  ]);
+
+  console.log('   ✅  Database cleared\n');
+
   // ── 1. Users ──────────────────────────────────────────────────────────────
   console.log('👤  Seeding users...');
 
@@ -286,7 +308,40 @@ async function main() {
     },
   });
 
-  console.log(`   ✅  Created ${10} categories\n`);
+  const catDeskMats = await prisma.category.upsert({
+    where: { slug: 'desk-mats' },
+    update: { parentId: catAccessories.id },
+    create: {
+      name: 'Desk Mats',
+      slug: 'desk-mats',
+      parentId: catAccessories.id,
+      isActive: true,
+    },
+  });
+
+  await prisma.category.upsert({
+    where: { slug: 'wrist-rests' },
+    update: { parentId: catAccessories.id },
+    create: {
+      name: 'Wrist Rests',
+      slug: 'wrist-rests',
+      parentId: catAccessories.id,
+      isActive: true,
+    },
+  });
+
+  await prisma.category.upsert({
+    where: { slug: 'cables' },
+    update: { parentId: catAccessories.id },
+    create: {
+      name: 'Cables',
+      slug: 'cables',
+      parentId: catAccessories.id,
+      isActive: true,
+    },
+  });
+
+  console.log(`   ✅  Created ${13} categories\n`);
 
   // ── 5. Products ───────────────────────────────────────────────────────────
   console.log('📦  Seeding products...');
@@ -294,7 +349,7 @@ async function main() {
   // ── Product 1: Keychron Q3 Pro ────────────────────────────────────────────
   const prodQ3Pro = await prisma.product.upsert({
     where: { slug: 'keychron-q3-pro-tkl' },
-    update: {},
+    update: { tags: ['TKL', 'Wireless', 'QMK/VIA', 'Gasket'] },
     create: {
       name: 'Keychron Q3 Pro TKL',
       slug: 'keychron-q3-pro-tkl',
@@ -305,6 +360,7 @@ async function main() {
       basePrice: 199.99,
       compareAtPrice: 229.99,
       thumbnailUrl: 'https://cdn.luxekeys.com/products/q3-pro/thumb.jpg',
+      tags: ['TKL', 'Wireless', 'QMK/VIA', 'Gasket'],
       isFeatured: true,
       shortDescription:
         'Wireless TKL gasket-mount keyboard with knob, QMK/VIA support.',
@@ -452,7 +508,7 @@ async function main() {
   // ── Product 2: Ducky One 3 SF ─────────────────────────────────────────────
   const prodDuckyOne3 = await prisma.product.upsert({
     where: { slug: 'ducky-one-3-sf-65' },
-    update: {},
+    update: { tags: ['65%', 'Hotswap', 'PBT Keycaps'] },
     create: {
       name: 'Ducky One 3 SF 65%',
       slug: 'ducky-one-3-sf-65',
@@ -463,6 +519,7 @@ async function main() {
       basePrice: 129.99,
       compareAtPrice: 149.99,
       thumbnailUrl: 'https://cdn.luxekeys.com/products/ducky-one3-sf/thumb.jpg',
+      tags: ['65%', 'Hotswap', 'PBT Keycaps'],
       isFeatured: true,
       shortDescription:
         'Compact 65% keyboard with hot-swap PCB and PBT keycaps.',
@@ -581,7 +638,7 @@ async function main() {
   // ── Product 3: Gateron G Pro 3.0 Yellow (Switches) ────────────────────────
   const prodGateronYellow = await prisma.product.upsert({
     where: { slug: 'gateron-g-pro-3-yellow-linear' },
-    update: {},
+    update: { tags: ['Linear', 'Factory Lubed'] },
     create: {
       name: 'Gateron G Pro 3.0 Yellow Linear Switches',
       slug: 'gateron-g-pro-3-yellow-linear',
@@ -592,6 +649,7 @@ async function main() {
       basePrice: 18.99,
       thumbnailUrl:
         'https://cdn.luxekeys.com/products/gateron-yellow/thumb.jpg',
+      tags: ['Linear', 'Factory Lubed'],
       isFeatured: false,
       shortDescription:
         'Ultra-smooth factory-lubed linear switches, 35g actuation.',
@@ -695,7 +753,7 @@ async function main() {
   // ── Product 4: GMK NightCity Keycaps ─────────────────────────────────────
   const prodGMKNightCity = await prisma.product.upsert({
     where: { slug: 'gmk-nightcity-keycaps' },
-    update: {},
+    update: { tags: ['Cherry Profile', 'ABS', 'Doubleshot'] },
     create: {
       name: 'GMK NightCity Keycaps',
       slug: 'gmk-nightcity-keycaps',
@@ -706,6 +764,7 @@ async function main() {
       basePrice: 159.99,
       compareAtPrice: 185.0,
       thumbnailUrl: 'https://cdn.luxekeys.com/products/gmk-nightcity/thumb.jpg',
+      tags: ['Cherry Profile', 'ABS', 'Doubleshot'],
       isFeatured: true,
       shortDescription:
         'Cherry profile ABS double-shot keycaps inspired by cyberpunk cityscapes.',
@@ -801,7 +860,7 @@ async function main() {
   // ── Product 5: KBDfans TOFU65 Barebones Kit ───────────────────────────────
   const prodTofu65 = await prisma.product.upsert({
     where: { slug: 'kbdfans-tofu65-barebones' },
-    update: {},
+    update: { tags: ['65%', 'Aluminum', 'Barebones', 'Hotswap'] },
     create: {
       name: 'KBDfans TOFU65 Barebones Kit',
       slug: 'kbdfans-tofu65-barebones',
@@ -812,6 +871,7 @@ async function main() {
       basePrice: 169.0,
       compareAtPrice: 199.0,
       thumbnailUrl: 'https://cdn.luxekeys.com/products/tofu65/thumb.jpg',
+      tags: ['65%', 'Aluminum', 'Barebones', 'Hotswap'],
       isFeatured: true,
       shortDescription:
         'Premium 65% aluminum barebones kit — tray mount, hotswap PCB.',
@@ -924,7 +984,7 @@ async function main() {
   // ── Product 6: Keychron K8 Pro (Full-size) ────────────────────────────────
   const prodK8Pro = await prisma.product.upsert({
     where: { slug: 'keychron-k8-pro-tkl-wireless' },
-    update: {},
+    update: { tags: ['TKL', 'Wireless', 'Hotswap', 'QMK/VIA'] },
     create: {
       name: 'Keychron K8 Pro TKL Wireless',
       slug: 'keychron-k8-pro-tkl-wireless',
@@ -935,6 +995,7 @@ async function main() {
       basePrice: 109.99,
       compareAtPrice: 129.99,
       thumbnailUrl: 'https://cdn.luxekeys.com/products/k8-pro/thumb.jpg',
+      tags: ['TKL', 'Wireless', 'Hotswap', 'QMK/VIA'],
       isFeatured: false,
       shortDescription:
         'Wireless TKL keyboard with hot-swap PCB, RGB, and QMK support.',
@@ -1019,16 +1080,20 @@ async function main() {
   // ── Product 7: Desk Mat (Accessory) ──────────────────────────────────────
   const prodDeskMat = await prisma.product.upsert({
     where: { slug: 'luxekeys-xl-desk-mat-midnight' },
-    update: {},
+    update: {
+      categoryId: catDeskMats.id,
+      tags: ['Desk Mat', 'XL', 'Stitched Edge'],
+    },
     create: {
       name: 'LuxeKeys XL Desk Mat — Midnight',
       slug: 'luxekeys-xl-desk-mat-midnight',
       type: ProductType.ACCESSORY,
       status: ProductStatus.ACTIVE,
-      categoryId: catAccessories.id,
+      categoryId: catDeskMats.id,
       basePrice: 34.99,
       thumbnailUrl:
         'https://cdn.luxekeys.com/products/desk-mat-midnight/thumb.jpg',
+      tags: ['Desk Mat', 'XL', 'Stitched Edge'],
       isFeatured: false,
       shortDescription:
         'Extra-large stitched desk mat with non-slip rubber base.',

@@ -13,11 +13,7 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Slider } from '@/shared/components/ui/slider';
-import {
-  KeycapProfile,
-  ProductCaseMaterial,
-  ProductCategory,
-} from '@/features/shop/types';
+import { KeycapProfile } from '@/features/shop/types';
 import type {
   ProductFiltersProps,
   ProductPriceRange,
@@ -248,49 +244,47 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
 
   const {
     categoryOptions,
-    selectedCategory,
+    selectedCategories,
     capabilities,
     brandOptions,
     keycapProfileOptions,
     layoutOptions,
     switchTypeOptions,
-    featureOptions,
-    caseMaterialOptions,
     selectedBrands,
     selectedKeycapProfiles,
     selectedLayouts,
     selectedSwitchTypes,
-    selectedFeatures,
-    selectedCaseMaterial,
     selectedPrice,
     priceBounds,
-    onCategoryChange,
+    onToggleCategory,
     onToggleBrand,
     onToggleKeycapProfile,
     onToggleLayout,
     onToggleSwitchType,
-    onToggleFeature,
-    onCaseMaterialChange,
     onPriceChange,
     onReset,
   } = controller;
 
-  const isCaseMaterialValue = (
-    value: string
-  ): value is ProductCaseMaterial | 'All' => {
-    return (
-      value === 'All' ||
-      caseMaterialOptions.some((material) => material === value)
-    );
-  };
-
   const isKeycapProfileValue = (value: string): value is KeycapProfile => {
     return keycapProfileOptions.some((profile) => profile === value);
   };
-
-  const isCategoryValue = (value: string): value is ProductCategory => {
-    return categoryOptions.some((option) => option.value === value);
-  };
+  const isAllProductsPage = controller.showCategoryFilter;
+  const hasSelectedCategory = selectedCategories.length > 0;
+  const showBrandFilter = isAllProductsPage || capabilities.showBrandFilter;
+  const showProfileFilter = isAllProductsPage || capabilities.showProfileFilter;
+  const showLayoutFilter = isAllProductsPage || capabilities.showLayoutFilter;
+  const showSwitchTypeFilter =
+    isAllProductsPage || capabilities.showSwitchTypeFilter;
+  const disableBrandFilter =
+    isAllProductsPage && hasSelectedCategory && !capabilities.showBrandFilter;
+  const disableProfileFilter =
+    isAllProductsPage && hasSelectedCategory && !capabilities.showProfileFilter;
+  const disableLayoutFilter =
+    isAllProductsPage && hasSelectedCategory && !capabilities.showLayoutFilter;
+  const disableSwitchTypeFilter =
+    isAllProductsPage &&
+    hasSelectedCategory &&
+    !capabilities.showSwitchTypeFilter;
 
   return (
     <div
@@ -310,58 +304,31 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
       </div>
 
       <div className="space-y-6">
-        <section>
-          <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-            Category
-          </h3>
-          <Select
-            value={selectedCategory}
-            onValueChange={(value) => {
-              if (isCategoryValue(value)) {
-                onCategoryChange(value);
-              }
-            }}
-          >
-            <SelectTrigger
-              id="category"
-              className="w-full min-w-full rounded-full"
-            >
-              <SelectValue placeholder="Choose category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categoryOptions.map((categoryOption) => (
-                <SelectItem
-                  key={categoryOption.value}
-                  value={categoryOption.value}
-                >
-                  {categoryOption.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </section>
-
-        {capabilities.showBrandFilter ? (
-          <section className="border-border/50 border-t pt-5">
+        {controller.showCategoryFilter ? (
+          <section>
             <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-              Brand
+              Category
             </h3>
             <div className="space-y-3">
-              {brandOptions.map((brand) => {
-                const id = toInputId('brand', brand);
+              {categoryOptions.map((categoryOption) => {
+                const id = toInputId('category', categoryOption.value);
                 return (
                   <label
-                    key={brand}
+                    key={categoryOption.value}
                     htmlFor={id}
                     className="flex cursor-pointer items-center gap-2"
                   >
                     <Checkbox
                       id={id}
-                      checked={selectedBrands.includes(brand)}
-                      onCheckedChange={() => onToggleBrand(brand)}
+                      checked={selectedCategories.includes(
+                        categoryOption.value
+                      )}
+                      onCheckedChange={() =>
+                        onToggleCategory(categoryOption.value)
+                      }
                     />
                     <span className="text-muted-foreground text-sm">
-                      {brand}
+                      {categoryOption.label}
                     </span>
                   </label>
                 );
@@ -370,13 +337,50 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
           </section>
         ) : null}
 
-        {capabilities.showProfileFilter ? (
+        {showBrandFilter ? (
+          <section className="border-border/50 border-t pt-5">
+            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
+              Brand
+            </h3>
+            <div className="space-y-3">
+              {brandOptions.length > 0 ? (
+                brandOptions.map((brand) => {
+                  const id = toInputId('brand', brand.slug);
+                  return (
+                    <label
+                      key={brand.id}
+                      htmlFor={id}
+                      className="flex cursor-pointer items-center gap-2"
+                    >
+                      <Checkbox
+                        id={id}
+                        checked={selectedBrands.includes(brand.slug)}
+                        onCheckedChange={() => onToggleBrand(brand.slug)}
+                        disabled={disableBrandFilter}
+                      />
+                      <span className="text-muted-foreground text-sm">
+                        {brand.name}
+                      </span>
+                    </label>
+                  );
+                })
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No brand filters available.
+                </p>
+              )}
+            </div>
+          </section>
+        ) : null}
+
+        {showProfileFilter ? (
           <section className="border-border/50 border-t pt-5">
             <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
               Profile
             </h3>
             <Select
               value={selectedKeycapProfiles[0] ?? 'All'}
+              disabled={disableProfileFilter}
               onValueChange={(value) => {
                 if (value === 'All') {
                   selectedKeycapProfiles.forEach((profile) => {
@@ -418,14 +422,8 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
           </section>
         ) : null}
 
-        {capabilities.showLayoutFilter ? (
-          <section
-            className={
-              capabilities.showBrandFilter
-                ? 'border-border/50 border-t pt-5'
-                : ''
-            }
-          >
+        {showLayoutFilter ? (
+          <section className="border-border/50 border-t pt-5">
             <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
               Layout
             </h3>
@@ -439,6 +437,7 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
                     size="sm"
                     className="justify-center rounded-full"
                     onClick={() => onToggleLayout(layout)}
+                    disabled={disableLayoutFilter}
                   >
                     {layout}
                   </Button>
@@ -448,7 +447,7 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
           </section>
         ) : null}
 
-        {capabilities.showSwitchTypeFilter ? (
+        {showSwitchTypeFilter ? (
           <section className="border-border/50 border-t pt-5">
             <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
               Switch Type
@@ -466,6 +465,7 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
                       id={id}
                       checked={selectedSwitchTypes.includes(switchType)}
                       onCheckedChange={() => onToggleSwitchType(switchType)}
+                      disabled={disableSwitchTypeFilter}
                     />
                     <span className="text-muted-foreground text-sm">
                       {switchType}
@@ -474,66 +474,6 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
                 );
               })}
             </div>
-          </section>
-        ) : null}
-
-        {capabilities.showFeaturesFilter ? (
-          <section className="border-border/50 border-t pt-5">
-            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-              Features
-            </h3>
-            <div className="space-y-3">
-              {featureOptions.map((feature) => {
-                const id = toInputId('feature', feature);
-                return (
-                  <label
-                    key={feature}
-                    htmlFor={id}
-                    className="flex cursor-pointer items-center gap-2"
-                  >
-                    <Checkbox
-                      id={id}
-                      checked={selectedFeatures.includes(feature)}
-                      onCheckedChange={() => onToggleFeature(feature)}
-                    />
-                    <span className="text-muted-foreground text-sm">
-                      {feature}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </section>
-        ) : null}
-
-        {capabilities.showCaseMaterialFilter ? (
-          <section className="border-border/50 border-t pt-5">
-            <h3 className="text-foreground mb-3 text-sm font-semibold tracking-wide uppercase">
-              Case Material
-            </h3>
-            <Select
-              value={selectedCaseMaterial}
-              onValueChange={(value) => {
-                if (isCaseMaterialValue(value)) {
-                  onCaseMaterialChange(value);
-                }
-              }}
-            >
-              <SelectTrigger
-                id="case-material"
-                className="w-full min-w-full rounded-full"
-              >
-                <SelectValue placeholder="All Materials" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Materials</SelectItem>
-                {caseMaterialOptions.map((material) => (
-                  <SelectItem key={material} value={material}>
-                    {material}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </section>
         ) : null}
 

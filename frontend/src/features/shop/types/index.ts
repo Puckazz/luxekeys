@@ -83,13 +83,12 @@ export interface ProductListItem {
 }
 
 export interface ProductListQueryState {
-  category: ProductCategory;
+  categories: ProductCategory[];
   brands: string[];
+  categorySlugs: string[];
   keycapProfiles: KeycapProfile[];
   layouts: ProductLayout[];
   switchTypes: ProductSwitchType[];
-  features: ProductFeature[];
-  caseMaterial: ProductCaseMaterial | 'All';
   price: {
     min: number;
     max: number;

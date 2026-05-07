@@ -90,6 +90,7 @@ export class ProductsService {
         basePrice: dto.basePrice,
         compareAtPrice: dto.compareAtPrice ?? null,
         thumbnailUrl: dto.thumbnailUrl ?? null,
+        tags: dto.tags ?? [],
         isFeatured: dto.isFeatured ?? false,
       },
       include: PRODUCT_DETAIL_INCLUDE,
@@ -103,11 +104,36 @@ export class ProductsService {
 
     const baseWhere: Prisma.ProductWhereInput = { deletedAt: null };
 
-    if (query.type) baseWhere.type = query.type;
+    if (query.type?.length) baseWhere.type = { in: query.type };
     if (query.status) baseWhere.status = query.status;
-    if (query.brandId) baseWhere.brandId = query.brandId;
+    if (query.brandId?.length) baseWhere.brandId = { in: query.brandId };
     if (query.categoryId) baseWhere.categoryId = query.categoryId;
+    if (query.categorySlug?.length) {
+      baseWhere.category = {
+        is: { slug: { in: query.categorySlug }, deletedAt: null },
+      };
+    }
     if (query.isFeatured !== undefined) baseWhere.isFeatured = query.isFeatured;
+    if (query.layout?.length || query.switchType?.length) {
+      const variantWhere: Prisma.ProductVariantWhereInput = {
+        deletedAt: null,
+        isActive: true,
+      };
+
+      if (query.layout?.length) {
+        variantWhere.layout = { in: query.layout };
+      }
+
+      if (query.switchType?.length) {
+        variantWhere.OR = query.switchType.map((switchType) => ({
+          switchType: { contains: switchType, mode: 'insensitive' },
+        }));
+      }
+
+      baseWhere.variants = {
+        some: variantWhere,
+      };
+    }
 
     if (query.search) {
       baseWhere.name = { contains: query.search, mode: 'insensitive' };
@@ -282,6 +308,7 @@ export class ProductsService {
       ...(dto.thumbnailUrl !== undefined && {
         thumbnailUrl: dto.thumbnailUrl,
       }),
+      ...(dto.tags !== undefined && { tags: dto.tags }),
       ...(dto.isFeatured !== undefined && { isFeatured: dto.isFeatured }),
     };
 

@@ -1,5 +1,5 @@
 ﻿import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -16,14 +16,35 @@ import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 export const PRODUCT_SORT_FIELDS = ['createdAt', 'basePrice', 'name'] as const;
 export type ProductSortField = (typeof PRODUCT_SORT_FIELDS)[number];
 
+const parseStringListQueryParam = (value: unknown): string[] | undefined => {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => String(item).split(','))
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
 export class GetProductsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({
     enum: ProductType,
     description: 'Filter by product type',
+    isArray: true,
+    type: String,
   })
   @IsOptional()
-  @IsEnum(ProductType)
-  type?: ProductType;
+  @Transform(({ value }) => parseStringListQueryParam(value))
+  @IsEnum(ProductType, { each: true })
+  type?: ProductType[];
 
   @ApiPropertyOptional({
     enum: ProductStatus,
@@ -33,15 +54,50 @@ export class GetProductsQueryDto extends PaginationQueryDto {
   @IsEnum(ProductStatus)
   status?: ProductStatus;
 
-  @ApiPropertyOptional({ description: 'Filter by brand UUID' })
+  @ApiPropertyOptional({
+    description: 'Filter by brand UUIDs',
+    isArray: true,
+    type: String,
+  })
   @IsOptional()
-  @IsUUID()
-  brandId?: string;
+  @Transform(({ value }) => parseStringListQueryParam(value))
+  @IsUUID('4', { each: true })
+  brandId?: string[];
 
   @ApiPropertyOptional({ description: 'Filter by category UUID' })
   @IsOptional()
   @IsUUID()
   categoryId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by category slugs',
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseStringListQueryParam(value))
+  @IsString({ each: true })
+  categorySlug?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Filter by variant layout',
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseStringListQueryParam(value))
+  @IsString({ each: true })
+  layout?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Filter by variant switch type',
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseStringListQueryParam(value))
+  @IsString({ each: true })
+  switchType?: string[];
 
   @ApiPropertyOptional({ description: 'Filter featured products' })
   @IsOptional()
