@@ -28,7 +28,12 @@ import type {
   ProductDetailHeroProps,
   ProductStockBadgeProps,
 } from '@/features/shop/types/product-detail.types';
+import {
+  getStockLabel,
+  getStockStatus,
+} from '@/features/shop/mappers/product-api/product-api.shared';
 import { formatCurrency } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 
 const stockBadgeVariantMap = {
   'in-stock': 'success',
@@ -56,11 +61,14 @@ const paymentMethods = ['VISA', 'PayPal', 'Mastercard', 'AMEX', 'Amazon Pay'];
 export default function ProductDetailHeroSection({
   product,
   selectedImageId,
-  selectedSwitch,
+  selectedSwitchName,
   selectedColor,
   quantity,
+  currentVariant,
+  currentStock,
   onImageSelect,
   onSwitchSelect,
+  onSwitchNameSelect,
   onColorSelect,
   onQuantityDecrease,
   onQuantityIncrease,
@@ -70,7 +78,14 @@ export default function ProductDetailHeroSection({
     typeof product.discountPercentage === 'number' &&
     product.discountPercentage > 0;
   const showsKeyboardSelectors = product.category === 'keyboards';
-  const canPurchase = product.quantityLimit > 0;
+
+  const canPurchase = currentStock > 0;
+  const stockStatus = getStockStatus(currentStock);
+  const stockLabel = getStockLabel(currentStock);
+
+  // Switch names available for the currently selected color variant
+  const availableSwitchOptions = currentVariant?.switchOptions ?? [];
+
   const discountedPrice = calculateDiscountedPrice(
     product.price,
     product.discountPercentage
@@ -273,8 +288,8 @@ export default function ProductDetailHeroSection({
                 {product.reviewCount.toLocaleString()} reviews)
               </p>
               <ProductStockBadge
-                status={product.stockStatus}
-                label={product.stockLabel}
+                status={stockStatus}
+                label={stockLabel}
               />
             </div>
 
@@ -292,30 +307,7 @@ export default function ProductDetailHeroSection({
             <div className="mt-8 space-y-6">
               {showsKeyboardSelectors ? (
                 <>
-                  <div>
-                    <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
-                      Switch Type
-                    </p>
-                    <div className="mt-3.5 flex flex-wrap gap-2.5">
-                      {product.switchOptions.map((switchType) => {
-                        const isActive = switchType === selectedSwitch;
-
-                        return (
-                          <Button
-                            key={`${product.slug}-switch-${switchType}`}
-                            type="button"
-                            variant={isActive ? 'default' : 'outline'}
-                            size="sm"
-                            className="rounded-full px-4"
-                            onClick={() => onSwitchSelect(switchType)}
-                          >
-                            {switchType}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
+                  {/* Color selector (primary dimension) */}
                   <div>
                     <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
                       Color
@@ -323,6 +315,11 @@ export default function ProductDetailHeroSection({
                     <div className="mt-3.5 flex flex-wrap gap-2.5">
                       {product.colorOptions.map((color) => {
                         const isActive = color === selectedColor;
+                        const isOutOfStock = !product.variants?.some(
+                          (v) =>
+                            (v.color ?? product.defaultColor) === color &&
+                            v.switchOptions.some((sw) => sw.stock > 0)
+                        );
 
                         return (
                           <Button
@@ -330,8 +327,13 @@ export default function ProductDetailHeroSection({
                             type="button"
                             variant={isActive ? 'default' : 'outline'}
                             size="sm"
-                            className="rounded-full px-4"
+                            className={cn(
+                              'rounded-full px-4',
+                              isOutOfStock &&
+                                'text-muted-foreground decoration-muted-foreground/80 line-through opacity-65'
+                            )}
                             onClick={() => onColorSelect(color)}
+                            title={isOutOfStock ? 'Out of stock' : color}
                           >
                             {color}
                           </Button>
@@ -339,6 +341,44 @@ export default function ProductDetailHeroSection({
                       })}
                     </div>
                   </div>
+
+                  {/* Switch name selector (secondary — specific switches for selected color) */}
+                  {availableSwitchOptions.length > 0 ? (
+                    <div>
+                      <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
+                        Switch
+                      </p>
+                      <div className="mt-3.5 flex flex-wrap gap-2.5">
+                        {availableSwitchOptions.map((sw) => {
+                          const isActive = sw.name === selectedSwitchName;
+                          const isOutOfStock = sw.stock <= 0;
+
+                          return (
+                            <Button
+                              key={`${product.slug}-sw-${sw.id}`}
+                              type="button"
+                              variant={isActive ? 'default' : 'outline'}
+                              size="sm"
+                              className={cn(
+                                'rounded-full px-4',
+                                isOutOfStock &&
+                                  'text-muted-foreground decoration-muted-foreground/80 line-through opacity-65'
+                              )}
+                              onClick={() => {
+                                onSwitchSelect(
+                                  sw.switchType as import('@/features/shop/types').ProductSwitchType
+                                );
+                                onSwitchNameSelect(sw.name);
+                              }}
+                              title={isOutOfStock ? 'Out of stock' : sw.switchType}
+                            >
+                              {sw.name}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
                 </>
               ) : null}
 
@@ -366,7 +406,7 @@ export default function ProductDetailHeroSection({
                       variant="ghost"
                       size="icon-sm"
                       onClick={onQuantityIncrease}
-                      disabled={!canPurchase || quantity >= product.quantityLimit}
+                      disabled={!canPurchase || quantity >= currentStock}
                       aria-label="Increase quantity"
                     >
                       <Plus className="size-4" />
@@ -383,7 +423,7 @@ export default function ProductDetailHeroSection({
                 disabled={!canPurchase}
               >
                 <ShoppingCart className="mr-2 size-4" />
-                Add to Cart
+                {canPurchase ? 'Add to Cart' : 'Out of Stock'}
               </Button>
               <Button
                 type="button"

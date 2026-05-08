@@ -8,6 +8,9 @@ export const PRODUCT_DETAIL_INCLUDE = {
   variants: {
     where: { deletedAt: null, isActive: true },
     orderBy: { isDefault: 'desc' as const },
+    include: {
+      switchOptions: { orderBy: { sortOrder: 'asc' as const } },
+    },
   },
   _count: { select: { reviews: true, wishlistItems: true } },
 } satisfies Prisma.ProductInclude;

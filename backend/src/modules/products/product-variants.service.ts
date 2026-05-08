@@ -48,7 +48,7 @@ export class ProductVariantsService {
         });
       }
 
-      return tx.productVariant.create({
+      const variant = await tx.productVariant.create({
         data: {
           productId,
           sku: dto.sku,
@@ -57,13 +57,16 @@ export class ProductVariantsService {
           compareAtPrice: dto.compareAtPrice ?? null,
           color: dto.color ?? null,
           layout: dto.layout ?? null,
-          switchType: dto.switchType ?? null,
           connectivity: dto.connectivity ?? null,
           stock: dto.stock ?? 0,
           isDefault,
           isActive: dto.isActive ?? true,
         },
       });
+
+      await this.syncProductPriceFromDefaultVariant(productId, tx);
+
+      return variant;
     });
   }
 
@@ -93,7 +96,7 @@ export class ProductVariantsService {
         });
       }
 
-      return tx.productVariant.update({
+      const updated = await tx.productVariant.update({
         where: { id },
         data: {
           ...(dto.sku !== undefined && { sku: dto.sku }),
@@ -104,7 +107,6 @@ export class ProductVariantsService {
           }),
           ...(dto.color !== undefined && { color: dto.color }),
           ...(dto.layout !== undefined && { layout: dto.layout }),
-          ...(dto.switchType !== undefined && { switchType: dto.switchType }),
           ...(dto.connectivity !== undefined && {
             connectivity: dto.connectivity,
           }),
@@ -113,6 +115,10 @@ export class ProductVariantsService {
           ...(dto.isActive !== undefined && { isActive: dto.isActive }),
         },
       });
+
+      await this.syncProductPriceFromDefaultVariant(productId, tx);
+
+      return updated;
     });
   }
 
@@ -137,7 +143,58 @@ export class ProductVariantsService {
         });
       }
 
+      await this.syncProductPriceFromDefaultVariant(productId, tx);
+
       return removed;
+    });
+  }
+
+  private async syncProductPriceFromDefaultVariant(
+    productId: string,
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
+    let defaultVariant = await tx.productVariant.findFirst({
+      where: {
+        productId,
+        deletedAt: null,
+        isActive: true,
+        isDefault: true,
+      },
+      orderBy: [{ createdAt: 'asc' }],
+    });
+
+    if (!defaultVariant) {
+      defaultVariant = await tx.productVariant.findFirst({
+        where: { productId, deletedAt: null, isActive: true },
+        orderBy: [{ createdAt: 'asc' }],
+      });
+
+      if (!defaultVariant) {
+        return;
+      }
+
+      await tx.productVariant.update({
+        where: { id: defaultVariant.id },
+        data: { isDefault: true },
+      });
+    }
+
+    await tx.productVariant.updateMany({
+      where: {
+        productId,
+        deletedAt: null,
+        isDefault: true,
+        NOT: { id: defaultVariant.id },
+      },
+      data: { isDefault: false },
+    });
+
+    await tx.product.update({
+      where: { id: productId },
+      data: {
+        basePrice: defaultVariant.price,
+        compareAtPrice: defaultVariant.compareAtPrice,
+      },
     });
   }
 

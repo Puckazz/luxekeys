@@ -28,7 +28,8 @@ export const mapApiProductToDetail = (
 ): ProductDetail => {
   const listItem = mapApiProductToListItem(product);
   const defaultVariant = getDefaultVariant(product);
-  const stock = defaultVariant?.stock ?? 0;
+
+  // Color options come from variants (one color per variant)
   const colorOptions = [
     ...new Set(
       product.variants
@@ -36,27 +37,45 @@ export const mapApiProductToDetail = (
         .filter((color): color is string => Boolean(color)) ?? []
     ),
   ];
-  const switchOptions = [
-    ...new Set(
-      product.variants
-        ?.map((variant) => variant.switchType)
-        .filter(isProductSwitchType) ?? []
-    ),
-  ];
+
+  // Switch types come from all switchOptions across all variants (deduplicated)
+  const switchTypeSet = new Set<string>();
+  product.variants?.forEach((variant) => {
+    variant.switchOptions?.forEach((sw) => {
+      if (isProductSwitchType(sw.switchType)) {
+        switchTypeSet.add(sw.switchType);
+      }
+    });
+  });
+  const switchOptions = [...switchTypeSet];
+
+  // Default switch option: from default variant's default switch option
+  const defaultSwitchOption = defaultVariant?.switchOptions?.find(
+    (sw) => sw.isDefault
+  ) ?? defaultVariant?.switchOptions?.[0];
+
+  // Effective stock = sum of default variant's switch option stocks (or 0)
+  const defaultVariantStock = defaultVariant?.switchOptions?.reduce(
+    (sum, sw) => sum + sw.stock,
+    0
+  ) ?? defaultVariant?.stock ?? 0;
 
   return {
     ...listItem,
     series: product.category?.name ?? listItem.category,
-    stockStatus: getStockStatus(stock),
-    stockLabel: getStockLabel(stock),
+    stockStatus: getStockStatus(defaultVariantStock),
+    stockLabel: getStockLabel(defaultVariantStock),
     reviewCount: product._count?.reviews ?? 0,
     gallery: mapGalleryImages(product),
     switchOptions:
-      switchOptions.length > 0 ? switchOptions : [listItem.switchType],
+      switchOptions.length > 0
+        ? (switchOptions as import('@/features/shop/types').ProductSwitchType[])
+        : [listItem.switchType],
     colorOptions: colorOptions.length > 0 ? colorOptions : ['Default'],
-    defaultSwitch: listItem.switchType,
+    defaultSwitch: (defaultSwitchOption?.switchType as import('@/features/shop/types').ProductSwitchType) ?? listItem.switchType,
+    defaultSwitchName: defaultSwitchOption?.name ?? '',
     defaultColor: colorOptions[0] ?? 'Default',
-    quantityLimit: Math.max(stock, 0),
+    quantityLimit: Math.max(defaultVariantStock, 0),
     specsHeading: 'Technical Specifications',
     specsDescription:
       product.description ??
@@ -65,5 +84,19 @@ export const mapApiProductToDetail = (
     technicalSpecs: mapSpecsToTechnicalSpecs(product),
     reviewsHeading: 'Community Reviews',
     reviews: [],
+    variants:
+      product.variants?.map((v) => ({
+        id: v.id,
+        sku: v.sku,
+        color: v.color,
+        stock: v.switchOptions?.reduce((sum, sw) => sum + sw.stock, 0) ?? v.stock,
+        switchOptions: (v.switchOptions ?? []).map((sw) => ({
+          id: sw.id,
+          name: sw.name,
+          switchType: sw.switchType,
+          stock: sw.stock,
+          isDefault: sw.isDefault,
+        })),
+      })) ?? [],
   };
 };

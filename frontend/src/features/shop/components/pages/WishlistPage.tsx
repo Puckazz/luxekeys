@@ -120,7 +120,7 @@ export default function WishlistPage() {
                   href={`/products/${item.slug}`}
                   image={item.image}
                   name={item.name}
-                  subtitle={item.subtitle}
+                  brand={item.subtitle}
                   priceLabel={formatCurrency(discountedPrice, {
                     minimumFractionDigits: 2,
                   })}

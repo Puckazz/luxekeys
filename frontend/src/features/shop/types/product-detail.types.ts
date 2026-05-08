@@ -16,10 +16,15 @@ export type ProductDetailHeroProps = {
   product: ProductDetail;
   selectedImageId: string;
   selectedSwitch: ProductSwitchType;
+  selectedSwitchName: string;
   selectedColor: string;
   quantity: number;
+  currentVariant: ProductDetail['variants'][number] | null;
+  currentSwitchOption: ProductDetail['variants'][number]['switchOptions'][number] | null;
+  currentStock: number;
   onImageSelect: (imageId: string) => void;
   onSwitchSelect: (switchType: ProductSwitchType) => void;
+  onSwitchNameSelect: (switchName: string) => void;
   onColorSelect: (color: string) => void;
   onQuantityDecrease: () => void;
   onQuantityIncrease: () => void;

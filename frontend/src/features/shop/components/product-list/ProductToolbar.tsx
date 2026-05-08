@@ -78,7 +78,7 @@ export default function ProductToolbar({
             }
           }}
         >
-          <SelectTrigger id="product-sort" className="h-10 min-w-44">
+          <SelectTrigger id="product-sort" className="h-auto! min-w-44">
             <SelectValue placeholder="Sort products" />
           </SelectTrigger>
           <SelectContent>

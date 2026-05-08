@@ -1,5 +1,5 @@
 import type {
-  ProductCardBadge,
+
   ProductCategory,
   ProductCaseMaterial,
   ProductGalleryImage,
@@ -136,13 +136,7 @@ export const getStockLabel = (stock: number): string => {
     return 'Out of Stock';
   }
 
-  return stock <= 5 ? 'Limited stock' : 'In Stock';
+  return stock <= 5 ? 'Low Stock' : 'In Stock';
 };
 
-export const getProductBadge = (stock: number): ProductCardBadge | undefined => {
-  if (stock <= 0) {
-    return undefined;
-  }
 
-  return stock <= 5 ? 'limited' : 'in-stock';
-};

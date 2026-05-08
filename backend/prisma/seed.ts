@@ -23,6 +23,37 @@ function hashPassword(plain: string): string {
   return crypto.createHash('sha256').update(plain).digest('hex');
 }
 
+async function syncVariantStocksFromSwitchOptions(): Promise<number> {
+  const variants = await prisma.productVariant.findMany({
+    where: { deletedAt: null },
+    include: { switchOptions: true },
+  });
+
+  let updatedCount = 0;
+
+  for (const variant of variants) {
+    if (variant.switchOptions.length === 0) {
+      continue;
+    }
+
+    const stock = variant.switchOptions.reduce((sum, switchOption) => {
+      return sum + switchOption.stock;
+    }, 0);
+
+    if (variant.stock === stock) {
+      continue;
+    }
+
+    await prisma.productVariant.update({
+      where: { id: variant.id },
+      data: { stock },
+    });
+    updatedCount += 1;
+  }
+
+  return updatedCount;
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -163,7 +194,8 @@ async function main() {
     create: {
       name: 'Keychron',
       slug: 'keychron',
-      logoUrl: 'https://cdn.luxekeys.com/brands/keychron.svg',
+      logoUrl:
+        'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
       isActive: true,
     },
   });
@@ -174,7 +206,8 @@ async function main() {
     create: {
       name: 'Ducky',
       slug: 'ducky',
-      logoUrl: 'https://cdn.luxekeys.com/brands/ducky.svg',
+      logoUrl:
+        'https://images.unsplash.com/photo-1511467687858-23d1928afd91?auto=format&fit=crop&w=800&q=80',
       isActive: true,
     },
   });
@@ -185,7 +218,8 @@ async function main() {
     create: {
       name: 'GMK',
       slug: 'gmk',
-      logoUrl: 'https://cdn.luxekeys.com/brands/gmk.svg',
+      logoUrl:
+        'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80',
       isActive: true,
     },
   });
@@ -196,7 +230,8 @@ async function main() {
     create: {
       name: 'ZMK / Gateron',
       slug: 'zmk',
-      logoUrl: 'https://cdn.luxekeys.com/brands/zmk.svg',
+      logoUrl:
+        'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=800&q=80',
       isActive: true,
     },
   });
@@ -207,7 +242,8 @@ async function main() {
     create: {
       name: 'KBDfans',
       slug: 'kbdfans',
-      logoUrl: 'https://cdn.luxekeys.com/brands/kbdfans.svg',
+      logoUrl:
+        'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
       isActive: true,
     },
   });
@@ -218,7 +254,8 @@ async function main() {
     create: {
       name: 'Drop',
       slug: 'drop',
-      logoUrl: 'https://cdn.luxekeys.com/brands/drop.svg',
+      logoUrl:
+        'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
       isActive: true,
     },
   });
@@ -229,7 +266,8 @@ async function main() {
     create: {
       name: 'Glorious',
       slug: 'glorious',
-      logoUrl: 'https://cdn.luxekeys.com/brands/glorious.svg',
+      logoUrl:
+        'https://images.unsplash.com/photo-1511467687858-23d1928afd91?auto=format&fit=crop&w=800&q=80',
       isActive: true,
     },
   });
@@ -240,7 +278,8 @@ async function main() {
     create: {
       name: 'Kailh',
       slug: 'kailh',
-      logoUrl: 'https://cdn.luxekeys.com/brands/kailh.svg',
+      logoUrl:
+        'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80',
       isActive: true,
     },
   });
@@ -392,7 +431,8 @@ async function main() {
       categoryId: catTKL.id,
       basePrice: 199.99,
       compareAtPrice: 229.99,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/q3-pro/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=800&q=80',
       tags: ['TKL', 'Wireless', 'QMK/VIA', 'Gasket'],
       isFeatured: true,
       shortDescription:
@@ -461,20 +501,23 @@ async function main() {
     data: [
       {
         productId: prodQ3Pro.id,
-        imageUrl: 'https://cdn.luxekeys.com/products/q3-pro/gallery-1.jpg',
+        imageUrl:
+          'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
         altText: 'Q3 Pro front view',
         sortOrder: 1,
         isPrimary: true,
       },
       {
         productId: prodQ3Pro.id,
-        imageUrl: 'https://cdn.luxekeys.com/products/q3-pro/gallery-2.jpg',
+        imageUrl:
+          'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
         altText: 'Q3 Pro side view',
         sortOrder: 2,
       },
       {
         productId: prodQ3Pro.id,
-        imageUrl: 'https://cdn.luxekeys.com/products/q3-pro/gallery-3.jpg',
+        imageUrl:
+          'https://images.unsplash.com/photo-1511467687858-23d1928afd91?auto=format&fit=crop&w=800&q=80',
         altText: 'Q3 Pro RGB lighting',
         sortOrder: 3,
       },
@@ -488,16 +531,40 @@ async function main() {
     create: {
       productId: prodQ3Pro.id,
       sku: 'KQ3P-BLK-RED-HS',
-      name: 'Carbon Black / Red Switch (Hot-swap)',
+      name: 'Carbon Black',
       price: 199.99,
       compareAtPrice: 229.99,
       color: 'Carbon Black',
       layout: 'TKL',
-      switchType: 'Keychron Red (Linear)',
       connectivity: 'Bluetooth + USB-C',
-      stock: 42,
+      stock: 0,
       isDefault: true,
       isActive: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Keychron K Pro Red',
+            switchType: 'Linear',
+            stock: 42,
+            isDefault: true,
+            sortOrder: 1,
+          },
+          {
+            name: 'Keychron K Pro Brown',
+            switchType: 'Tactile',
+            stock: 18,
+            isDefault: false,
+            sortOrder: 2,
+          },
+          {
+            name: 'Keychron K Pro Blue',
+            switchType: 'Clicky',
+            stock: 0,
+            isDefault: false,
+            sortOrder: 3,
+          },
+        ],
+      },
     },
   });
 
@@ -507,16 +574,33 @@ async function main() {
     create: {
       productId: prodQ3Pro.id,
       sku: 'KQ3P-WHT-BRN-HS',
-      name: 'Off-White / Brown Switch (Hot-swap)',
+      name: 'Off-White',
       price: 199.99,
       compareAtPrice: 229.99,
       color: 'Off-White',
       layout: 'TKL',
-      switchType: 'Keychron Brown (Tactile)',
       connectivity: 'Bluetooth + USB-C',
-      stock: 28,
+      stock: 0,
       isDefault: false,
       isActive: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Keychron K Pro Red',
+            switchType: 'Linear',
+            stock: 28,
+            isDefault: false,
+            sortOrder: 1,
+          },
+          {
+            name: 'Keychron K Pro Brown',
+            switchType: 'Tactile',
+            stock: 15,
+            isDefault: true,
+            sortOrder: 2,
+          },
+        ],
+      },
     },
   });
 
@@ -526,15 +610,39 @@ async function main() {
     create: {
       productId: prodQ3Pro.id,
       sku: 'KQ3P-NVY-BLU-HS',
-      name: 'Navy Blue / Blue Switch (Hot-swap)',
+      name: 'Navy Blue',
       price: 199.99,
       color: 'Navy Blue',
       layout: 'TKL',
-      switchType: 'Keychron Blue (Clicky)',
       connectivity: 'Bluetooth + USB-C',
-      stock: 15,
+      stock: 0,
       isDefault: false,
       isActive: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Keychron K Pro Red',
+            switchType: 'Linear',
+            stock: 12,
+            isDefault: false,
+            sortOrder: 1,
+          },
+          {
+            name: 'Keychron K Pro Brown',
+            switchType: 'Tactile',
+            stock: 8,
+            isDefault: false,
+            sortOrder: 2,
+          },
+          {
+            name: 'Keychron K Pro Blue',
+            switchType: 'Clicky',
+            stock: 15,
+            isDefault: true,
+            sortOrder: 3,
+          },
+        ],
+      },
     },
   });
 
@@ -551,7 +659,8 @@ async function main() {
       categoryId: cat75.id,
       basePrice: 129.99,
       compareAtPrice: 149.99,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/ducky-one3-sf/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80',
       tags: ['65%', 'Hotswap', 'PBT Keycaps'],
       isFeatured: true,
       shortDescription:
@@ -614,7 +723,7 @@ async function main() {
       {
         productId: prodDuckyOne3.id,
         imageUrl:
-          'https://cdn.luxekeys.com/products/ducky-one3-sf/gallery-1.jpg',
+          'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=800&q=80',
         altText: 'Ducky One 3 SF Daybreak',
         sortOrder: 1,
         isPrimary: true,
@@ -622,7 +731,7 @@ async function main() {
       {
         productId: prodDuckyOne3.id,
         imageUrl:
-          'https://cdn.luxekeys.com/products/ducky-one3-sf/gallery-2.jpg',
+          'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
         altText: 'Ducky One 3 SF Fuji',
         sortOrder: 2,
       },
@@ -636,16 +745,47 @@ async function main() {
     create: {
       productId: prodDuckyOne3.id,
       sku: 'DUCK-ONE3-DB-RED',
-      name: 'Daybreak / Cherry MX Red',
+      name: 'Daybreak',
       price: 129.99,
       compareAtPrice: 149.99,
       color: 'Daybreak',
       layout: '65%',
-      switchType: 'Cherry MX Red (Linear)',
       connectivity: 'USB-C',
-      stock: 55,
+      stock: 0,
       isDefault: true,
       isActive: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Cherry MX Red',
+            switchType: 'Linear',
+            stock: 55,
+            isDefault: true,
+            sortOrder: 1,
+          },
+          {
+            name: 'Cherry MX Speed Silver',
+            switchType: 'Linear',
+            stock: 20,
+            isDefault: false,
+            sortOrder: 2,
+          },
+          {
+            name: 'Cherry MX Brown',
+            switchType: 'Tactile',
+            stock: 30,
+            isDefault: false,
+            sortOrder: 3,
+          },
+          {
+            name: 'Cherry MX Blue',
+            switchType: 'Clicky',
+            stock: 15,
+            isDefault: false,
+            sortOrder: 4,
+          },
+        ],
+      },
     },
   });
 
@@ -655,16 +795,40 @@ async function main() {
     create: {
       productId: prodDuckyOne3.id,
       sku: 'DUCK-ONE3-FJ-BLU',
-      name: 'Fuji / Cherry MX Blue',
+      name: 'Fuji',
       price: 129.99,
       compareAtPrice: 149.99,
       color: 'Fuji',
       layout: '65%',
-      switchType: 'Cherry MX Blue (Clicky)',
       connectivity: 'USB-C',
-      stock: 30,
+      stock: 0,
       isDefault: false,
       isActive: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Cherry MX Red',
+            switchType: 'Linear',
+            stock: 30,
+            isDefault: false,
+            sortOrder: 1,
+          },
+          {
+            name: 'Cherry MX Brown',
+            switchType: 'Tactile',
+            stock: 25,
+            isDefault: false,
+            sortOrder: 2,
+          },
+          {
+            name: 'Cherry MX Blue',
+            switchType: 'Clicky',
+            stock: 0,
+            isDefault: true,
+            sortOrder: 3,
+          },
+        ],
+      },
     },
   });
 
@@ -681,7 +845,7 @@ async function main() {
       categoryId: catLinearSwitches.id,
       basePrice: 18.99,
       thumbnailUrl:
-        'https://cdn.luxekeys.com/products/gateron-yellow/thumb.jpg',
+        'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
       tags: ['Linear', 'Factory Lubed'],
       isFeatured: false,
       shortDescription:
@@ -744,7 +908,7 @@ async function main() {
       {
         productId: prodGateronYellow.id,
         imageUrl:
-          'https://cdn.luxekeys.com/products/gateron-yellow/gallery-1.jpg',
+          'https://images.unsplash.com/photo-1511467687858-23d1928afd91?auto=format&fit=crop&w=800&q=80',
         altText: 'Gateron Yellow pack of 110',
         sortOrder: 1,
         isPrimary: true,
@@ -761,8 +925,8 @@ async function main() {
       sku: 'GAT-YLW-3-10PK',
       name: '10-pack',
       price: 1.99,
+      color: 'Yellow',
       stock: 500,
-      switchType: 'Linear',
       isDefault: false,
       isActive: true,
     },
@@ -776,8 +940,8 @@ async function main() {
       sku: 'GAT-YLW-3-110PK',
       name: '110-pack',
       price: 18.99,
+      color: 'Yellow',
       stock: 200,
-      switchType: 'Linear',
       isDefault: true,
       isActive: true,
     },
@@ -796,7 +960,8 @@ async function main() {
       categoryId: catKeycaps.id,
       basePrice: 159.99,
       compareAtPrice: 185.0,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/gmk-nightcity/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80',
       tags: ['Cherry Profile', 'ABS', 'Doubleshot'],
       isFeatured: true,
       shortDescription:
@@ -845,7 +1010,7 @@ async function main() {
       {
         productId: prodGMKNightCity.id,
         imageUrl:
-          'https://cdn.luxekeys.com/products/gmk-nightcity/gallery-1.jpg',
+          'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=800&q=80',
         altText: 'GMK NightCity base kit',
         sortOrder: 1,
         isPrimary: true,
@@ -853,7 +1018,7 @@ async function main() {
       {
         productId: prodGMKNightCity.id,
         imageUrl:
-          'https://cdn.luxekeys.com/products/gmk-nightcity/gallery-2.jpg',
+          'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
         altText: 'GMK NightCity numpad kit',
         sortOrder: 2,
       },
@@ -870,6 +1035,7 @@ async function main() {
       name: 'Base Kit',
       price: 159.99,
       compareAtPrice: 185.0,
+      color: 'Neon-on-Charcoal',
       stock: 75,
       isDefault: true,
       isActive: true,
@@ -884,6 +1050,7 @@ async function main() {
       sku: 'GMK-NC-NUM',
       name: 'Numpad Kit',
       price: 49.99,
+      color: 'Neon-on-Charcoal',
       stock: 60,
       isDefault: false,
       isActive: true,
@@ -903,7 +1070,8 @@ async function main() {
       categoryId: cat75.id,
       basePrice: 169.0,
       compareAtPrice: 199.0,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/tofu65/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
       tags: ['65%', 'Aluminum', 'Barebones', 'Hotswap'],
       isFeatured: true,
       shortDescription:
@@ -965,14 +1133,16 @@ async function main() {
     data: [
       {
         productId: prodTofu65.id,
-        imageUrl: 'https://cdn.luxekeys.com/products/tofu65/gallery-1.jpg',
+        imageUrl:
+          'https://images.unsplash.com/photo-1511467687858-23d1928afd91?auto=format&fit=crop&w=800&q=80',
         altText: 'TOFU65 Silver',
         sortOrder: 1,
         isPrimary: true,
       },
       {
         productId: prodTofu65.id,
-        imageUrl: 'https://cdn.luxekeys.com/products/tofu65/gallery-2.jpg',
+        imageUrl:
+          'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80',
         altText: 'TOFU65 Black',
         sortOrder: 2,
       },
@@ -1027,7 +1197,8 @@ async function main() {
       categoryId: catTKL.id,
       basePrice: 109.99,
       compareAtPrice: 129.99,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/k8-pro/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=800&q=80',
       tags: ['TKL', 'Wireless', 'Hotswap', 'QMK/VIA'],
       isFeatured: false,
       shortDescription:
@@ -1082,7 +1253,8 @@ async function main() {
     data: [
       {
         productId: prodK8Pro.id,
-        imageUrl: 'https://cdn.luxekeys.com/products/k8-pro/gallery-1.jpg',
+        imageUrl:
+          'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
         altText: 'K8 Pro Space Gray',
         sortOrder: 1,
         isPrimary: true,
@@ -1097,16 +1269,40 @@ async function main() {
     create: {
       productId: prodK8Pro.id,
       sku: 'KK8P-GRY-RED',
-      name: 'Space Gray / Red Switch',
+      name: 'Space Gray',
       price: 109.99,
       compareAtPrice: 129.99,
       color: 'Space Gray',
       layout: 'TKL',
-      switchType: 'Keychron Red (Linear)',
       connectivity: 'Bluetooth + USB-C',
-      stock: 60,
+      stock: 0,
       isDefault: true,
       isActive: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Keychron K Pro Red',
+            switchType: 'Linear',
+            stock: 60,
+            isDefault: true,
+            sortOrder: 1,
+          },
+          {
+            name: 'Keychron K Pro Brown',
+            switchType: 'Tactile',
+            stock: 35,
+            isDefault: false,
+            sortOrder: 2,
+          },
+          {
+            name: 'Keychron K Pro Blue',
+            switchType: 'Clicky',
+            stock: 20,
+            isDefault: false,
+            sortOrder: 3,
+          },
+        ],
+      },
     },
   });
 
@@ -1123,7 +1319,8 @@ async function main() {
       categoryId: catKeyboards.id,
       basePrice: 89.99,
       compareAtPrice: 99.99,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/anne-pro-2/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
       tags: ['60% Layout', 'Wireless', 'RGB', 'PBT'],
       isFeatured: false,
       shortDescription: 'Compact 60% wireless mechanical keyboard.',
@@ -1132,31 +1329,106 @@ async function main() {
     },
   });
 
-  await prisma.productVariant.createMany({
+  await prisma.productSpec.createMany({
     data: [
       {
         productId: prodAnnePro2.id,
-        sku: 'ANNE2-WHT-BRN',
-        name: 'White / Gateron Brown',
-        price: 89.99,
-        color: 'White',
-        layout: '60%',
-        switchType: 'Gateron Brown (Tactile)',
-        stock: 50,
-        isDefault: true,
+        groupName: 'General',
+        specKey: 'Layout',
+        specValue: '60%',
+        sortOrder: 1,
       },
       {
         productId: prodAnnePro2.id,
-        sku: 'ANNE2-BLK-BLU',
-        name: 'Black / Gateron Blue',
-        price: 89.99,
-        color: 'Black',
-        layout: '60%',
-        switchType: 'Gateron Blue (Clicky)',
-        stock: 30,
+        groupName: 'General',
+        specKey: 'Connectivity',
+        specValue: 'Bluetooth / USB-C',
+        sortOrder: 2,
       },
     ],
     skipDuplicates: true,
+  });
+
+  await prisma.productImage.createMany({
+    data: [
+      {
+        productId: prodAnnePro2.id,
+        imageUrl:
+          'https://images.unsplash.com/photo-1511467687858-23d1928afd91?auto=format&fit=crop&w=800&q=80',
+        altText: 'Anne Pro 2 White',
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.productVariant.create({
+    data: {
+      productId: prodAnnePro2.id,
+      sku: 'ANNE2-WHT-BRN',
+      name: 'White',
+      price: 89.99,
+      color: 'White',
+      layout: '60%',
+      stock: 0,
+      isDefault: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Gateron Red',
+            switchType: 'Linear',
+            stock: 50,
+            isDefault: false,
+            sortOrder: 1,
+          },
+          {
+            name: 'Gateron Brown',
+            switchType: 'Tactile',
+            stock: 50,
+            isDefault: true,
+            sortOrder: 2,
+          },
+          {
+            name: 'Gateron Blue',
+            switchType: 'Clicky',
+            stock: 30,
+            isDefault: false,
+            sortOrder: 3,
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.productVariant.create({
+    data: {
+      productId: prodAnnePro2.id,
+      sku: 'ANNE2-BLK-BLU',
+      name: 'Black',
+      price: 89.99,
+      color: 'Black',
+      layout: '60%',
+      stock: 0,
+      switchOptions: {
+        create: [
+          {
+            name: 'Gateron Brown',
+            switchType: 'Tactile',
+            stock: 20,
+            isDefault: false,
+            sortOrder: 1,
+          },
+          {
+            name: 'Gateron Blue',
+            switchType: 'Clicky',
+            stock: 30,
+            isDefault: true,
+            sortOrder: 2,
+          },
+        ],
+      },
+    },
   });
 
   // ── New Keyboard: Keychron Q1 (75%) ──────────────────────────────────────
@@ -1171,24 +1443,83 @@ async function main() {
       brandId: brandKeychron.id,
       categoryId: cat75.id,
       basePrice: 169.99,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/q1/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80',
       tags: ['75% Layout', 'Gasket', 'QMK/VIA'],
       isFeatured: true,
       shortDescription: '75% Gasket Mount QMK/VIA Mechanical Keyboard.',
     },
   });
 
+  await prisma.productSpec.createMany({
+    data: [
+      {
+        productId: prodQ1.id,
+        groupName: 'General',
+        specKey: 'Layout',
+        specValue: '75%',
+        sortOrder: 1,
+      },
+      {
+        productId: prodQ1.id,
+        groupName: 'Build',
+        specKey: 'Case Material',
+        specValue: 'Aluminum',
+        sortOrder: 2,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.productImage.createMany({
+    data: [
+      {
+        productId: prodQ1.id,
+        imageUrl:
+          'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=800&q=80',
+        altText: 'Keychron Q1 Space Gray',
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
   await prisma.productVariant.create({
     data: {
       productId: prodQ1.id,
       sku: 'KQ1-GRY-YLW',
-      name: 'Space Gray / Gateron Yellow',
+      name: 'Space Gray',
       price: 169.99,
       color: 'Space Gray',
       layout: '75%',
-      switchType: 'Gateron Yellow (Linear)',
-      stock: 25,
+      stock: 0,
       isDefault: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Gateron Yellow',
+            switchType: 'Linear',
+            stock: 25,
+            isDefault: true,
+            sortOrder: 1,
+          },
+          {
+            name: 'Gateron Red',
+            switchType: 'Linear',
+            stock: 18,
+            isDefault: false,
+            sortOrder: 2,
+          },
+          {
+            name: 'Gateron Brown',
+            switchType: 'Tactile',
+            stock: 12,
+            isDefault: false,
+            sortOrder: 3,
+          },
+        ],
+      },
     },
   });
 
@@ -1204,7 +1535,8 @@ async function main() {
       brandId: brandKBDfans.id,
       categoryId: catKeycaps.id,
       basePrice: 79.99,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/pbt-notion/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
       tags: ['OEM Profile', 'PBT', 'Dye-sub'],
       shortDescription:
         'OEM profile PBT dye-sub keycaps inspired by productivity apps.',
@@ -1219,12 +1551,27 @@ async function main() {
     },
   });
 
+  await prisma.productImage.createMany({
+    data: [
+      {
+        productId: prodPBTNotion.id,
+        imageUrl:
+          'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
+        altText: 'PBT Notion Base Kit',
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
   await prisma.productVariant.create({
     data: {
       productId: prodPBTNotion.id,
       sku: 'PBT-NOTION-BASE',
       name: 'Base Kit',
       price: 79.99,
+      color: 'White/Cyan',
       stock: 40,
       isDefault: true,
     },
@@ -1242,7 +1589,8 @@ async function main() {
       brandId: brandDrop.id,
       categoryId: catKeycaps.id,
       basePrice: 110.0,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/mt3-3277/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1511467687858-23d1928afd91?auto=format&fit=crop&w=800&q=80',
       tags: ['SA Profile', 'ABS', 'Hi-profile'],
       shortDescription: 'Vintage inspired MT3 (SA-like) profile keycaps.',
     },
@@ -1256,12 +1604,27 @@ async function main() {
     },
   });
 
+  await prisma.productImage.createMany({
+    data: [
+      {
+        productId: prodMT33277.id,
+        imageUrl:
+          'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80',
+        altText: 'MT3 3277 Base Kit',
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
   await prisma.productVariant.create({
     data: {
       productId: prodMT33277.id,
       sku: 'MT3-3277-BASE',
       name: 'Base Kit',
       price: 110.0,
+      color: 'Grey/Turquoise',
       stock: 15,
       isDefault: true,
     },
@@ -1279,10 +1642,45 @@ async function main() {
       brandId: brandDrop.id,
       categoryId: catSwitches.id,
       basePrice: 75.0,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/holy-panda/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=800&q=80',
       tags: ['Tactile', 'Premium'],
       shortDescription: 'The original tactile masterpiece.',
     },
+  });
+
+  await prisma.productSpec.createMany({
+    data: [
+      {
+        productId: prodHolyPanda.id,
+        groupName: 'Switch',
+        specKey: 'Type',
+        specValue: 'Tactile',
+        sortOrder: 1,
+      },
+      {
+        productId: prodHolyPanda.id,
+        groupName: 'Switch',
+        specKey: 'Actuation Force',
+        specValue: '67g',
+        sortOrder: 2,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.productImage.createMany({
+    data: [
+      {
+        productId: prodHolyPanda.id,
+        imageUrl:
+          'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
+        altText: 'Holy Panda Switches',
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+    skipDuplicates: true,
   });
 
   await prisma.productVariant.create({
@@ -1291,8 +1689,8 @@ async function main() {
       sku: 'HP-35PK',
       name: '35-pack',
       price: 35.0,
+      color: 'Orange/White',
       stock: 100,
-      switchType: 'Tactile',
       isDefault: true,
     },
   });
@@ -1309,10 +1707,45 @@ async function main() {
       brandId: brandKailh.id,
       categoryId: catSwitches.id,
       basePrice: 32.0,
-      thumbnailUrl: 'https://cdn.luxekeys.com/products/kailh-navy/thumb.jpg',
+      thumbnailUrl:
+        'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
       tags: ['Clicky', 'Heavy'],
       shortDescription: 'Thick-click bar switches for ultimate tactility.',
     },
+  });
+
+  await prisma.productSpec.createMany({
+    data: [
+      {
+        productId: prodKailhNavy.id,
+        groupName: 'Switch',
+        specKey: 'Type',
+        specValue: 'Clicky',
+        sortOrder: 1,
+      },
+      {
+        productId: prodKailhNavy.id,
+        groupName: 'Switch',
+        specKey: 'Actuation Force',
+        specValue: '60g',
+        sortOrder: 2,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.productImage.createMany({
+    data: [
+      {
+        productId: prodKailhNavy.id,
+        imageUrl:
+          'https://images.unsplash.com/photo-1511467687858-23d1928afd91?auto=format&fit=crop&w=800&q=80',
+        altText: 'Kailh Box Navy Switches',
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+    skipDuplicates: true,
   });
 
   await prisma.productVariant.create({
@@ -1320,9 +1753,9 @@ async function main() {
       productId: prodKailhNavy.id,
       sku: 'KBN-36PK',
       name: '36-pack',
-      price: 16.0,
+      price: 32.0,
+      color: 'Navy',
       stock: 80,
-      switchType: 'Clicky',
       isDefault: true,
     },
   });
@@ -1340,7 +1773,7 @@ async function main() {
       categoryId: catKeyboards.id,
       basePrice: 139.99,
       thumbnailUrl:
-        'https://cdn.luxekeys.com/products/ducky-one3-full/thumb.jpg',
+        'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80',
       tags: ['100% Layout', 'RGB', 'Hot-swap'],
       isFeatured: false,
       shortDescription:
@@ -1348,17 +1781,82 @@ async function main() {
     },
   });
 
+  await prisma.productSpec.createMany({
+    data: [
+      {
+        productId: prodDuckyFull.id,
+        groupName: 'General',
+        specKey: 'Layout',
+        specValue: '100%',
+        sortOrder: 1,
+      },
+      {
+        productId: prodDuckyFull.id,
+        groupName: 'General',
+        specKey: 'Connectivity',
+        specValue: 'USB-C',
+        sortOrder: 2,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.productImage.createMany({
+    data: [
+      {
+        productId: prodDuckyFull.id,
+        imageUrl:
+          'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&w=800&q=80',
+        altText: 'Ducky One 3 Full-size Black',
+        sortOrder: 1,
+        isPrimary: true,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
   await prisma.productVariant.create({
     data: {
       productId: prodDuckyFull.id,
       sku: 'D13-FULL-BLK-RED',
-      name: 'Black / Cherry MX Red',
+      name: 'Black',
       price: 139.99,
       color: 'Black',
       layout: '100%',
-      switchType: 'Cherry MX Red (Linear)',
-      stock: 20,
+      stock: 0,
       isDefault: true,
+      switchOptions: {
+        create: [
+          {
+            name: 'Cherry MX Red',
+            switchType: 'Linear',
+            stock: 20,
+            isDefault: true,
+            sortOrder: 1,
+          },
+          {
+            name: 'Cherry MX Brown',
+            switchType: 'Tactile',
+            stock: 15,
+            isDefault: false,
+            sortOrder: 2,
+          },
+          {
+            name: 'Cherry MX Blue',
+            switchType: 'Clicky',
+            stock: 10,
+            isDefault: false,
+            sortOrder: 3,
+          },
+          {
+            name: 'Cherry MX Silent Red',
+            switchType: 'Linear',
+            stock: 8,
+            isDefault: false,
+            sortOrder: 4,
+          },
+        ],
+      },
     },
   });
 
@@ -1377,7 +1875,7 @@ async function main() {
       categoryId: catDeskMats.id,
       basePrice: 34.99,
       thumbnailUrl:
-        'https://cdn.luxekeys.com/products/desk-mat-midnight/thumb.jpg',
+        'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
       tags: ['Desk Mat', 'XL', 'Stitched Edge'],
       isFeatured: false,
       shortDescription:
@@ -1426,7 +1924,7 @@ async function main() {
       {
         productId: prodDeskMat.id,
         imageUrl:
-          'https://cdn.luxekeys.com/products/desk-mat-midnight/gallery-1.jpg',
+          'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80',
         altText: 'LuxeKeys Midnight Desk Mat',
         sortOrder: 1,
         isPrimary: true,
@@ -1454,6 +1952,11 @@ async function main() {
     `   ✅  Created ${14} products with variants, specs, and images\n`,
   );
 
+  const syncedVariantStockCount = await syncVariantStocksFromSwitchOptions();
+  console.log(
+    `   ✅  Synced ${syncedVariantStockCount} variant stock totals from switch options\n`,
+  );
+
   // ── 6. Carts ──────────────────────────────────────────────────────────────
   console.log('🛒  Seeding carts...');
 
@@ -1469,9 +1972,6 @@ async function main() {
   const varHolyPanda = await prisma.productVariant.findUniqueOrThrow({
     where: { sku: 'HP-35PK' },
   });
-  const varDuckyFull = await prisma.productVariant.findUniqueOrThrow({
-    where: { sku: 'D13-FULL-BLK-RED' },
-  });
 
   const cartAlice = await prisma.cart.upsert({
     where: { userId: customer1.id },
@@ -1479,38 +1979,20 @@ async function main() {
     create: { userId: customer1.id },
   });
 
-  await prisma.cartItem.upsert({
-    where: {
-      cartId_variantId: {
-        cartId: cartAlice.id,
-        variantId: varQ3ProBlackRed.id,
-      },
-    },
-    update: { quantity: 1 },
-    create: {
+  await prisma.cartItem.create({
+    data: {
       cartId: cartAlice.id,
       variantId: varQ3ProBlackRed.id,
       quantity: 1,
     },
   });
 
-  await prisma.cartItem.upsert({
-    where: {
-      cartId_variantId: { cartId: cartAlice.id, variantId: varGMKBaseKit.id },
-    },
-    update: { quantity: 1 },
-    create: { cartId: cartAlice.id, variantId: varGMKBaseKit.id, quantity: 1 },
+  await prisma.cartItem.create({
+    data: { cartId: cartAlice.id, variantId: varGMKBaseKit.id, quantity: 1 },
   });
 
-  await prisma.cartItem.upsert({
-    where: {
-      cartId_variantId: {
-        cartId: cartAlice.id,
-        variantId: varAnnePro2White.id,
-      },
-    },
-    update: { quantity: 1 },
-    create: {
+  await prisma.cartItem.create({
+    data: {
       cartId: cartAlice.id,
       variantId: varAnnePro2White.id,
       quantity: 1,
@@ -1523,15 +2005,8 @@ async function main() {
     create: { userId: customer2.id },
   });
 
-  await prisma.cartItem.upsert({
-    where: {
-      cartId_variantId: {
-        cartId: cartBob.id,
-        variantId: varGateronYellow110.id,
-      },
-    },
-    update: { quantity: 2 },
-    create: {
+  await prisma.cartItem.create({
+    data: {
       cartId: cartBob.id,
       variantId: varGateronYellow110.id,
       quantity: 2,
@@ -1544,12 +2019,8 @@ async function main() {
     create: { userId: customer3.id },
   });
 
-  await prisma.cartItem.upsert({
-    where: {
-      cartId_variantId: { cartId: cartCarol.id, variantId: varPBTNotion.id },
-    },
-    update: { quantity: 2 },
-    create: { cartId: cartCarol.id, variantId: varPBTNotion.id, quantity: 2 },
+  await prisma.cartItem.create({
+    data: { cartId: cartCarol.id, variantId: varPBTNotion.id, quantity: 2 },
   });
 
   console.log(`   ✅  Created carts for Alice, Bob, and Carol\n`);

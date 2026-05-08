@@ -6,7 +6,8 @@ export type ShopProductCardBadgeVariant =
   | 'default'
   | 'success'
   | 'warning'
-  | 'destructive';
+  | 'destructive'
+  | 'secondary';
 
 export type ShopProductCardAction = {
   label: string;
@@ -16,6 +17,7 @@ export type ShopProductCardAction = {
   variant?: 'default' | 'secondary' | 'outline';
   size?: 'default' | 'lg';
   className?: string;
+  disabled?: boolean;
 };
 
 export type ShopProductCardIconAction = {

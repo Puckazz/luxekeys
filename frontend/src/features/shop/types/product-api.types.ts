@@ -48,6 +48,17 @@ export type CustomerProductSpecApiItem = {
   createdAt: string;
 };
 
+export type CustomerProductSwitchOptionApiItem = {
+  id: string;
+  variantId: string;
+  name: string;
+  switchType: string;
+  stock: number;
+  isDefault: boolean;
+  sortOrder: number;
+  createdAt: string;
+};
+
 export type CustomerProductVariantApiItem = {
   id: string;
   productId: string;
@@ -57,7 +68,6 @@ export type CustomerProductVariantApiItem = {
   compareAtPrice?: string | number | null;
   color?: string | null;
   layout?: string | null;
-  switchType?: string | null;
   connectivity?: string | null;
   stock: number;
   isDefault: boolean;
@@ -65,6 +75,7 @@ export type CustomerProductVariantApiItem = {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
+  switchOptions?: CustomerProductSwitchOptionApiItem[];
 };
 
 export type CustomerProductCountApiItem = {

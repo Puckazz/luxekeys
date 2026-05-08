@@ -5,13 +5,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Input } from '@/shared/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/ui/select';
 import { Slider } from '@/shared/components/ui/slider';
 import { KeycapProfile } from '@/features/shop/types';
 import type {
@@ -265,9 +258,6 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
     onReset,
   } = controller;
 
-  const isKeycapProfileValue = (value: string): value is KeycapProfile => {
-    return keycapProfileOptions.some((profile) => profile === value);
-  };
   const isAllProductsPage = controller.showCategoryFilter;
   const hasSelectedCategory = selectedCategories.length > 0;
   const showBrandFilter = isAllProductsPage || capabilities.showBrandFilter;
@@ -415,7 +405,7 @@ export default function ProductFilters({ className }: ProductFiltersProps) {
                   <Button
                     key={layout}
                     variant={active ? 'default' : 'outline'}
-                    size="sm"
+                    size="lg"
                     className="justify-center rounded-full"
                     onClick={() => onToggleLayout(layout)}
                     disabled={disableLayoutFilter}

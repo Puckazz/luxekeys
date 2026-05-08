@@ -127,6 +127,7 @@ export default function ShopProductCard({
             )}
             aria-label={primaryAction.ariaLabel}
             onClick={(event) => onActionClick(event, primaryAction.onClick)}
+            disabled={primaryAction.disabled}
           >
             {primaryAction.icon}
             {primaryAction.label}

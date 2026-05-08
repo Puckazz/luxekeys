@@ -69,6 +69,29 @@ export class ProductsService {
     );
   }
 
+  private async getDefaultVariantPrice(productId: string) {
+    const defaultVariant = await this.prisma.productVariant.findFirst({
+      where: {
+        productId,
+        deletedAt: null,
+        isActive: true,
+        isDefault: true,
+      },
+      orderBy: [{ createdAt: 'asc' }],
+      select: { price: true, compareAtPrice: true },
+    });
+
+    if (defaultVariant) {
+      return defaultVariant;
+    }
+
+    return this.prisma.productVariant.findFirst({
+      where: { productId, deletedAt: null, isActive: true },
+      orderBy: [{ createdAt: 'asc' }],
+      select: { price: true, compareAtPrice: true },
+    });
+  }
+
   async create(dto: CreateProductDto): Promise<ProductDetail> {
     const slug = dto.slug ?? toSlug(dto.name);
 
@@ -132,9 +155,11 @@ export class ProductsService {
       }
 
       if (query.switchType?.length) {
-        variantWhere.OR = query.switchType.map((switchType) => ({
-          switchType: { contains: switchType, mode: 'insensitive' },
-        }));
+        variantWhere.switchOptions = {
+          some: {
+            switchType: { in: query.switchType },
+          },
+        };
       }
 
       baseWhere.variants = {
@@ -297,6 +322,7 @@ export class ProductsService {
       }
     }
 
+    const defaultVariantPrice = await this.getDefaultVariantPrice(id);
     const data: Prisma.ProductUpdateInput = {
       ...(dto.name !== undefined && { name: dto.name }),
       ...(nextSlug !== undefined && { slug: nextSlug }),
@@ -318,6 +344,11 @@ export class ProductsService {
       ...(dto.tags !== undefined && { tags: dto.tags }),
       ...(dto.isFeatured !== undefined && { isFeatured: dto.isFeatured }),
     };
+
+    if (defaultVariantPrice) {
+      data.basePrice = defaultVariantPrice.price;
+      data.compareAtPrice = defaultVariantPrice.compareAtPrice;
+    }
 
     return this.prisma.product.update({
       where: { id },

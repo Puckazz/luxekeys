@@ -46,8 +46,6 @@ export type ProductCaseMaterial =
   | 'ABS Plastic'
   | 'Carbon Fiber';
 
-export type ProductCardBadge = 'new' | 'in-stock' | 'limited';
-
 export type ProductSortOption = 'newest' | 'price';
 
 export type ProductListViewMode = 'grid' | 'list';
@@ -70,7 +68,7 @@ export interface ProductListItem {
   price: number;
   discountPercentage?: number;
   image: string;
-  badge?: ProductCardBadge;
+  badge?: ProductStockStatus;
   layout: ProductLayout;
   switchType: ProductSwitchType;
   features: ProductFeature[];
@@ -160,6 +158,22 @@ export interface ProductReviewItem {
   helpfulCount: number;
 }
 
+export interface ProductDetailSwitchOption {
+  id: string;
+  name: string;
+  switchType: string;
+  stock: number;
+  isDefault: boolean;
+}
+
+export interface ProductDetailVariant {
+  id: string;
+  sku: string;
+  color?: string | null;
+  stock: number;
+  switchOptions: ProductDetailSwitchOption[];
+}
+
 export interface ProductDetail extends ProductListItem {
   series: string;
   stockStatus: ProductStockStatus;
@@ -170,6 +184,7 @@ export interface ProductDetail extends ProductListItem {
   colorOptions: string[];
   defaultSwitch: ProductSwitchType;
   defaultColor: string;
+  defaultSwitchName: string;
   quantityLimit: number;
   specsHeading: string;
   specsDescription: string;
@@ -178,6 +193,7 @@ export interface ProductDetail extends ProductListItem {
   videoTour?: ProductVideoTour;
   reviewsHeading: string;
   reviews: ProductReviewItem[];
+  variants: ProductDetailVariant[];
 }
 
 export type {

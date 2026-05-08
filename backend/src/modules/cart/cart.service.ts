@@ -121,12 +121,11 @@ export class CartService {
     }
 
     // Check if item already exists
-    const existingItem = await this.prisma.cartItem.findUnique({
+    const existingItem = await this.prisma.cartItem.findFirst({
       where: {
-        cartId_variantId: {
-          cartId: cart.id,
-          variantId: dto.variantId,
-        },
+        cartId: cart.id,
+        variantId: dto.variantId,
+        switchOptionId: null,
       },
     });
 
@@ -190,12 +189,11 @@ export class CartService {
     }
 
     // Update cart item
-    const cartItem = await this.prisma.cartItem.findUnique({
+    const cartItem = await this.prisma.cartItem.findFirst({
       where: {
-        cartId_variantId: {
-          cartId: cart.id,
-          variantId,
-        },
+        cartId: cart.id,
+        variantId,
+        switchOptionId: null,
       },
     });
 
@@ -222,12 +220,11 @@ export class CartService {
     }
 
     // Find and delete cart item
-    const cartItem = await this.prisma.cartItem.findUnique({
+    const cartItem = await this.prisma.cartItem.findFirst({
       where: {
-        cartId_variantId: {
-          cartId: cart.id,
-          variantId,
-        },
+        cartId: cart.id,
+        variantId,
+        switchOptionId: null,
       },
     });
 

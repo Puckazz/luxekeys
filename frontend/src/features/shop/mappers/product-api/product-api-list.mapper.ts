@@ -8,7 +8,7 @@ import {
   DEFAULT_LAYOUT,
   DEFAULT_SWITCH_TYPE,
   getDefaultVariant,
-  getProductBadge,
+  getStockStatus,
   getProductImage,
   isProductLayout,
   isProductSwitchType,
@@ -27,8 +27,12 @@ export const mapApiProductToListItem = (
   const layout = isProductLayout(defaultVariant?.layout)
     ? defaultVariant.layout
     : DEFAULT_LAYOUT;
-  const switchType = isProductSwitchType(defaultVariant?.switchType)
-    ? defaultVariant.switchType
+  // switchType is now derived from switchOptions on the default variant
+  const defaultSwitchOption = defaultVariant?.switchOptions?.find(
+    (sw) => sw.isDefault
+  ) ?? defaultVariant?.switchOptions?.[0];
+  const switchType = isProductSwitchType(defaultSwitchOption?.switchType)
+    ? (defaultSwitchOption.switchType as import('@/features/shop/types').ProductSwitchType)
     : DEFAULT_SWITCH_TYPE;
 
   return {
@@ -41,7 +45,7 @@ export const mapApiProductToListItem = (
     price,
     discountPercentage: calculateDiscountPercentage(price, compareAtPrice),
     image: getProductImage(product),
-    badge: getProductBadge(stock),
+    badge: getStockStatus(stock),
     layout,
     switchType,
     features: [],
