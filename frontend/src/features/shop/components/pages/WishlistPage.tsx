@@ -142,9 +142,10 @@ export default function WishlistPage() {
                     className: 'flex-1',
                     onClick: () => {
                       addCartItem({
+                        variantId: item.variantId,
                         slug: item.slug,
                         name: item.name,
-                        variantLabel: 'Standard',
+                        variantLabel: item.subtitle || 'Default',
                         unitPrice: discountedPrice,
                         image: item.image,
                         quantity: 1,

@@ -4,12 +4,16 @@ import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { cartApi } from '@/features/shop/api/cart.api';
+import { useAuthStore } from '@/stores/auth/auth.store';
 import { useCartStore } from '@/stores/shop/cart.store';
 
 const cartQueryKey = ['cart'] as const;
 
 export const useCartSync = () => {
   const queryClient = useQueryClient();
+
+  const authStatus = useAuthStore((state) => state.status);
+  const isAuthenticated = authStatus === 'authenticated';
 
   const hydrated = useCartStore((state) => state.hydrated);
   const items = useCartStore((state) => state.items);
@@ -21,7 +25,7 @@ export const useCartSync = () => {
   const cartQuery = useQuery({
     queryKey: cartQueryKey,
     queryFn: cartApi.getCart,
-    enabled: hydrated,
+    enabled: hydrated && isAuthenticated,
     staleTime: 30_000,
   });
 
@@ -35,7 +39,7 @@ export const useCartSync = () => {
   });
 
   useEffect(() => {
-    if (!hydrated || !cartQuery.data || syncMutation.isPending) {
+    if (!hydrated || !isAuthenticated || !cartQuery.data || syncMutation.isPending) {
       return;
     }
 
@@ -54,9 +58,33 @@ export const useCartSync = () => {
       return;
     }
 
+    // Smart merge: if guest cart is dirty on login, merge previous server items that do not exist locally
+    let hasMerged = false;
+    const mergedItems = [...items];
+
+    for (const serverItem of serverSnapshot.items) {
+      const existsLocally = mergedItems.some(
+        (localItem) =>
+          localItem.variantId === serverItem.variantId &&
+          localItem.switchOptionId === serverItem.switchOptionId
+      );
+
+      if (!existsLocally) {
+        mergedItems.push(serverItem);
+        hasMerged = true;
+      }
+    }
+
+    if (hasMerged) {
+      replaceFromServer(mergedItems, Date.now());
+      useCartStore.setState({ isDirty: true });
+      return;
+    }
+
     syncMutation.mutate({ items, updatedAt });
   }, [
     hydrated,
+    isAuthenticated,
     cartQuery.data,
     isDirty,
     items,

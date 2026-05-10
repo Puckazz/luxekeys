@@ -22,6 +22,9 @@ export const PRODUCT_LIST_INCLUDE = {
   variants: {
     where: { isDefault: true, deletedAt: null, isActive: true },
     take: 1,
+    include: {
+      switchOptions: { orderBy: { sortOrder: 'asc' as const } },
+    },
   },
   _count: { select: { reviews: true } },
 } satisfies Prisma.ProductInclude;

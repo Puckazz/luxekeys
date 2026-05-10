@@ -39,10 +39,26 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
   );
   const isWished = wishlistItems.some((item) => item.slug === product.slug);
 
+  const variantLabel = (() => {
+    if (product.category === 'keyboards') {
+      const color = product.defaultColor || 'Default';
+      const sw = product.defaultSwitchName || product.switchType;
+      return `${color} / ${sw}`;
+    }
+    if (product.category === 'keycaps' && product.keycapProfile) {
+      return `${product.keycapProfile} Profile`;
+    }
+    if (product.category === 'switches') {
+      return product.switchType;
+    }
+    return 'Default';
+  })();
+
   const featuredProduct = {
+    variantId: product.defaultVariantId || product.id,
     slug: product.slug,
     name: product.name,
-    subtitle: `${product.layout} / ${product.switchType}`,
+    subtitle: variantLabel,
     price: formatCurrency(product.price, { minimumFractionDigits: 0 }),
     discountPercentage: product.discountPercentage,
     badge: product.badge ? badgeLabel[product.badge] : null,
@@ -85,9 +101,11 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         disabled: product.badge === 'out-of-stock',
         onClick: () => {
           addItem({
+            variantId: product.defaultVariantId || product.id,
+            switchOptionId: product.defaultSwitchOptionId,
             slug: product.slug,
             name: product.name,
-            variantLabel: `${product.layout} / ${product.switchType}`,
+            variantLabel,
             unitPrice: discountedPrice,
             image: product.image,
             quantity: 1,

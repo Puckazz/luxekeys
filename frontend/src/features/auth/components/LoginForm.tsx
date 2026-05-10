@@ -65,7 +65,7 @@ export default function LoginForm() {
 
         setAuthSession(response);
         setIsRedirecting(true);
-        const nextPath = searchParams.get('next');
+        const nextPath = searchParams.get('next') || searchParams.get('returnUrl');
         const canAccessAdmin = canAccessAdminPanel(response.user.role);
         const safeNextPath =
           nextPath?.startsWith('/') && !nextPath.startsWith('//')

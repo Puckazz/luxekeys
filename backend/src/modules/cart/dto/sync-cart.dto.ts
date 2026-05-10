@@ -1,7 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsInt,
+  IsOptional,
+  IsUUID,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
-export class AddCartItemDto {
+export class SyncCartItemDto {
   @ApiProperty({
     description: 'Product variant ID',
     type: String,
@@ -30,4 +38,15 @@ export class AddCartItemDto {
   @IsInt()
   @Min(1)
   quantity!: number;
+}
+
+export class SyncCartDto {
+  @ApiProperty({
+    description: 'Array of items to sync',
+    type: [SyncCartItemDto],
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SyncCartItemDto)
+  items!: SyncCartItemDto[];
 }

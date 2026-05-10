@@ -1,4 +1,5 @@
 export interface FeaturedProduct {
+  variantId: string;
   slug: string;
   name: string;
   subtitle: string;
@@ -78,6 +79,10 @@ export interface ProductListItem {
   rating: number;
   popularity: number;
   createdAt: string;
+  defaultVariantId?: string;
+  defaultColor?: string;
+  defaultSwitchName?: string;
+  defaultSwitchOptionId?: string;
 }
 
 export interface ProductListQueryState {

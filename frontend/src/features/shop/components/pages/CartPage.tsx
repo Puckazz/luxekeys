@@ -82,6 +82,10 @@ export default function CartPage() {
             ) : (
               <div className="space-y-4">
                 {items.map((item) => {
+                  const itemUrl = item.variantLabel.includes(' / ')
+                    ? `/products/${item.slug}?color=${encodeURIComponent(item.variantLabel.split(' / ')[0])}&switch=${encodeURIComponent(item.variantLabel.split(' / ')[1])}`
+                    : `/products/${item.slug}`;
+
                   return (
                     <article
                       key={item.id}
@@ -89,7 +93,7 @@ export default function CartPage() {
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <Link
-                          href={`/products/${item.slug}`}
+                          href={itemUrl}
                           className="bg-card/60 border-border/60 relative aspect-square w-28 shrink-0 overflow-hidden rounded-sm border"
                         >
                           <Image
@@ -103,14 +107,29 @@ export default function CartPage() {
 
                         <div className="min-w-0 flex-1">
                           <Link
-                            href={`/products/${item.slug}`}
+                            href={itemUrl}
                             className="text-foreground hover:text-primary line-clamp-1 text-lg font-semibold transition-colors"
                           >
                             {item.name}
                           </Link>
-                          <p className="text-muted-foreground mt-1 text-sm">
-                            {item.variantLabel}
-                          </p>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            {item.variantLabel.includes(' / ') ? (
+                              item.variantLabel.split(' / ').map((label, index) => (
+                                <div key={label} className="flex items-center gap-2">
+                                  <span className="text-muted-foreground text-sm font-semibold">
+                                    {label}
+                                  </span>
+                                  {index === 0 && (
+                                    <span className="bg-muted-foreground/70 h-3 w-[1px]" />
+                                  )}
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-muted-foreground text-sm font-medium">
+                                {item.variantLabel}
+                              </span>
+                            )}
+                          </div>
 
                           <div className="border-input/80 bg-card mt-4 inline-flex items-center rounded-sm border px-3 py-2">
                             <Button

@@ -22,10 +22,6 @@ type CartState = {
   setHydrated: (value: boolean) => void;
 };
 
-const buildItemId = (slug: string, variantLabel: string) => {
-  return slug + '::' + variantLabel;
-};
-
 const now = () => Date.now();
 
 export const useCartStore = create<CartState>()(
@@ -39,7 +35,9 @@ export const useCartStore = create<CartState>()(
       addItem: (input) =>
         set((state) => {
           const normalizedQuantity = Math.max(1, input.quantity ?? 1);
-          const itemId = buildItemId(input.slug, input.variantLabel);
+          const itemId = input.switchOptionId
+            ? `${input.variantId}::${input.switchOptionId}`
+            : input.variantId;
           const existing = state.items.find((item) => item.id === itemId);
 
           if (existing) {
@@ -59,6 +57,8 @@ export const useCartStore = create<CartState>()(
               ...state.items,
               {
                 id: itemId,
+                variantId: input.variantId,
+                switchOptionId: input.switchOptionId,
                 slug: input.slug,
                 name: input.name,
                 variantLabel: input.variantLabel,

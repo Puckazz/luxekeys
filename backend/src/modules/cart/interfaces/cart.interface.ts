@@ -1,6 +1,7 @@
 export interface CartItemResponse {
   id: string;
   variantId: string;
+  switchOptionId?: string | null;
   quantity: number;
   variant: {
     id: string;
@@ -13,6 +14,11 @@ export interface CartItemResponse {
       thumbnailUrl: string | null;
     };
   };
+  switchOption?: {
+    id: string;
+    name: string;
+    switchType: string;
+  } | null;
   createdAt: Date;
   updatedAt: Date;
 }

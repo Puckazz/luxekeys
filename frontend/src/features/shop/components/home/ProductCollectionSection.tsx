@@ -60,16 +60,19 @@ export default function ProductCollectionSection({
   };
 
   const handleAddToCart = (
+    variantId: string,
     slug: string,
     name: string,
     price: string,
     image: string,
+    variantLabel: string,
     discountPercentage?: number
   ) => {
     addItem({
+      variantId,
       slug,
       name,
-      variantLabel: 'Standard',
+      variantLabel: variantLabel || 'Default',
       unitPrice: getDiscountedPrice(price, discountPercentage),
       image,
       quantity: 1,
@@ -214,10 +217,12 @@ export default function ProductCollectionSection({
                         aria-label={`Add ${product.name} to cart`}
                         onClick={() =>
                           handleAddToCart(
+                            product.variantId,
                             product.slug,
                             product.name,
                             product.price,
                             product.image,
+                            product.subtitle,
                             product.discountPercentage
                           )
                         }

@@ -1,60 +1,37 @@
+import { authFetch } from '@/shared/api/http-client';
 import {
-  initialCartItems,
-  youMightAlsoLikeProducts,
-} from '@/features/shop/mocks/cart.data';
+  mapCartResponseToSnapshot,
+  type CartResponse,
+} from '@/features/shop/mappers/cart-api/cart-api.mapper';
 import type { FeaturedProduct } from '@/features/shop/types';
 import type {
-  CartLineItem,
   CartSnapshot,
 } from '@/features/shop/types/cart-page.types';
 
-const MOCK_DELAY = 180;
-const delay = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-const cloneItems = (items: CartLineItem[]) => {
-  return items.map((item) => ({ ...item }));
-};
-
-const cloneFeaturedProducts = (items: FeaturedProduct[]) => {
-  return items.map((item) => ({ ...item }));
-};
-
-let serverCartState: CartSnapshot = {
-  items: cloneItems(initialCartItems),
-  updatedAt: Date.now(),
-};
-
 export const cartApi = {
   getCart: async (): Promise<CartSnapshot> => {
-    await delay(MOCK_DELAY);
-
-    return {
-      items: cloneItems(serverCartState.items),
-      updatedAt: serverCartState.updatedAt,
-    };
+    const response = await authFetch<CartResponse>('cart');
+    return mapCartResponseToSnapshot(response);
   },
 
   syncCart: async (snapshot: CartSnapshot): Promise<CartSnapshot> => {
-    await delay(MOCK_DELAY);
+    const response = await authFetch<CartResponse>('cart/sync', {
+      method: 'POST',
+      body: JSON.stringify({
+        items: snapshot.items.map((item) => ({
+          variantId: item.variantId,
+          switchOptionId: item.switchOptionId,
+          quantity: item.quantity,
+        })),
+      }),
+    });
 
-    serverCartState = {
-      items: snapshot.items
-        .filter((item) => item.quantity > 0)
-        .map((item) => ({ ...item, quantity: Math.max(1, item.quantity) })),
-      updatedAt: Date.now(),
-    };
-
-    return {
-      items: cloneItems(serverCartState.items),
-      updatedAt: serverCartState.updatedAt,
-    };
+    return mapCartResponseToSnapshot(response);
   },
 
   getCartRecommendations: async (): Promise<FeaturedProduct[]> => {
-    await delay(MOCK_DELAY);
-
-    return cloneFeaturedProducts(youMightAlsoLikeProducts);
+    // This could be a real API endpoint in the future
+    // For now, it could call a products API with some filtering
+    return []; // Return empty for now or implement real recommendations
   },
 };

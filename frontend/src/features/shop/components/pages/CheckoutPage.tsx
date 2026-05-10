@@ -15,6 +15,7 @@ import { checkoutSchema } from '@/features/shop/schemas/checkout.schema';
 import { useCheckoutFlow } from '@/features/shop/hooks/useCheckoutFlow';
 import { useCheckoutStore } from '@/stores/shop/checkout.store';
 import { useCartStore } from '@/stores/shop/cart.store';
+import { useAuthStore } from '@/stores/auth/auth.store';
 import { useCartSync } from '@/features/shop/hooks/useCartSync';
 import type { CheckoutFormValues } from '@/features/shop/types/checkout.types';
 import {
@@ -142,10 +143,14 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { isSyncing } = useCartSync();
 
+  const authStatus = useAuthStore((state) => state.status);
+  const isAuthenticated = authStatus === 'authenticated';
   const cartHydrated = useCartStore((state) => state.hydrated);
   const checkoutHydrated = useCheckoutStore((state) => state.hydrated);
   const cartItems = useCartStore((state) => state.items);
   const draft = useCheckoutStore((state) => state.draft);
+
+
 
   const {
     submitCheckout,
@@ -217,6 +222,11 @@ export default function CheckoutPage() {
   const checkoutStep = 'checkout';
 
   const onSubmit = async (values: CheckoutFormValues) => {
+    if (!isAuthenticated) {
+      router.replace('/login?next=/checkout');
+      return;
+    }
+
     const reviewData = await submitCheckout(values);
     await confirmCheckout(reviewData);
     router.push('/checkout/confirmation');

@@ -1957,74 +1957,6 @@ async function main() {
     `   ✅  Synced ${syncedVariantStockCount} variant stock totals from switch options\n`,
   );
 
-  // ── 6. Carts ──────────────────────────────────────────────────────────────
-  console.log('🛒  Seeding carts...');
-
-  const varAnnePro2White = await prisma.productVariant.findUniqueOrThrow({
-    where: { sku: 'ANNE2-WHT-BRN' },
-  });
-  const varQ1 = await prisma.productVariant.findUniqueOrThrow({
-    where: { sku: 'KQ1-GRY-YLW' },
-  });
-  const varPBTNotion = await prisma.productVariant.findUniqueOrThrow({
-    where: { sku: 'PBT-NOTION-BASE' },
-  });
-  const varHolyPanda = await prisma.productVariant.findUniqueOrThrow({
-    where: { sku: 'HP-35PK' },
-  });
-
-  const cartAlice = await prisma.cart.upsert({
-    where: { userId: customer1.id },
-    update: {},
-    create: { userId: customer1.id },
-  });
-
-  await prisma.cartItem.create({
-    data: {
-      cartId: cartAlice.id,
-      variantId: varQ3ProBlackRed.id,
-      quantity: 1,
-    },
-  });
-
-  await prisma.cartItem.create({
-    data: { cartId: cartAlice.id, variantId: varGMKBaseKit.id, quantity: 1 },
-  });
-
-  await prisma.cartItem.create({
-    data: {
-      cartId: cartAlice.id,
-      variantId: varAnnePro2White.id,
-      quantity: 1,
-    },
-  });
-
-  const cartBob = await prisma.cart.upsert({
-    where: { userId: customer2.id },
-    update: {},
-    create: { userId: customer2.id },
-  });
-
-  await prisma.cartItem.create({
-    data: {
-      cartId: cartBob.id,
-      variantId: varGateronYellow110.id,
-      quantity: 2,
-    },
-  });
-
-  const cartCarol = await prisma.cart.upsert({
-    where: { userId: customer3.id },
-    update: {},
-    create: { userId: customer3.id },
-  });
-
-  await prisma.cartItem.create({
-    data: { cartId: cartCarol.id, variantId: varPBTNotion.id, quantity: 2 },
-  });
-
-  console.log(`   ✅  Created carts for Alice, Bob, and Carol\n`);
-
   // ── 7. Wishlist ───────────────────────────────────────────────────────────
   console.log('❤️   Seeding wishlists...');
 
@@ -2253,6 +2185,13 @@ async function main() {
       quantity: 1,
       subtotalAmount: 109.99,
     },
+  });
+
+  const varQ1 = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'KQ1-GRY-YLW' },
+  });
+  const varHolyPanda = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'HP-35PK' },
   });
 
   // Order 6: Carol — DELIVERED (With newly seeded products)

@@ -54,5 +54,9 @@ export const mapApiProductToListItem = (
     rating: product.averageRating ?? 0,
     popularity: product._count?.wishlistItems ?? 0,
     createdAt: product.createdAt,
+    defaultVariantId: defaultVariant?.id,
+    defaultColor: defaultVariant?.color ?? undefined,
+    defaultSwitchName: defaultSwitchOption?.name,
+    defaultSwitchOptionId: defaultSwitchOption?.id,
   };
 };

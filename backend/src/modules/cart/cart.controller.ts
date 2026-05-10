@@ -21,7 +21,7 @@ import {
 import { CurrentUser } from '../../common/decorators/index.js';
 import { JwtAuthGuard } from '../../common/guards/index.js';
 import type { AuthUser } from '../auth/interfaces/auth-user.interface.js';
-import { AddCartItemDto, UpdateCartItemDto } from './dto/index.js';
+import { AddCartItemDto, SyncCartDto, UpdateCartItemDto } from './dto/index.js';
 import { CartResponse } from './interfaces/index.js';
 import { CartService } from './cart.service.js';
 
@@ -42,6 +42,21 @@ export class CartController {
     return this.cartService.getCart(user.id);
   }
 
+  @Post('sync')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Sync guest cart with user cart' })
+  @ApiOkResponse({
+    description: 'Merged cart',
+    type: Object,
+  })
+  syncCart(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: SyncCartDto,
+  ): Promise<CartResponse> {
+    return this.cartService.syncCart(user.id, dto);
+  }
+
   @Post('items')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -60,15 +75,15 @@ export class CartController {
     return this.cartService.addItem(user.id, dto);
   }
 
-  @Patch('items/:variantId')
+  @Patch('items/:cartItemId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update cart item quantity' })
   @ApiParam({
-    name: 'variantId',
+    name: 'cartItemId',
     type: String,
     format: 'uuid',
-    description: 'Product variant ID',
+    description: 'Cart item ID',
   })
   @ApiOkResponse({
     description: 'Updated cart',
@@ -80,21 +95,21 @@ export class CartController {
   })
   updateItem(
     @CurrentUser() user: AuthUser,
-    @Param('variantId', ParseUUIDPipe) variantId: string,
+    @Param('cartItemId', ParseUUIDPipe) cartItemId: string,
     @Body() dto: UpdateCartItemDto,
   ): Promise<CartResponse> {
-    return this.cartService.updateItem(user.id, variantId, dto);
+    return this.cartService.updateItem(user.id, cartItemId, dto);
   }
 
-  @Delete('items/:variantId')
+  @Delete('items/:cartItemId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remove item from cart' })
   @ApiParam({
-    name: 'variantId',
+    name: 'cartItemId',
     type: String,
     format: 'uuid',
-    description: 'Product variant ID',
+    description: 'Cart item ID',
   })
   @ApiOkResponse({
     description: 'Updated cart',
@@ -103,9 +118,9 @@ export class CartController {
   @ApiNotFoundResponse({ description: 'Cart or item not found' })
   removeItem(
     @CurrentUser() user: AuthUser,
-    @Param('variantId', ParseUUIDPipe) variantId: string,
+    @Param('cartItemId', ParseUUIDPipe) cartItemId: string,
   ): Promise<CartResponse> {
-    return this.cartService.removeItem(user.id, variantId);
+    return this.cartService.removeItem(user.id, cartItemId);
   }
 
   @Delete()
