@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { cartApi } from '@/features/shop/api/cart.api';
@@ -11,6 +11,7 @@ const cartQueryKey = ['cart'] as const;
 
 export const useCartSync = () => {
   const queryClient = useQueryClient();
+  const mergedOnceRef = useRef(false);
 
   const authStatus = useAuthStore((state) => state.status);
   const isAuthenticated = authStatus === 'authenticated';
@@ -28,6 +29,19 @@ export const useCartSync = () => {
     enabled: hydrated && isAuthenticated,
     staleTime: 30_000,
   });
+  const { refetch } = cartQuery;
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      mergedOnceRef.current = false;
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (hydrated && isAuthenticated) {
+      void refetch();
+    }
+  }, [hydrated, isAuthenticated, refetch]);
 
   const syncMutation = useMutation({
     mutationFn: cartApi.syncCart,
@@ -56,6 +70,11 @@ export const useCartSync = () => {
         return;
       }
 
+      if (items.length === 0 && serverSnapshot.items.length > 0) {
+        replaceFromServer(serverSnapshot.items, serverSnapshot.updatedAt);
+        return;
+      }
+
       if (serverSnapshot.updatedAt !== updatedAt) {
         replaceFromServer(serverSnapshot.items, serverSnapshot.updatedAt);
       }
@@ -63,40 +82,67 @@ export const useCartSync = () => {
       return;
     }
 
-    if (items.length === 0) {
-      syncMutation.mutate({ items, updatedAt });
-      return;
-    }
-
-    let hasMerged = false;
-    const mergedItems = [...items];
-
-    for (const serverItem of serverSnapshot.items) {
-      const existsLocally = mergedItems.some(
-        (localItem) =>
-          localItem.variantId === serverItem.variantId &&
-          localItem.switchOptionId === serverItem.switchOptionId
-      );
-
-      if (!existsLocally) {
-        mergedItems.push(serverItem);
-        hasMerged = true;
+    if (items.length === 0 && serverSnapshot.items.length > 0) {
+      if (mergedOnceRef.current) {
+        syncMutation.mutate({ items, updatedAt });
+        return;
       }
-    }
 
-    if (hasMerged) {
-      replaceFromServer(mergedItems, Date.now());
-      useCartStore.setState({ isDirty: true });
+      mergedOnceRef.current = true;
+      replaceFromServer(serverSnapshot.items, serverSnapshot.updatedAt);
+      markSynced();
       return;
     }
 
-    syncMutation.mutate({ items, updatedAt });
+    if (!mergedOnceRef.current && serverSnapshot.items.length > 0) {
+      const makeKey = (item: {
+        variantId: string;
+        switchOptionId?: string | null;
+      }) =>
+        item.switchOptionId
+          ? `${item.variantId}::${item.switchOptionId}`
+          : item.variantId;
+
+      const mergedMap = new Map<string, (typeof items)[number]>();
+
+      const mergeItem = (item: (typeof items)[number]) => {
+        const key = makeKey(item);
+        const existing = mergedMap.get(key);
+
+        if (existing) {
+          mergedMap.set(key, {
+            ...existing,
+            quantity: existing.quantity + item.quantity,
+          });
+          return;
+        }
+
+        mergedMap.set(key, { ...item });
+      };
+
+      items.forEach(mergeItem);
+      serverSnapshot.items.forEach(mergeItem);
+
+      const mergedItems = Array.from(mergedMap.values());
+      const mergedUpdatedAt = Date.now();
+
+      mergedOnceRef.current = true;
+      replaceFromServer(mergedItems, mergedUpdatedAt);
+      useCartStore.setState({ isDirty: true });
+      syncMutation.mutate({ items: mergedItems, updatedAt: mergedUpdatedAt });
+      return;
+    }
+
+    if (items.length > 0 || serverSnapshot.items.length === 0) {
+      syncMutation.mutate({ items, updatedAt });
+    }
   }, [
     hydrated,
     isAuthenticated,
     cartQuery.data,
     isDirty,
     items,
+    markSynced,
     replaceFromServer,
     syncMutation,
     updatedAt,

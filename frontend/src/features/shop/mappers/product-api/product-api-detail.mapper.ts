@@ -50,15 +50,14 @@ export const mapApiProductToDetail = (
   const switchOptions = [...switchTypeSet];
 
   // Default switch option: from default variant's default switch option
-  const defaultSwitchOption = defaultVariant?.switchOptions?.find(
-    (sw) => sw.isDefault
-  ) ?? defaultVariant?.switchOptions?.[0];
+  const defaultSwitchOption =
+    defaultVariant?.switchOptions?.find((sw) => sw.isDefault) ??
+    defaultVariant?.switchOptions?.[0];
 
   // Effective stock = sum of default variant's switch option stocks (or 0)
-  const defaultVariantStock = defaultVariant?.switchOptions?.reduce(
-    (sum, sw) => sum + sw.stock,
-    0
-  ) ?? defaultVariant?.stock ?? 0;
+  const defaultVariantStock = defaultVariant?.switchOptions?.length
+    ? defaultVariant.switchOptions.reduce((sum, sw) => sum + sw.stock, 0)
+    : (defaultVariant?.stock ?? 0);
 
   return {
     ...listItem,
@@ -72,7 +71,9 @@ export const mapApiProductToDetail = (
         ? (switchOptions as import('@/features/shop/types').ProductSwitchType[])
         : [listItem.switchType],
     colorOptions: colorOptions.length > 0 ? colorOptions : ['Default'],
-    defaultSwitch: (defaultSwitchOption?.switchType as import('@/features/shop/types').ProductSwitchType) ?? listItem.switchType,
+    defaultSwitch:
+      (defaultSwitchOption?.switchType as import('@/features/shop/types').ProductSwitchType) ??
+      listItem.switchType,
     defaultSwitchName: defaultSwitchOption?.name ?? '',
     defaultColor: colorOptions[0] ?? 'Default',
     quantityLimit: Math.max(defaultVariantStock, 0),
@@ -89,7 +90,9 @@ export const mapApiProductToDetail = (
         id: v.id,
         sku: v.sku,
         color: v.color,
-        stock: v.switchOptions?.reduce((sum, sw) => sum + sw.stock, 0) ?? v.stock,
+        stock: v.switchOptions?.length
+          ? v.switchOptions.reduce((sum, sw) => sum + sw.stock, 0)
+          : v.stock,
         switchOptions: (v.switchOptions ?? []).map((sw) => ({
           id: sw.id,
           name: sw.name,

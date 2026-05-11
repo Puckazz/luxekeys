@@ -1,6 +1,4 @@
-import type {
-  CartSnapshot,
-} from '@/features/shop/types/cart-page.types';
+import type { CartSnapshot } from '@/features/shop/types/cart-page.types';
 
 export interface CartItemResponse {
   id: string;
@@ -48,6 +46,7 @@ export const mapCartResponseToSnapshot = (
         id: item.switchOptionId
           ? `${item.variantId}::${item.switchOptionId}`
           : item.variantId,
+        cartItemId: item.id,
         variantId: item.variantId,
         switchOptionId: item.switchOptionId,
         slug: item.variant.product.slug,

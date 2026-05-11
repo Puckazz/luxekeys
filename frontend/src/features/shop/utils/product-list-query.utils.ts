@@ -29,6 +29,7 @@ export const productListQueryKeys = {
   priceMax: 'priceMax',
   sort: 'sort',
   page: 'page',
+  query: 'query',
 } as const;
 
 type SearchParamReader = Pick<URLSearchParams, 'get'>;
@@ -122,6 +123,7 @@ export const getDefaultProductListQueryState = (
     },
     sort: 'newest',
     page: 1,
+    search: '',
   };
 };
 
@@ -191,5 +193,6 @@ export const parseProductListQueryState = (
     },
     sort: sortSchema.parse(searchParams.get(productListQueryKeys.sort)),
     page: pageSchema.parse(searchParams.get(productListQueryKeys.page)),
+    search: searchParams.get(productListQueryKeys.query)?.trim() ?? '',
   };
 };

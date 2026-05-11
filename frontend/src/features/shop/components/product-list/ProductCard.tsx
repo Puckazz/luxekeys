@@ -1,5 +1,5 @@
 import ShopProductCard from '@/features/shop/components/product-list/ShopProductCard';
-import { useCartStore } from '@/stores/shop/cart.store';
+import { useCartActions } from '@/features/shop/hooks/useCartActions';
 import { useWishlistStore } from '@/stores/shop/wishlist.store';
 import { ProductStockStatus } from '@/features/shop/types';
 import type { ProductCardProps } from '@/features/shop/types/product-list.types';
@@ -30,7 +30,7 @@ const getDiscountedPrice = (price: number, discountPercentage?: number) => {
 };
 
 export default function ProductCard({ product, viewMode }: ProductCardProps) {
-  const addItem = useCartStore((state) => state.addItem);
+  const { addItem } = useCartActions();
   const wishlistItems = useWishlistStore((state) => state.items);
   const toggleWishlistItem = useWishlistStore((state) => state.toggleItem);
   const discountedPrice = getDiscountedPrice(
@@ -95,7 +95,8 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         onClick: () => toggleWishlistItem(featuredProduct),
       }}
       primaryAction={{
-        label: product.badge === 'out-of-stock' ? 'Out of Stock' : 'Add to Cart',
+        label:
+          product.badge === 'out-of-stock' ? 'Out of Stock' : 'Add to Cart',
         ariaLabel: `Add ${product.name} to cart`,
         className: 'flex-1',
         disabled: product.badge === 'out-of-stock',

@@ -7,6 +7,7 @@ import {
 
 export const featuredProducts: FeaturedProduct[] = [
   {
+    variantId: 'variant-mk-90-pro-default',
     slug: 'mk-90-pro',
     name: 'Obsidian TKL Pro',
     subtitle: 'Gasket Mount / CNC Aluminum',
@@ -17,6 +18,7 @@ export const featuredProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    variantId: 'variant-mode-sixtyfive-default',
     slug: 'mode-sixtyfive',
     name: 'Ghost 65 Edition',
     subtitle: 'Polycarbonate / RGB Underglow',
@@ -27,6 +29,7 @@ export const featuredProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    variantId: 'variant-wuque-zoom75-default',
     slug: 'wuque-zoom75',
     name: 'Nebula Keycap Set',
     subtitle: 'PBT Doubleshot / Cherry Profile',
@@ -36,6 +39,7 @@ export const featuredProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1613141411244-0e4ac259d217?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    variantId: 'variant-tofu60-redux-default',
     slug: 'tofu60-redux',
     name: 'Cobalt Silent Linears',
     subtitle: 'Lubed & Filmed / 36-pack',
@@ -45,6 +49,7 @@ export const featuredProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    variantId: 'variant-keychron-q1-pro-default',
     slug: 'keychron-q1-pro',
     name: 'Aurora 60 Build Kit',
     subtitle: 'Hotswap / CNC Frame',

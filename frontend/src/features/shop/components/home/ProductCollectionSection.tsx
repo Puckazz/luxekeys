@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Heart, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { useCartStore } from '@/stores/shop/cart.store';
+import { useCartActions } from '@/features/shop/hooks/useCartActions';
 import {
   selectWishlistItems,
   useWishlistStore,
@@ -34,7 +34,7 @@ export default function ProductCollectionSection({
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
-  const addItem = useCartStore((state) => state.addItem);
+  const { addItem } = useCartActions();
   const wishlistItems = useWishlistStore(selectWishlistItems);
   const toggleWishlistItem = useWishlistStore((state) => state.toggleItem);
 

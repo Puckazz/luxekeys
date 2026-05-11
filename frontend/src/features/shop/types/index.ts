@@ -98,6 +98,7 @@ export interface ProductListQueryState {
   };
   sort: ProductSortOption;
   page: number;
+  search?: string;
 }
 
 export interface ProductPaginationMeta {

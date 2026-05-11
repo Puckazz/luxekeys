@@ -11,7 +11,7 @@ import {
   ProductTechnicalSpecsSection,
   ProductVideoTourSection,
 } from '@/features/shop/components/product-detail';
-import { useCartStore } from '@/stores/shop/cart.store';
+import { useCartActions } from '@/features/shop/hooks/useCartActions';
 import { useProductReviewsQuery } from '@/features/shop/hooks/useProductReviewsQuery';
 import { ProductSwitchType } from '@/features/shop/types';
 import type { ProductDetailPageProps } from '@/features/shop/types/product-detail.types';
@@ -58,7 +58,7 @@ const buildVariantLabel = ({
 };
 
 export default function ProductDetailPage({ product }: ProductDetailPageProps) {
-  const addItem = useCartStore((state) => state.addItem);
+  const { addItem } = useCartActions();
   const searchParams = useSearchParams();
 
   const queryColor = searchParams?.get('color');
@@ -71,16 +71,21 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   const initialColor = queryColor || product.defaultColor;
   const [selectedColor, setSelectedColor] = useState(initialColor);
 
-  const [selectedSwitch, setSelectedSwitch] = useState<ProductSwitchType>(() => {
-    if (querySwitchName && product.variants) {
-      const variant = product.variants.find(
-        (v) => (v.color ?? product.defaultColor) === initialColor
-      ) ?? product.variants[0];
-      const swOpt = variant?.switchOptions?.find((sw) => sw.name === querySwitchName);
-      if (swOpt) return swOpt.switchType as ProductSwitchType;
+  const [selectedSwitch, setSelectedSwitch] = useState<ProductSwitchType>(
+    () => {
+      if (querySwitchName && product.variants) {
+        const variant =
+          product.variants.find(
+            (v) => (v.color ?? product.defaultColor) === initialColor
+          ) ?? product.variants[0];
+        const swOpt = variant?.switchOptions?.find(
+          (sw) => sw.name === querySwitchName
+        );
+        if (swOpt) return swOpt.switchType as ProductSwitchType;
+      }
+      return product.defaultSwitch;
     }
-    return product.defaultSwitch;
-  });
+  );
 
   const [selectedSwitchName, setSelectedSwitchName] = useState<string>(
     querySwitchName || product.defaultSwitchName
@@ -109,10 +114,13 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     if (switchParam) {
       setSelectedSwitchName(switchParam);
       if (product.variants) {
-        const variant = product.variants.find(
-          (v) => (v.color ?? product.defaultColor) === resolvedColor
-        ) ?? product.variants[0];
-        const swOpt = variant?.switchOptions?.find((sw) => sw.name === switchParam);
+        const variant =
+          product.variants.find(
+            (v) => (v.color ?? product.defaultColor) === resolvedColor
+          ) ?? product.variants[0];
+        const swOpt = variant?.switchOptions?.find(
+          (sw) => sw.name === switchParam
+        );
         if (swOpt) {
           setSelectedSwitch(swOpt.switchType as ProductSwitchType);
         }
@@ -133,7 +141,8 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     if (!product.variants || product.variants.length === 0) return null;
     return (
       product.variants.find(
-        (v) => !isKeyboard || (v.color ?? product.defaultColor) === selectedColor
+        (v) =>
+          !isKeyboard || (v.color ?? product.defaultColor) === selectedColor
       ) ?? product.variants[0]
     );
   }, [product.variants, product.defaultColor, selectedColor, isKeyboard]);
@@ -197,7 +206,9 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     );
     if (targetVariant?.switchOptions?.length) {
       const best =
-        targetVariant.switchOptions.find((sw) => sw.isDefault && sw.stock > 0) ??
+        targetVariant.switchOptions.find(
+          (sw) => sw.isDefault && sw.stock > 0
+        ) ??
         targetVariant.switchOptions.find((sw) => sw.stock > 0) ??
         targetVariant.switchOptions[0];
       if (best) {

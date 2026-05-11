@@ -19,6 +19,7 @@ const createProductsQueryKey = (queryState: ProductListQueryState) => {
     queryState.price.max,
     queryState.sort,
     queryState.page,
+    queryState.search ?? '',
   ] as const;
 };
 

@@ -1,17 +1,20 @@
 'use client';
 
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Heart,
   Keyboard,
+  Loader2,
   Search,
   SearchIcon,
   ShoppingBag,
   UserCircle,
 } from 'lucide-react';
 
+import { useProductSearchQuery } from '@/features/shop/hooks/useProductSearchQuery';
 import MobileNavMenu from '@/shared/components/layout/MobileNavMenu';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
@@ -40,6 +43,8 @@ import {
   useWishlistStore,
 } from '@/stores/shop/wishlist.store';
 import { useAuthStore } from '@/stores/auth/auth.store';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 const navLinkClass =
   'group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent! min-[1400px]:px-4 px-2 py-2 text-base font-bold outline-none transition-[color,background-color] hover:text-accent-foreground hover:bg-transparent! focus:bg-transparent! disabled:pointer-events-none disabled:opacity-50 data-active:bg-transparent data-state-open:bg-transparent';
@@ -120,7 +125,34 @@ export default function Header() {
   );
   const [isSearchSheetOpen, setIsSearchSheetOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const accountHref = isAuthenticated ? '/account' : '/login';
+
+  // Debounce the search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchKeyword);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [searchKeyword]);
+
+  // Reset search state when sheet closes
+  useEffect(() => {
+    if (!isSearchSheetOpen) {
+      setSearchKeyword('');
+      setDebouncedQuery('');
+    }
+  }, [isSearchSheetOpen]);
+
+  const { data: searchResults, isFetching: isSearchFetching } =
+    useProductSearchQuery(debouncedQuery);
+
+  const showResults =
+    debouncedQuery.trim().length >= 2 && searchResults !== undefined;
+  const hasResults = showResults && searchResults.length > 0;
+  const showEmpty =
+    showResults && !isSearchFetching && searchResults.length === 0;
 
   const openSearchSheet = () => {
     setIsSearchSheetOpen(true);
@@ -130,12 +162,12 @@ export default function Header() {
     const trimmedKeyword = keyword.trim();
 
     if (!trimmedKeyword) {
-      router.push('/products/keyboards');
+      router.push('/products');
       return;
     }
 
     const searchParams = new URLSearchParams({ query: trimmedKeyword });
-    router.push(`/products/keyboards?${searchParams.toString()}`);
+    router.push(`/products?${searchParams.toString()}`);
   };
 
   const handleSubmitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -148,6 +180,10 @@ export default function Header() {
     setSearchKeyword(keyword);
     setIsSearchSheetOpen(false);
     navigateToSearch(keyword);
+  };
+
+  const handleResultClick = () => {
+    setIsSearchSheetOpen(false);
   };
 
   return (
@@ -330,19 +366,94 @@ export default function Header() {
               </Button>
             </form>
 
-            <div className="flex flex-wrap gap-2">
-              {quickSearchKeywords.map((keyword) => (
-                <Button
-                  key={keyword}
-                  type="button"
-                  variant="secondary"
-                  className="rounded-full"
-                  onClick={() => handleQuickSearch(keyword)}
-                >
-                  {keyword}
-                </Button>
-              ))}
-            </div>
+            {/* Quick search pills — hidden once user starts typing */}
+            {!searchKeyword && (
+              <div className="flex flex-wrap gap-2">
+                {quickSearchKeywords.map((keyword) => (
+                  <Button
+                    key={keyword}
+                    type="button"
+                    variant="secondary"
+                    className="rounded-full"
+                    onClick={() => handleQuickSearch(keyword)}
+                  >
+                    {keyword}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {/* Live search results */}
+            {searchKeyword.trim().length >= 2 && (
+              <div className="space-y-1">
+                {isSearchFetching && (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="text-muted-foreground size-5 animate-spin" />
+                  </div>
+                )}
+
+                {showEmpty && (
+                  <p className="text-muted-foreground py-4 text-center text-sm">
+                    No products found for &ldquo;{debouncedQuery}&rdquo;.
+                  </p>
+                )}
+
+                {hasResults && (
+                  <>
+                    <p className="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wider">
+                      {searchResults.length} result
+                      {searchResults.length !== 1 ? 's' : ''}
+                    </p>
+                    <ul className="divide-border divide-y">
+                      {searchResults.map((product) => (
+                        <li key={product.id}>
+                          <Link
+                            href={`/products/${product.slug}`}
+                            onClick={handleResultClick}
+                            className="hover:bg-accent/50 flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors"
+                          >
+                            <div className="bg-card border-border relative size-12 shrink-0 overflow-hidden rounded-md border">
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                sizes="48px"
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-foreground truncate text-sm font-medium">
+                                {product.name}
+                              </p>
+                              <p className="text-muted-foreground truncate text-xs">
+                                {product.brand}
+                              </p>
+                            </div>
+                            <span className="text-foreground shrink-0 text-sm font-semibold">
+                              ${product.price.toFixed(2)}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="pt-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="text-primary w-full text-sm"
+                        onClick={() => {
+                          setIsSearchSheetOpen(false);
+                          navigateToSearch(searchKeyword);
+                        }}
+                      >
+                        See all results for &ldquo;{debouncedQuery}&rdquo; →
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>

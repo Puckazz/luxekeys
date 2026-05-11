@@ -8,7 +8,7 @@ import {
   ProductPagination,
   ShopProductCard,
 } from '@/features/shop/components/product-list';
-import { useCartStore } from '@/stores/shop/cart.store';
+import { useCartActions } from '@/features/shop/hooks/useCartActions';
 import { useWishlistPaginationState } from '@/features/shop/hooks/useWishlistPaginationState';
 import {
   selectWishlistItems,
@@ -45,7 +45,7 @@ export default function WishlistPage() {
   const wishlistItems = useWishlistStore(selectWishlistItems);
   const clearWishlist = useWishlistStore((state) => state.clear);
   const removeWishlistItem = useWishlistStore((state) => state.removeItem);
-  const addCartItem = useCartStore((state) => state.addItem);
+  const { addItem } = useCartActions();
   const { currentPage, setPage } = useWishlistPaginationState();
 
   const totalPages = Math.max(1, Math.ceil(wishlistItems.length / pageSize));
@@ -141,7 +141,7 @@ export default function WishlistPage() {
                     ariaLabel: `Add ${item.name} to cart`,
                     className: 'flex-1',
                     onClick: () => {
-                      addCartItem({
+                      addItem({
                         variantId: item.variantId,
                         slug: item.slug,
                         name: item.name,

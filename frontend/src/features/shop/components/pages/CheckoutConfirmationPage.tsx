@@ -72,7 +72,7 @@ export default function CheckoutConfirmationPage() {
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
               {confirmation.review.shippingAddress.fullName},{' '}
               {confirmation.review.shippingAddress.streetAddress},{' '}
-              {confirmation.review.shippingAddress.district},{' '}
+              {confirmation.review.shippingAddress.province},{' '}
               {confirmation.review.shippingAddress.city}
             </p>
             <p className="text-muted-foreground mt-1 text-sm">

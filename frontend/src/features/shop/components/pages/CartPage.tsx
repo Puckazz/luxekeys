@@ -11,6 +11,7 @@ import {
   selectCartSubtotal,
   useCartStore,
 } from '@/stores/shop/cart.store';
+import { useCartActions } from '@/features/shop/hooks/useCartActions';
 import { buildOrderPricing } from '@/features/shop/utils/checkout.utils';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';
@@ -28,8 +29,7 @@ export default function CartPage() {
   const hydrated = useCartStore((state) => state.hydrated);
   const items = useCartStore(selectCartItems);
   const subtotal = useCartStore(selectCartSubtotal);
-  const setQuantity = useCartStore((state) => state.setQuantity);
-  const removeItem = useCartStore((state) => state.removeItem);
+  const { updateQuantity, removeItem } = useCartActions();
   const cartRecommendationsQuery = useCartRecommendationsQuery();
 
   if (!hydrated) {
@@ -43,8 +43,10 @@ export default function CartPage() {
   });
   const recommendationProducts = cartRecommendationsQuery.data ?? [];
 
-  const updateQuantity = (id: string, nextQuantity: number) => {
-    setQuantity(id, nextQuantity);
+  const handleQuantityChange = (itemId: string, nextQuantity: number) => {
+    const item = items.find((entry) => entry.id === itemId);
+    if (!item) return;
+    updateQuantity(item, nextQuantity);
   };
 
   return (
@@ -114,16 +116,21 @@ export default function CartPage() {
                           </Link>
                           <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                             {item.variantLabel.includes(' / ') ? (
-                              item.variantLabel.split(' / ').map((label, index) => (
-                                <div key={label} className="flex items-center gap-2">
-                                  <span className="text-muted-foreground text-sm font-semibold">
-                                    {label}
-                                  </span>
-                                  {index === 0 && (
-                                    <span className="bg-muted-foreground/70 h-3 w-px" />
-                                  )}
-                                </div>
-                              ))
+                              item.variantLabel
+                                .split(' / ')
+                                .map((label, index) => (
+                                  <div
+                                    key={label}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <span className="text-muted-foreground text-sm font-semibold">
+                                      {label}
+                                    </span>
+                                    {index === 0 && (
+                                      <span className="bg-muted-foreground/70 h-3 w-px" />
+                                    )}
+                                  </div>
+                                ))
                             ) : (
                               <span className="text-muted-foreground text-sm font-medium">
                                 {item.variantLabel}
@@ -137,7 +144,7 @@ export default function CartPage() {
                               size="icon-xs"
                               aria-label={`Decrease quantity of ${item.name}`}
                               onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
+                                handleQuantityChange(item.id, item.quantity - 1)
                               }
                               className="hover:bg-transparent!"
                             >
@@ -151,7 +158,7 @@ export default function CartPage() {
                               size="icon-xs"
                               aria-label={`Increase quantity of ${item.name}`}
                               onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
+                                handleQuantityChange(item.id, item.quantity + 1)
                               }
                               className="hover:bg-transparent!"
                             >
@@ -169,7 +176,7 @@ export default function CartPage() {
                           <Button
                             variant="link"
                             size="lg"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(item)}
                             className="text-destructive hover:text-destructive/80 h-auto p-0 leading-0 no-underline!"
                           >
                             <Trash2 className="size-4" />

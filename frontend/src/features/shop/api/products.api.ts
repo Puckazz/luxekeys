@@ -7,6 +7,7 @@ import {
 import type {
   ProductDetail,
   ProductListApiResponse,
+  ProductListItem,
   ProductListQueryState,
   ProductReviewItem,
 } from '@/features/shop/types';
@@ -55,7 +56,25 @@ const mapPaginationMeta = (
   };
 };
 
+export const PRODUCT_SEARCH_LIMIT = 8;
+
 export const productsApi = {
+  searchProducts: async (query: string): Promise<ProductListItem[]> => {
+    const qs = toQueryString({
+      search: query,
+      status: 'ACTIVE',
+      page: 1,
+      limit: PRODUCT_SEARCH_LIMIT,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+    const response = await apiRequestWithMeta<
+      CustomerProductListApiData,
+      CustomerProductApiPaginationMeta
+    >(`/products?${qs}`);
+
+    return response.data.items.map(mapApiProductToListItem);
+  },
   getBrandOptions: async (): Promise<ProductBrandOptionItem[]> => {
     const query = toQueryString({
       isActive: 'true',

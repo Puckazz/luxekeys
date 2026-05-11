@@ -153,6 +153,7 @@ export type ProductApiQueryParams = {
   categorySlug?: string;
   layout?: string;
   switchType?: string;
+  search?: string;
   minPrice: number;
   maxPrice: number;
   page: number;

@@ -4,6 +4,7 @@ import type { CartLineItem } from '@/features/shop/types/cart-page.types';
 export const initialCartItems: CartLineItem[] = [
   {
     id: 'cart-1',
+    variantId: 'variant-mk-90-pro-default',
     slug: 'mk-90-pro',
     name: 'Premium Wireless Headphones',
     variantLabel: 'Matte Black',
@@ -14,6 +15,7 @@ export const initialCartItems: CartLineItem[] = [
   },
   {
     id: 'cart-2',
+    variantId: 'variant-wuque-zoom75-default',
     slug: 'wuque-zoom75',
     name: 'Mechanical Gaming Keyboard',
     variantLabel: 'Tactile Switches, RGB',
@@ -26,6 +28,7 @@ export const initialCartItems: CartLineItem[] = [
 
 export const youMightAlsoLikeProducts: FeaturedProduct[] = [
   {
+    variantId: 'variant-charging-pad-x1-default',
     slug: 'charging-pad-x1',
     name: 'Fast Wireless Charging Pad',
     subtitle: '15W Qi-Certified',
@@ -36,6 +39,7 @@ export const youMightAlsoLikeProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    variantId: 'variant-ergonomic-mouse-pro-default',
     slug: 'ergonomic-mouse-pro',
     name: 'Ergonomic Wireless Mouse',
     subtitle: 'Dark Grey',
@@ -46,6 +50,7 @@ export const youMightAlsoLikeProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    variantId: 'variant-usb-c-hub-7in1-default',
     slug: 'usb-c-hub-7in1',
     name: '7-in-1 USB-C Hub',
     subtitle: 'Aluminum',
@@ -55,6 +60,7 @@ export const youMightAlsoLikeProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    variantId: 'variant-vegan-desk-mat-default',
     slug: 'vegan-desk-mat',
     name: 'Premium Vegan Leather Desk Mat',
     subtitle: 'Midnight Black',
