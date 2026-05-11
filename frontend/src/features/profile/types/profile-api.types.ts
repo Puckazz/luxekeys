@@ -1,5 +1,11 @@
-import type { OrderStatus } from '@/features/profile/types';
 import type { UserRole } from '@/lib/rbac';
+
+export type OrderStatusDto =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'SHIPPING'
+  | 'DELIVERED'
+  | 'CANCELLED';
 
 export type ProfileUserDto = {
   id: string;
@@ -34,7 +40,7 @@ export type OrderLineItemDto = {
 export type OrderDetailDto = {
   id: string;
   placedAt: string;
-  status: OrderStatus;
+  status: OrderStatusDto;
   totalAmount: number;
   paymentMethod: string;
   address: SavedAddressDto;

@@ -59,11 +59,30 @@ const getPaymentMethodLabel = (method: string): string => {
   return map[method] || method;
 };
 
+const mapOrderStatusDtoToModel = (
+  status: OrderDetailDto['status']
+): OrderDetail['status'] => {
+  switch (status) {
+    case 'PENDING':
+      return 'pending';
+    case 'CONFIRMED':
+      return 'confirmed';
+    case 'SHIPPING':
+      return 'shipped';
+    case 'DELIVERED':
+      return 'delivered';
+    case 'CANCELLED':
+      return 'cancelled';
+    default:
+      return 'pending';
+  }
+};
+
 export const mapOrderDetailDtoToModel = (dto: OrderDetailDto): OrderDetail => {
   return {
     orderId: dto.id,
     createdAt: dto.placedAt,
-    status: dto.status,
+    status: mapOrderStatusDtoToModel(dto.status),
     total: dto.totalAmount,
     itemCount: dto.items.reduce((sum, item) => sum + item.quantity, 0),
     paymentMethodLabel: getPaymentMethodLabel(dto.paymentMethod),

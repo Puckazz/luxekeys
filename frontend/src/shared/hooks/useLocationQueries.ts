@@ -7,8 +7,6 @@ export const LOCATION_QUERY_KEYS = {
     [...LOCATION_QUERY_KEYS.all, 'states', country] as const,
   cities: (country: string, state: string) =>
     [...LOCATION_QUERY_KEYS.all, 'cities', country, state] as const,
-  wards: (districtCode: string) =>
-    [...LOCATION_QUERY_KEYS.all, 'wards', districtCode] as const,
 };
 
 export const useStatesQuery = (country?: string) => {
@@ -27,18 +25,6 @@ export const useCitiesQuery = (country?: string, state?: number | string) => {
     queryKey: LOCATION_QUERY_KEYS.cities(country!, stateParam!),
     queryFn: () => locationApi.getCities(country!, stateParam!),
     enabled: !!country && !!stateParam,
-    staleTime: Infinity,
-  });
-};
-
-export const useWardsQuery = (districtCode?: number | string) => {
-  const districtParam =
-    districtCode !== undefined ? String(districtCode) : undefined;
-
-  return useQuery({
-    queryKey: LOCATION_QUERY_KEYS.wards(districtParam!),
-    queryFn: () => locationApi.getWards(districtParam!),
-    enabled: !!districtParam,
     staleTime: Infinity,
   });
 };

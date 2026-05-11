@@ -2,9 +2,13 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { PackageSearch } from 'lucide-react';
+import { Eye, PackageSearch, XCircle } from 'lucide-react';
 
-import { useOrderDetailQuery, useOrdersQuery } from '@/features/profile/hooks';
+import {
+  useCancelOrderMutation,
+  useOrderDetailQuery,
+  useOrdersQuery,
+} from '@/features/profile/hooks';
 import type { OrdersFilterValue } from '@/features/profile/types';
 import {
   formatAccountDate,
@@ -14,6 +18,17 @@ import {
 import { formatCurrency } from '@/features/shop/utils/checkout.utils';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/shared/components/ui/alert-dialog';
 import {
   Card,
   CardContent,
@@ -62,6 +77,7 @@ export default function OrdersPage() {
 
   const ordersQuery = useOrdersQuery(statusFilter);
   const orderDetailQuery = useOrderDetailQuery(selectedOrderId);
+  const { cancelOrder, isCancelling } = useCancelOrderMutation();
 
   const orders = ordersQuery.data ?? [];
   const selectedOrder = orderDetailQuery.data;
@@ -149,15 +165,59 @@ export default function OrdersPage() {
                     <TableCell className="text-foreground text-right font-semibold">
                       {formatCurrency(order.total)}
                     </TableCell>
-                    <TableCell className="pr-5 text-right">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedOrderId(order.orderId)}
-                      >
-                        View details
-                      </Button>
+                    <TableCell className="pr-5">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`View order ${order.orderId}`}
+                          onClick={() => setSelectedOrderId(order.orderId)}
+                        >
+                          <Eye className="size-4" />
+                        </Button>
+                        {order.status === 'pending' ||
+                        order.status === 'confirmed' ? (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label={`Cancel order ${order.orderId}`}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <XCircle className="size-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Cancel this order?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. The order will
+                                  be cancelled and stock will be restored.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>
+                                  Keep order
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  variant="destructive"
+                                  onClick={() => cancelOrder(order.orderId)}
+                                  disabled={isCancelling}
+                                >
+                                  {isCancelling
+                                    ? 'Cancelling...'
+                                    : 'Cancel order'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        ) : null}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -201,7 +261,7 @@ export default function OrdersPage() {
                   </p>
                   <p className="text-muted-foreground">
                     {selectedOrder.shippingAddress.streetAddress},{' '}
-                    {selectedOrder.shippingAddress.district},{' '}
+                    {selectedOrder.shippingAddress.province},{' '}
                     {selectedOrder.shippingAddress.city}
                   </p>
                 </div>

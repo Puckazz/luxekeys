@@ -22,16 +22,6 @@ import type {
   SavedAddressDto,
 } from '@/features/profile/types/profile-api.types';
 
-type PaginatedResponse<T> = {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-};
-
 export const profileApi = {
   getProfile: async (): Promise<ProfileUser> => {
     const data = await authFetch<ProfileUserDto>('/users/me');
@@ -85,7 +75,7 @@ export const profileApi = {
         }),
       });
     }
-    
+
     return profileApi.getAddresses();
   },
 
@@ -106,20 +96,38 @@ export const profileApi = {
   getOrders: async (
     status: OrdersFilterValue = 'all'
   ): Promise<OrderSummary[]> => {
+    const statusToApiValue: Record<
+      Exclude<OrdersFilterValue, 'all'>,
+      string
+    > = {
+      pending: 'PENDING',
+      confirmed: 'CONFIRMED',
+      shipped: 'SHIPPING',
+      delivered: 'DELIVERED',
+      cancelled: 'CANCELLED',
+    };
     const query = new URLSearchParams();
     if (status !== 'all') {
-      query.append('status', status);
+      query.append('status', statusToApiValue[status]);
     }
-    
-    const response = await authFetch<PaginatedResponse<OrderDetailDto>>(
-      `/orders?${query.toString()}`
+
+    const queryString = query.toString();
+    const response = await authFetch<OrderDetailDto[]>(
+      queryString ? `/orders?${queryString}` : '/orders'
     );
-    
-    return response.data.map(mapOrderDetailDtoToModel).map(mapOrderDetailToSummary);
+
+    return response.map(mapOrderDetailDtoToModel).map(mapOrderDetailToSummary);
   },
 
   getOrderDetail: async (orderId: string): Promise<OrderDetail> => {
     const data = await authFetch<OrderDetailDto>(`/orders/${orderId}`);
+    return mapOrderDetailDtoToModel(data);
+  },
+
+  cancelOrder: async (orderId: string): Promise<OrderDetail> => {
+    const data = await authFetch<OrderDetailDto>(`/orders/${orderId}/cancel`, {
+      method: 'PATCH',
+    });
     return mapOrderDetailDtoToModel(data);
   },
 };

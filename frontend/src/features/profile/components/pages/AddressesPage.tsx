@@ -26,14 +26,13 @@ import { Checkbox } from '@/shared/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
+  DialogClose,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
 import AddressFormFields from '@/shared/components/forms/AddressFormFields';
-
-
 
 const initialAddressValues: AddressFormValues = {
   label: '',
@@ -101,7 +100,8 @@ export default function AddressesPage() {
   const selectedCountry = watch('country');
   const selectedProvince = watch('province');
 
-  const { data: states, isFetching: isFetchingStates } = useStatesQuery(selectedCountry);
+  const { data: states, isFetching: isFetchingStates } =
+    useStatesQuery(selectedCountry);
 
   const countryOptions = ['Vietnam', 'United States', 'Canada', 'Australia'];
   const provinceOptions = states?.map((p) => p.name) || [];
@@ -177,7 +177,7 @@ export default function AddressesPage() {
                       {address.phone}
                     </p>
                     <p className="text-muted-foreground mt-1 text-sm">
-                      {address.streetAddress}, {address.district},{' '}
+                      {address.streetAddress}, {address.province},{' '}
                       {address.city}
                     </p>
                     <p className="text-muted-foreground mt-2 text-xs">
@@ -226,8 +226,8 @@ export default function AddressesPage() {
       )}
 
       <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
-        <DialogContent className="max-h-[85vh] w-[94%] max-w-lg overflow-y-auto p-0 sm:max-w-lg">
-          <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
+        <DialogContent className="flex max-h-[90vh] min-h-0 max-w-2xl flex-col gap-0 overflow-hidden rounded-md p-0 sm:max-w-2xl">
+          <DialogHeader className="shrink-0 border-b px-4 pt-4 pr-10 pb-3 sm:px-6 sm:pt-6">
             <DialogTitle>
               {editingAddress ? 'Edit Address' : 'Add Address'}
             </DialogTitle>
@@ -238,82 +238,87 @@ export default function AddressesPage() {
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6"
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
           >
-            <div className="space-y-2">
-              <label className="text-foreground text-sm font-semibold">
-                Label
-              </label>
-              <Input {...register('label')} placeholder="Home, Office..." />
-              {errors.label ? (
-                <p className="text-destructive text-xs font-medium">
-                  {errors.label.message}
-                </p>
-              ) : null}
-            </div>
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-6 sm:py-6 [&::-webkit-scrollbar]:hidden">
+              <div className="space-y-2">
+                <label className="text-foreground text-sm font-semibold">
+                  Label
+                </label>
+                <Input {...register('label')} placeholder="Home, Office..." />
+                {errors.label ? (
+                  <p className="text-destructive text-xs font-medium">
+                    {errors.label.message}
+                  </p>
+                ) : null}
+              </div>
 
-            <AddressFormFields
-              fullNameField={register('fullName')}
-              phoneField={register('phone')}
-              streetAddressField={register('streetAddress')}
-              provinceField={register('province')}
-              cityField={register('city')}
-              countrySelect={{
-                value: watch('country'),
-                options: countryOptions,
-                onValueChange: (nextCountry) => {
-                  setValue('country', nextCountry, { shouldValidate: true });
-                  setValue('province', '', { shouldValidate: true });
-                  setValue('city', '', { shouldValidate: true });
-                },
-                triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
-              }}
-              provinceSelect={{
-                value: selectedProvince,
-                options: provinceOptions,
-                onValueChange: (nextProvince) => {
-                  setValue('province', nextProvince, { shouldValidate: true });
-                  setValue('city', '', { shouldValidate: true });
-                },
-                triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
-                disabled: !selectedCountry || isFetchingStates,
-              }}
-              messages={{
-                fullName: errors.fullName?.message,
-                phone: errors.phone?.message,
-                streetAddress: errors.streetAddress?.message,
-                country: errors.country?.message,
-                province: errors.province?.message,
-                city: errors.city?.message,
-              }}
-            />
-
-            <div className="flex items-center gap-2">
-              <Controller
-                control={control}
-                name="isDefault"
-                render={({ field }) => (
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={(value) => {
-                      if (value !== 'indeterminate') {
-                        field.onChange(value);
-                      }
-                    }}
-                  />
-                )}
+              <AddressFormFields
+                fullNameField={register('fullName')}
+                phoneField={register('phone')}
+                streetAddressField={register('streetAddress')}
+                provinceField={register('province')}
+                cityField={register('city')}
+                countrySelect={{
+                  value: watch('country'),
+                  options: countryOptions,
+                  onValueChange: (nextCountry) => {
+                    setValue('country', nextCountry, { shouldValidate: true });
+                    setValue('province', '', { shouldValidate: true });
+                    setValue('city', '', { shouldValidate: true });
+                  },
+                  triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
+                }}
+                provinceSelect={{
+                  value: selectedProvince,
+                  options: provinceOptions,
+                  onValueChange: (nextProvince) => {
+                    setValue('province', nextProvince, {
+                      shouldValidate: true,
+                    });
+                    setValue('city', '', { shouldValidate: true });
+                  },
+                  triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
+                  disabled: !selectedCountry || isFetchingStates,
+                }}
+                messages={{
+                  fullName: errors.fullName?.message,
+                  phone: errors.phone?.message,
+                  streetAddress: errors.streetAddress?.message,
+                  country: errors.country?.message,
+                  province: errors.province?.message,
+                  city: errors.city?.message,
+                }}
               />
-              <span className="text-foreground text-sm">
-                Set as default address
-              </span>
+
+              <div className="flex items-center gap-2">
+                <Controller
+                  control={control}
+                  name="isDefault"
+                  render={({ field }) => (
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(value) => {
+                        if (value !== 'indeterminate') {
+                          field.onChange(value);
+                        }
+                      }}
+                    />
+                  )}
+                />
+                <span className="text-foreground text-sm">
+                  Set as default address
+                </span>
+              </div>
             </div>
 
-            <div className="pt-2">
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSavingAddress}
-              >
+            <div className="dark:bg-input/30 flex shrink-0 items-center justify-end gap-2 border-t px-4 py-3 sm:px-6">
+              <DialogClose asChild>
+                <Button type="button" variant="outline" size="lg">
+                  Close
+                </Button>
+              </DialogClose>
+              <Button type="submit" size="lg" disabled={isSavingAddress}>
                 {isSavingAddress
                   ? 'Saving...'
                   : editingAddress
