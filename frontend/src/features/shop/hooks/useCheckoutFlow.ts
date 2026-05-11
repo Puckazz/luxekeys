@@ -1,18 +1,18 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
   checkoutApi,
   checkoutPaymentOptions,
   checkoutShippingOptions,
 } from '@/features/shop/api/checkout.api';
-import { useCartStore } from '@/stores/shop/cart.store';
 import { useCheckoutStore } from '@/stores/shop/checkout.store';
 import type {
   CheckoutDraft,
   CheckoutFormValues,
 } from '@/features/shop/types/checkout.types';
+import { useCartStore } from '@/stores/shop/cart.store';
 
 const toCheckoutDraft = (values: CheckoutFormValues): CheckoutDraft => {
   return {
@@ -21,8 +21,9 @@ const toCheckoutDraft = (values: CheckoutFormValues): CheckoutDraft => {
       email: values.email,
       phone: values.phone,
       streetAddress: values.streetAddress,
+      country: values.country,
+      province: values.province,
       city: values.city,
-      district: values.district,
     },
     shippingMethod: values.shippingMethod,
     paymentMethod: values.paymentMethod,
@@ -37,42 +38,36 @@ const toCheckoutDraft = (values: CheckoutFormValues): CheckoutDraft => {
 };
 
 export const useCheckoutFlow = () => {
-  const items = useCartStore((state) => state.items);
-  const clearCart = useCartStore((state) => state.clear);
+  const queryClient = useQueryClient();
+  const resetCart = useCartStore((state) => state.reset);
 
   const draft = useCheckoutStore((state) => state.draft);
   const setDraft = useCheckoutStore((state) => state.setDraft);
   const setConfirmation = useCheckoutStore((state) => state.setConfirmation);
 
-  const previewMutation = useMutation({
-    mutationFn: checkoutApi.previewCheckout,
-    onSuccess: (_, variables) => {
-      setDraft(variables.draft);
-    },
-  });
-
-  const confirmMutation = useMutation({
-    mutationFn: checkoutApi.confirmCheckout,
+  const createOrderMutation = useMutation({
+    mutationFn: checkoutApi.createOrder,
     onSuccess: (confirmation) => {
       setConfirmation(confirmation);
-      clearCart();
+      resetCart();
+      queryClient.setQueryData(['cart'], {
+        items: [],
+        updatedAt: Date.now(),
+      });
     },
   });
 
-  const submitCheckout = async (values: CheckoutFormValues) => {
+  const submitCheckout = async (
+    values: CheckoutFormValues,
+    addressId: string
+  ) => {
     const draftData = toCheckoutDraft(values);
 
-    return previewMutation.mutateAsync({
-      items,
-      draft: draftData,
-    });
-  };
+    setDraft(draftData);
 
-  const confirmCheckout = async (
-    reviewData: Awaited<ReturnType<typeof checkoutApi.previewCheckout>>
-  ) => {
-    return confirmMutation.mutateAsync({
-      review: reviewData,
+    return createOrderMutation.mutateAsync({
+      values,
+      addressId,
     });
   };
 
@@ -80,11 +75,8 @@ export const useCheckoutFlow = () => {
     draft,
     shippingOptions: checkoutShippingOptions,
     paymentOptions: checkoutPaymentOptions,
-    isSubmittingCheckout: previewMutation.isPending,
-    checkoutSubmitError: previewMutation.error,
-    isConfirmingCheckout: confirmMutation.isPending,
-    checkoutConfirmError: confirmMutation.error,
+    isSubmittingCheckout: createOrderMutation.isPending,
+    checkoutSubmitError: createOrderMutation.error,
     submitCheckout,
-    confirmCheckout,
   };
 };

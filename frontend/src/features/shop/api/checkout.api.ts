@@ -1,23 +1,13 @@
-import type { CartLineItem } from '@/features/shop/types/cart-page.types';
+import { authFetch } from '@/shared/api/http-client';
 import type {
   CheckoutConfirmationData,
-  CheckoutDraft,
+  CheckoutFormValues,
   CheckoutPaymentMethodOption,
-  CheckoutReviewData,
   CheckoutShippingOption,
+  PaymentMethodId,
 } from '@/features/shop/types/checkout.types';
-import {
-  buildOrderPricing,
-  calculateSubtotal,
-  normalizePromoCode,
-  resolveDiscountRate,
-} from '@/features/shop/utils/checkout.utils';
-
-const MOCK_DELAY = 220;
-
-const delay = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
+import type { OrderResponseDto } from '@/features/shop/types/checkout-api.types';
+import { mapOrderResponseToConfirmation } from '@/features/shop/mappers/checkout.mapper';
 
 export const checkoutShippingOptions: CheckoutShippingOption[] = [
   {
@@ -36,22 +26,25 @@ export const checkoutShippingOptions: CheckoutShippingOption[] = [
 
 export const checkoutPaymentOptions: CheckoutPaymentMethodOption[] = [
   {
-    id: 'vnpay-qr',
-    label: 'VNPay QR',
-    description: 'Pay via banking app QR',
-    shortLabel: 'VN',
+    id: 'paypal',
+    label: 'PayPal',
+    description: 'Secure online payment',
+    shortLabel: 'PP',
+    disabled: true,
   },
   {
     id: 'momo',
     label: 'MoMo Wallet',
     description: 'Instant mobile payment',
     shortLabel: 'MO',
+    disabled: true,
   },
   {
     id: 'card',
     label: 'Credit Card',
     description: 'Visa, Mastercard, JCB',
     shortLabel: 'CC',
+    disabled: true,
   },
   {
     id: 'cod',
@@ -61,74 +54,32 @@ export const checkoutPaymentOptions: CheckoutPaymentMethodOption[] = [
   },
 ];
 
-let orderCounter = 1024;
-
-const cloneCartItems = (items: CartLineItem[]) => {
-  return items.map((item) => ({ ...item }));
+const toApiPaymentMethod = (method: PaymentMethodId): 'COD' | 'PAYPAL' => {
+  return method === 'paypal' ? 'PAYPAL' : 'COD';
 };
 
 export const checkoutApi = {
-  previewCheckout: async ({
-    items,
-    draft,
+  createOrder: async ({
+    addressId,
+    values,
   }: {
-    items: CartLineItem[];
-    draft: CheckoutDraft;
-  }): Promise<CheckoutReviewData> => {
-    await delay(MOCK_DELAY);
-
-    if (items.length === 0) {
-      throw new Error('Your cart is empty.');
-    }
-
-    const shippingMethod = checkoutShippingOptions.find(
-      (option) => option.id === draft.shippingMethod
-    );
-    const paymentMethod = checkoutPaymentOptions.find(
-      (option) => option.id === draft.paymentMethod
-    );
-
-    if (!shippingMethod || !paymentMethod) {
-      throw new Error('Invalid shipping or payment method.');
-    }
-
-    const subtotal = calculateSubtotal(items);
-    const promoCode = normalizePromoCode(draft.promoCode);
-    const discountRate = resolveDiscountRate(promoCode);
-    const pricing = buildOrderPricing({
-      subtotal,
-      shippingFee: shippingMethod.fee,
-      discountRate,
+    addressId: string;
+    values: CheckoutFormValues;
+  }): Promise<CheckoutConfirmationData> => {
+    const order = await authFetch<OrderResponseDto>('/orders', {
+      method: 'POST',
+      body: JSON.stringify({
+        addressId,
+        paymentMethod: toApiPaymentMethod(values.paymentMethod),
+        note: values.notes.trim() || undefined,
+      }),
     });
 
-    return {
-      items: cloneCartItems(items),
-      shippingAddress: { ...draft.shippingAddress },
-      shippingMethod,
-      paymentMethod,
-      pricing,
-      promoCode,
-      notes: draft.notes,
-    };
-  },
-
-  confirmCheckout: async ({
-    review,
-  }: {
-    review: CheckoutReviewData;
-  }): Promise<CheckoutConfirmationData> => {
-    await delay(MOCK_DELAY);
-
-    orderCounter += 1;
-
-    return {
-      orderId: `LK-${orderCounter}`,
-      createdAt: new Date().toISOString(),
-      status: 'confirmed',
-      review: {
-        ...review,
-        items: cloneCartItems(review.items),
-      },
-    };
+    return mapOrderResponseToConfirmation({
+      order,
+      values,
+      shippingOptions: checkoutShippingOptions,
+      paymentOptions: checkoutPaymentOptions,
+    });
   },
 };

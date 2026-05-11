@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -25,12 +26,12 @@ import { UpdateAddressDto } from './dto/update-address.dto.js';
 
 @ApiTags('Addresses')
 @Controller('addresses')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 export class AddressesController {
   constructor(private readonly addressesService: AddressesService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'List all addresses of the current user' })
   @ApiOkResponse({
     description: 'List of user addresses ordered by default first',
@@ -39,7 +40,15 @@ export class AddressesController {
     return this.addressesService.findAllByUser(user.id);
   }
 
+  @Get('states')
+  @ApiOperation({ summary: 'Get states or provinces by country' })
+  getStates(@Query('country') country: string) {
+    return this.addressesService.getStates(country);
+  }
+
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Add a new address' })
   create(
     @CurrentUser() user: AuthUser,
@@ -49,6 +58,8 @@ export class AddressesController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get a single address by ID' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   @ApiOkResponse({ description: 'Address detail' })
@@ -60,6 +71,8 @@ export class AddressesController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an address' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   update(
@@ -71,6 +84,8 @@ export class AddressesController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Soft-delete an address' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   remove(
@@ -81,6 +96,8 @@ export class AddressesController {
   }
 
   @Patch(':id/set-default')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Set an address as default' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   setDefault(

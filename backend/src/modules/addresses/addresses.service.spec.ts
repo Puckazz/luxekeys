@@ -51,8 +51,9 @@ describe('AddressesService', () => {
       const result = await service.create(userId, {
         fullName: 'Test User',
         phone: '0901234567',
-        line1: '123 Main St',
-        city: 'HCM',
+        streetAddress: '123 Main St',
+        province: 'HCM',
+        city: 'District 1',
       } as never);
 
       expect(result.userId).toBe(userId);
@@ -67,8 +68,9 @@ describe('AddressesService', () => {
       await service.create(userId, {
         fullName: 'Test',
         phone: '0901234567',
-        line1: '123',
-        city: 'HCM',
+        streetAddress: '123',
+        province: 'HCM',
+        city: 'District 1',
         isDefault: true,
       } as never);
 

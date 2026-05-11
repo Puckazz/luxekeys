@@ -11,11 +11,15 @@ import {
   CheckoutOrderSummaryCard,
   CheckoutStepper,
 } from '@/features/shop/components/checkout';
+import { useStatesQuery } from '@/shared/hooks/useLocationQueries';
+import type { ProfileUser, SavedAddress } from '@/features/profile/types';
 import { checkoutSchema } from '@/features/shop/schemas/checkout.schema';
 import { useCheckoutFlow } from '@/features/shop/hooks/useCheckoutFlow';
 import { useCheckoutStore } from '@/stores/shop/checkout.store';
 import { useCartStore } from '@/stores/shop/cart.store';
 import { useAuthStore } from '@/stores/auth/auth.store';
+import { useProfileStore } from '@/stores/profile/profile.store';
+import { useAddressesStore } from '@/stores/profile/addresses.store';
 import { useCartSync } from '@/features/shop/hooks/useCartSync';
 import type { CheckoutFormValues } from '@/features/shop/types/checkout.types';
 import {
@@ -37,23 +41,11 @@ import { Input } from '@/shared/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-const cityOptions = ['Ho Chi Minh City', 'Ha Noi', 'Da Nang'];
-const districtOptionsByCity: Record<string, string[]> = {
-  'Ho Chi Minh City': [
-    'District 1',
-    'District 2',
-    'District 3',
-    'Thu Duc City',
-  ],
-  'Ha Noi': ['Ba Dinh', 'Dong Da', 'Cau Giay', 'Hoan Kiem'],
-  'Da Nang': ['Hai Chau', 'Thanh Khe', 'Son Tra'],
-};
-
 const paymentBadgeClassByMethod: Record<
   CheckoutFormValues['paymentMethod'],
   string
 > = {
-  'vnpay-qr': 'bg-white text-[#0A3D91]',
+  paypal: 'bg-[#003087] text-white',
   momo: 'bg-[#B5007A] text-white',
   card: 'bg-[#3C4E6A] text-white',
   cod: 'bg-[#2B3E5A] text-white',
@@ -62,13 +54,8 @@ const paymentBadgeClassByMethod: Record<
 const renderPaymentBadgeLabel = (
   paymentMethod: CheckoutFormValues['paymentMethod']
 ) => {
-  if (paymentMethod === 'vnpay-qr') {
-    return (
-      <>
-        <span>VN</span>
-        <span className="text-[#ED3C2F]">PAY</span>
-      </>
-    );
+  if (paymentMethod === 'paypal') {
+    return 'PayPal';
   }
 
   if (paymentMethod === 'momo') {
@@ -102,40 +89,28 @@ const toCvc = (raw: string) => {
 };
 
 const getDefaultValues = (
-  draft: ReturnType<typeof useCheckoutStore.getState>['draft']
+  draft: ReturnType<typeof useCheckoutStore.getState>['draft'],
+  profile?: ProfileUser | null,
+  addresses?: SavedAddress[]
 ): CheckoutFormValues => {
-  if (!draft) {
-    return {
-      fullName: 'John Doe',
-      email: 'john@example.com',
-      phone: '0912 345 678',
-      streetAddress: '123 Nguyen Hue Street',
-      city: 'Ho Chi Minh City',
-      district: 'District 1',
-      shippingMethod: 'standard',
-      paymentMethod: 'cod',
-      cardNumber: '',
-      expiry: '',
-      cvc: '',
-      promoCode: '',
-      notes: '',
-    };
-  }
+  const defaultAddress =
+    addresses?.find((address) => address.isDefault) || addresses?.[0];
 
   return {
-    fullName: draft.shippingAddress.fullName,
-    email: draft.shippingAddress.email,
-    phone: draft.shippingAddress.phone,
-    streetAddress: draft.shippingAddress.streetAddress,
-    city: draft.shippingAddress.city,
-    district: draft.shippingAddress.district,
+    fullName: profile?.fullName || '',
+    email: profile?.email || '',
+    phone: defaultAddress?.phone || profile?.phone || '',
+    streetAddress: defaultAddress?.streetAddress || '',
+    country: defaultAddress?.country || 'Vietnam',
+    province: defaultAddress?.province || '',
+    city: defaultAddress?.city || '',
     shippingMethod: 'standard',
     paymentMethod: 'cod',
     cardNumber: '',
     expiry: '',
     cvc: '',
-    promoCode: draft.promoCode ?? '',
-    notes: draft.notes,
+    promoCode: draft?.promoCode ?? '',
+    notes: draft?.notes ?? '',
   };
 };
 
@@ -149,18 +124,17 @@ export default function CheckoutPage() {
   const checkoutHydrated = useCheckoutStore((state) => state.hydrated);
   const cartItems = useCartStore((state) => state.items);
   const draft = useCheckoutStore((state) => state.draft);
-
-
+  const profile = useProfileStore((state) => state.profile);
+  const profileHydrated = useProfileStore((state) => state.hydrated);
+  const addresses = useAddressesStore((state) => state.addresses);
+  const addressesHydrated = useAddressesStore((state) => state.hydrated);
 
   const {
     submitCheckout,
-    confirmCheckout,
     shippingOptions,
     paymentOptions,
     isSubmittingCheckout,
     checkoutSubmitError,
-    isConfirmingCheckout,
-    checkoutConfirmError,
   } = useCheckoutFlow();
 
   const {
@@ -173,33 +147,44 @@ export default function CheckoutPage() {
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: getDefaultValues(draft),
+    defaultValues: getDefaultValues(draft, profile, addresses),
   });
 
   const [promoInputValue, setPromoInputValue] = useState(
-    getDefaultValues(draft).promoCode
+    getDefaultValues(draft, profile, addresses).promoCode
   );
+  const [addressError, setAddressError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!checkoutHydrated) {
+    if (!checkoutHydrated || !profileHydrated || !addressesHydrated) {
       return;
     }
 
-    const nextDefaultValues = getDefaultValues(draft);
+    const nextDefaultValues = getDefaultValues(draft, profile, addresses);
     reset(nextDefaultValues);
     setPromoInputValue(nextDefaultValues.promoCode);
-  }, [checkoutHydrated, draft, reset]);
+  }, [
+    checkoutHydrated,
+    profileHydrated,
+    addressesHydrated,
+    draft,
+    profile,
+    addresses,
+    reset,
+  ]);
 
-  const selectedCity = watch('city');
+  const selectedCountry = watch('country');
+  const selectedProvince = watch('province');
   const selectedShippingMethod = watch('shippingMethod');
   const selectedPromoCode = watch('promoCode');
   const selectedPaymentMethod = watch('paymentMethod');
   const streetAddress = watch('streetAddress');
-  const district = watch('district');
 
-  const availableDistricts =
-    districtOptionsByCity[selectedCity] ??
-    districtOptionsByCity['Ho Chi Minh City'];
+  const { data: states, isFetching: isFetchingStates } =
+    useStatesQuery(selectedCountry);
+
+  const countryOptions = ['Vietnam', 'United States', 'Canada', 'Australia'];
+  const provinceOptions = states?.map((p) => p.name) || [];
 
   const previewPricing = useMemo(() => {
     const subtotal = calculateSubtotal(cartItems);
@@ -218,6 +203,13 @@ export default function CheckoutPage() {
   const hasValidatedAddress =
     streetAddress.trim().length > 5 && !errors.streetAddress;
   const isCardPayment = selectedPaymentMethod === 'card';
+  const defaultAddressId = useMemo(() => {
+    return (
+      addresses?.find((address) => address.isDefault)?.id ??
+      addresses?.[0]?.id ??
+      ''
+    );
+  }, [addresses]);
 
   const checkoutStep = 'checkout';
 
@@ -227,8 +219,14 @@ export default function CheckoutPage() {
       return;
     }
 
-    const reviewData = await submitCheckout(values);
-    await confirmCheckout(reviewData);
+    setAddressError(null);
+
+    if (!defaultAddressId) {
+      setAddressError('Please add a shipping address before placing an order.');
+      return;
+    }
+
+    await submitCheckout(values, defaultAddressId);
     router.push('/checkout/confirmation');
   };
 
@@ -273,9 +271,9 @@ export default function CheckoutPage() {
               </div>
             ) : null}
 
-            {checkoutConfirmError ? (
+            {addressError ? (
               <div className="border-destructive/35 bg-destructive/10 text-destructive rounded-lg border p-3 text-sm">
-                {checkoutConfirmError.message}
+                {addressError}
               </div>
             ) : null}
 
@@ -292,35 +290,40 @@ export default function CheckoutPage() {
                   emailField={register('email')}
                   phoneField={register('phone')}
                   streetAddressField={register('streetAddress')}
-                  citySelect={{
-                    value: selectedCity,
-                    options: cityOptions,
-                    onValueChange: (nextCity) => {
-                      setValue('city', nextCity, { shouldValidate: true });
-                      setValue(
-                        'district',
-                        districtOptionsByCity[nextCity]?.[0] ?? 'District 1',
-                        { shouldValidate: true }
-                      );
+                  provinceField={register('province')}
+                  cityField={register('city')}
+                  countrySelect={{
+                    value: selectedCountry,
+                    options: countryOptions,
+                    onValueChange: (nextCountry) => {
+                      setValue('country', nextCountry, {
+                        shouldValidate: true,
+                      });
+                      setValue('province', '', { shouldValidate: true });
+                      setValue('city', '', { shouldValidate: true });
                     },
                     triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
                   }}
-                  districtSelect={{
-                    value: district,
-                    options: availableDistricts,
-                    onValueChange: (nextDistrict) => {
-                      setValue('district', nextDistrict, {
+                  provinceSelect={{
+                    value: selectedProvince,
+                    options: provinceOptions,
+                    onValueChange: (nextProvince) => {
+                      setValue('province', nextProvince, {
                         shouldValidate: true,
                       });
+                      setValue('city', '', { shouldValidate: true });
                     },
+                    triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
+                    disabled: !selectedCountry || isFetchingStates,
                   }}
                   messages={{
                     fullName: errors.fullName?.message,
                     email: errors.email?.message,
                     phone: errors.phone?.message,
                     streetAddress: errors.streetAddress?.message,
+                    country: errors.country?.message,
+                    province: errors.province?.message,
                     city: errors.city?.message,
-                    district: errors.district?.message,
                   }}
                   showEmail
                   showEmailIcon
@@ -395,8 +398,10 @@ export default function CheckoutPage() {
                         <label
                           key={option.id}
                           htmlFor={`payment-${option.id}`}
+                          aria-disabled={option.disabled}
                           className={cn(
                             'border-border/80 bg-input/30 flex min-h-42 cursor-pointer flex-col justify-between rounded-3xl border-2 p-5 transition-colors',
+                            option.disabled && 'cursor-not-allowed opacity-60',
                             field.value === option.id &&
                               'border-primary bg-primary/10 shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.35)]'
                           )}
@@ -417,6 +422,7 @@ export default function CheckoutPage() {
                               id={`payment-${option.id}`}
                               value={option.id}
                               className="mt-0.5"
+                              disabled={option.disabled}
                             />
                           </div>
 
@@ -527,9 +533,7 @@ export default function CheckoutPage() {
             actionType="submit"
             actionForm="checkout-form"
             actionLabel="Place Order"
-            isActionLoading={
-              isSubmittingCheckout || isConfirmingCheckout || isSyncing
-            }
+            isActionLoading={isSubmittingCheckout || isSyncing}
             promoCode={normalizePromoCode(selectedPromoCode) ?? undefined}
             promoInputValue={promoInputValue}
             onPromoInputChange={setPromoInputValue}

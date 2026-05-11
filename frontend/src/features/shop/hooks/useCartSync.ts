@@ -39,7 +39,12 @@ export const useCartSync = () => {
   });
 
   useEffect(() => {
-    if (!hydrated || !isAuthenticated || !cartQuery.data || syncMutation.isPending) {
+    if (
+      !hydrated ||
+      !isAuthenticated ||
+      !cartQuery.data ||
+      syncMutation.isPending
+    ) {
       return;
     }
 
@@ -51,14 +56,18 @@ export const useCartSync = () => {
         return;
       }
 
-      if (serverSnapshot.updatedAt > updatedAt) {
+      if (serverSnapshot.updatedAt !== updatedAt) {
         replaceFromServer(serverSnapshot.items, serverSnapshot.updatedAt);
       }
 
       return;
     }
 
-    // Smart merge: if guest cart is dirty on login, merge previous server items that do not exist locally
+    if (items.length === 0) {
+      syncMutation.mutate({ items, updatedAt });
+      return;
+    }
+
     let hasMerged = false;
     const mergedItems = [...items];
 

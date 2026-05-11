@@ -120,7 +120,7 @@ export default function Header() {
   );
   const [isSearchSheetOpen, setIsSearchSheetOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const accountHref = isAuthenticated ? '/account' : '/login?next=/account';
+  const accountHref = isAuthenticated ? '/account' : '/login';
 
   const openSearchSheet = () => {
     setIsSearchSheetOpen(true);

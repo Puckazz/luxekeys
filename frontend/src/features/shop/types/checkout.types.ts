@@ -4,13 +4,14 @@ export type CheckoutStepKey = 'checkout' | 'confirmation';
 
 export type ShippingMethodId = 'standard' | 'express';
 
-export type PaymentMethodId = 'vnpay-qr' | 'momo' | 'card' | 'cod';
+export type PaymentMethodId = 'paypal' | 'momo' | 'card' | 'cod';
 
 export type CheckoutPaymentMethodOption = {
   id: PaymentMethodId;
   label: string;
   description: string;
   shortLabel: string;
+  disabled?: boolean;
 };
 
 export type CheckoutShippingOption = {
@@ -25,8 +26,9 @@ export type CheckoutFormValues = {
   email: string;
   phone: string;
   streetAddress: string;
+  country: string;
+  province: string;
   city: string;
-  district: string;
   shippingMethod: ShippingMethodId;
   paymentMethod: PaymentMethodId;
   cardNumber: string;
@@ -41,8 +43,9 @@ export type ShippingAddress = {
   email: string;
   phone: string;
   streetAddress: string;
+  country: string;
+  province: string;
   city: string;
-  district: string;
 };
 
 export type CheckoutDraft = {

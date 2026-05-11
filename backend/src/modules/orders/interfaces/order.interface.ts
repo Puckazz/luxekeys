@@ -21,10 +21,8 @@ export interface OrderItemResponse {
 export interface OrderAddressSnapshot {
   fullName: string;
   phone: string;
-  line1: string;
-  line2: string | null;
-  ward: string | null;
-  district: string | null;
+  streetAddress: string;
+  province: string;
   city: string;
   country: string;
 }
@@ -55,10 +53,8 @@ export const ORDER_WITH_ITEMS_INCLUDE = {
     select: {
       fullName: true,
       phone: true,
-      line1: true,
-      line2: true,
-      ward: true,
-      district: true,
+      streetAddress: true,
+      province: true,
       city: true,
       country: true,
     },

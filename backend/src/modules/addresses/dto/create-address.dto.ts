@@ -15,32 +15,19 @@ export class CreateAddressDto {
   @ApiProperty({ example: '123 Nguyen Hue' })
   @IsString()
   @MaxLength(255)
-  line1!: string;
+  streetAddress!: string;
 
-  @ApiPropertyOptional({ example: 'Apt 4B' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  line2?: string;
-
-  @ApiPropertyOptional({ example: 'Ben Nghe' })
-  @IsOptional()
+  @ApiProperty({ example: 'Ho Chi Minh' })
   @IsString()
   @MaxLength(100)
-  ward?: string;
-
-  @ApiPropertyOptional({ example: 'District 1' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  district?: string;
+  province!: string;
 
   @ApiProperty({ example: 'Ho Chi Minh City' })
   @IsString()
   @MaxLength(100)
   city!: string;
 
-  @ApiPropertyOptional({ example: 'Vietnam', default: 'United States' })
+  @ApiPropertyOptional({ example: 'Vietnam', default: 'Vietnam' })
   @IsOptional()
   @IsString()
   @MaxLength(100)

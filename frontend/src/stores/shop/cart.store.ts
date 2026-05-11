@@ -17,6 +17,7 @@ type CartState = {
   removeItem: (id: string) => void;
   setQuantity: (id: string, quantity: number) => void;
   clear: () => void;
+  reset: () => void;
   replaceFromServer: (items: CartLineItem[], updatedAt: number) => void;
   markSynced: () => void;
   setHydrated: (value: boolean) => void;
@@ -95,6 +96,13 @@ export const useCartStore = create<CartState>()(
           isDirty: true,
         }),
 
+      reset: () =>
+        set({
+          items: [],
+          updatedAt: 0,
+          isDirty: false,
+        }),
+
       replaceFromServer: (items, updatedAt) =>
         set(() => ({
           items: items.map((item) => ({ ...item })),
@@ -113,6 +121,7 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         items: state.items,
         updatedAt: state.updatedAt,
+        isDirty: state.isDirty,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);

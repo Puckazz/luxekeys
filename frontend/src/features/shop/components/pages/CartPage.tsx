@@ -120,7 +120,7 @@ export default function CartPage() {
                                     {label}
                                   </span>
                                   {index === 0 && (
-                                    <span className="bg-muted-foreground/70 h-3 w-[1px]" />
+                                    <span className="bg-muted-foreground/70 h-3 w-px" />
                                   )}
                                 </div>
                               ))

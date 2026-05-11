@@ -17,6 +17,7 @@ type SelectFieldConfig = {
   options: string[];
   onValueChange: (value: string) => void;
   triggerClassName?: string;
+  disabled?: boolean;
 };
 
 type AddressFormFieldMessages = {
@@ -24,18 +25,21 @@ type AddressFormFieldMessages = {
   email?: string;
   phone?: string;
   streetAddress?: string;
+  country?: string;
   city?: string;
-  district?: string;
+  province?: string;
 };
 
 type AddressFormFieldsProps = {
   fullNameField: UseFormRegisterReturn;
   phoneField: UseFormRegisterReturn;
   streetAddressField: UseFormRegisterReturn;
+  countryField?: UseFormRegisterReturn;
+  provinceField?: UseFormRegisterReturn;
   cityField?: UseFormRegisterReturn;
-  districtField?: UseFormRegisterReturn;
   emailField?: UseFormRegisterReturn;
-  citySelect?: SelectFieldConfig;
+  countrySelect?: SelectFieldConfig;
+  provinceSelect?: SelectFieldConfig;
   districtSelect?: SelectFieldConfig;
   messages?: AddressFormFieldMessages;
   showEmail?: boolean;
@@ -57,11 +61,12 @@ export default function AddressFormFields({
   fullNameField,
   phoneField,
   streetAddressField,
+  countryField,
+  provinceField,
   cityField,
-  districtField,
   emailField,
-  citySelect,
-  districtSelect,
+  countrySelect,
+  provinceSelect,
   messages,
   showEmail = false,
   showValidatedAddress = false,
@@ -139,62 +144,76 @@ export default function AddressFormFields({
         {renderError(messages?.streetAddress)}
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      {countrySelect || countryField ? (
         <div className="space-y-2">
-          <label className="text-foreground text-sm font-semibold">City</label>
-          {citySelect ? (
+          <label className="text-foreground text-sm font-semibold">
+            Country
+          </label>
+          {countrySelect ? (
             <Select
-              value={citySelect.value}
-              onValueChange={citySelect.onValueChange}
+              value={countrySelect.value}
+              onValueChange={countrySelect.onValueChange}
+              disabled={countrySelect.disabled}
             >
               <SelectTrigger
-                className={
-                  citySelect.triggerClassName ??
-                  'bg-input/30 h-12 w-full rounded-md'
-                }
+                className={countrySelect.triggerClassName ?? 'w-full'}
               >
-                <SelectValue />
+                <SelectValue placeholder="Select Country" />
               </SelectTrigger>
               <SelectContent>
-                {citySelect.options.map((city) => (
-                  <SelectItem key={city} value={city}>
-                    {city}
+                {countrySelect.options.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           ) : (
-            <Input {...cityField} />
+            <Input {...countryField} />
           )}
-          {renderError(messages?.city)}
+          {renderError(messages?.country)}
+        </div>
+      ) : null}
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-foreground text-sm font-semibold">
+            State / Province
+          </label>
+          {provinceSelect ? (
+            <Select
+              value={provinceSelect.value}
+              onValueChange={provinceSelect.onValueChange}
+              disabled={provinceSelect.disabled}
+            >
+              <SelectTrigger
+                className={
+                  provinceSelect.triggerClassName ??
+                  'bg-input/30 h-12 w-full rounded-md'
+                }
+              >
+                <SelectValue placeholder="Select State / Province" />
+              </SelectTrigger>
+              <SelectContent>
+                {provinceSelect.options.map((prov) => (
+                  <SelectItem key={prov} value={prov}>
+                    {prov}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input {...provinceField} />
+          )}
+          {renderError(messages?.province)}
         </div>
 
         <div className="space-y-2">
           <label className="text-foreground text-sm font-semibold">
-            District
+            City
           </label>
-          {districtSelect ? (
-            <Select
-              value={districtSelect.value}
-              onValueChange={districtSelect.onValueChange}
-            >
-              <SelectTrigger
-                className={districtSelect.triggerClassName ?? 'w-full'}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {districtSelect.options.map((district) => (
-                  <SelectItem key={district} value={district}>
-                    {district}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Input {...districtField} />
-          )}
-          {renderError(messages?.district)}
+          <Input {...cityField} />
+          {renderError(messages?.city)}
         </div>
       </div>
     </>

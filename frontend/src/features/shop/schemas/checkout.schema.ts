@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-const paymentMethodSchema = z.enum([
-  'vnpay-qr',
-  'momo',
-  'card',
-  'cod',
-]);
+const paymentMethodSchema = z.enum(['paypal', 'momo', 'card', 'cod']);
 
 const shippingMethodSchema = z.enum(['standard', 'express']);
 
@@ -15,8 +10,9 @@ export const checkoutSchema = z
     email: z.email('Email is invalid.'),
     phone: z.string().regex(/^[0-9+()\s-]{8,18}$/, 'Phone number is invalid.'),
     streetAddress: z.string().min(6, 'Street address is required.'),
-    city: z.string().min(2, 'Please select a city.'),
-    district: z.string().min(2, 'Please select a district.'),
+    country: z.string().min(2, 'Please select a country.'),
+    province: z.string().min(2, 'State / Province is required.'),
+    city: z.string().min(2, 'City is required.'),
     shippingMethod: shippingMethodSchema,
     paymentMethod: paymentMethodSchema,
     cardNumber: z.string(),

@@ -23,7 +23,8 @@ export const addressSchema = z.object({
     .string()
     .trim()
     .min(6, 'Street address must be at least 6 characters.'),
+  country: z.string().trim().min(2, 'Country is required.'),
+  province: z.string().trim().min(2, 'State / Province is required.'),
   city: z.string().trim().min(2, 'City is required.'),
-  district: z.string().trim().min(2, 'District is required.'),
   isDefault: z.boolean(),
 });

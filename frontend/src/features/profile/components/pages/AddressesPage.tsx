@@ -9,6 +9,7 @@ import {
   useAddressMutations,
   useAddressesQuery,
 } from '@/features/profile/hooks';
+import { useStatesQuery } from '@/shared/hooks/useLocationQueries';
 import { addressSchema } from '@/features/profile/schemas/profile.schema';
 import type { AddressFormValues, SavedAddress } from '@/features/profile/types';
 import { formatAccountDate } from '@/features/profile/utils/profile.utils';
@@ -32,26 +33,16 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import AddressFormFields from '@/shared/components/forms/AddressFormFields';
 
-const cityOptions = ['Ho Chi Minh City', 'Ha Noi', 'Da Nang'];
 
-const districtOptionsByCity: Record<string, string[]> = {
-  'Ho Chi Minh City': [
-    'District 1',
-    'District 2',
-    'District 3',
-    'Thu Duc City',
-  ],
-  'Ha Noi': ['Ba Dinh', 'Dong Da', 'Cau Giay', 'Hoan Kiem'],
-  'Da Nang': ['Hai Chau', 'Thanh Khe', 'Son Tra'],
-};
 
 const initialAddressValues: AddressFormValues = {
   label: '',
   fullName: '',
   phone: '',
   streetAddress: '',
+  country: 'Vietnam',
+  province: '',
   city: '',
-  district: '',
   isDefault: false,
 };
 
@@ -61,8 +52,9 @@ const toFormValues = (address: SavedAddress): AddressFormValues => {
     fullName: address.fullName,
     phone: address.phone,
     streetAddress: address.streetAddress,
+    country: address.country ?? 'Vietnam',
+    province: address.province,
     city: address.city,
-    district: address.district,
     isDefault: address.isDefault,
   };
 };
@@ -106,11 +98,13 @@ export default function AddressesPage() {
     defaultValues: initialAddressValues,
   });
 
-  const selectedCity = watch('city');
+  const selectedCountry = watch('country');
+  const selectedProvince = watch('province');
 
-  const availableDistricts =
-    districtOptionsByCity[selectedCity] ??
-    districtOptionsByCity['Ho Chi Minh City'];
+  const { data: states, isFetching: isFetchingStates } = useStatesQuery(selectedCountry);
+
+  const countryOptions = ['Vietnam', 'United States', 'Canada', 'Australia'];
+  const provinceOptions = states?.map((p) => p.name) || [];
 
   const openCreateEditor = () => {
     setEditingAddressId(null);
@@ -262,32 +256,35 @@ export default function AddressesPage() {
               fullNameField={register('fullName')}
               phoneField={register('phone')}
               streetAddressField={register('streetAddress')}
-              citySelect={{
-                value: selectedCity,
-                options: cityOptions,
-                onValueChange: (nextCity) => {
-                  setValue('city', nextCity, { shouldValidate: true });
-                  setValue(
-                    'district',
-                    districtOptionsByCity[nextCity]?.[0] ?? 'District 1',
-                    { shouldValidate: true }
-                  );
+              provinceField={register('province')}
+              cityField={register('city')}
+              countrySelect={{
+                value: watch('country'),
+                options: countryOptions,
+                onValueChange: (nextCountry) => {
+                  setValue('country', nextCountry, { shouldValidate: true });
+                  setValue('province', '', { shouldValidate: true });
+                  setValue('city', '', { shouldValidate: true });
                 },
                 triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
               }}
-              districtSelect={{
-                value: watch('district'),
-                options: availableDistricts,
-                onValueChange: (nextDistrict) => {
-                  setValue('district', nextDistrict, { shouldValidate: true });
+              provinceSelect={{
+                value: selectedProvince,
+                options: provinceOptions,
+                onValueChange: (nextProvince) => {
+                  setValue('province', nextProvince, { shouldValidate: true });
+                  setValue('city', '', { shouldValidate: true });
                 },
+                triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
+                disabled: !selectedCountry || isFetchingStates,
               }}
               messages={{
                 fullName: errors.fullName?.message,
                 phone: errors.phone?.message,
                 streetAddress: errors.streetAddress?.message,
+                country: errors.country?.message,
+                province: errors.province?.message,
                 city: errors.city?.message,
-                district: errors.district?.message,
               }}
             />
 

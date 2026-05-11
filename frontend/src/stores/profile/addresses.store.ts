@@ -10,6 +10,7 @@ type AddressesStoreState = {
   hydrated: boolean;
   setAddresses: (addresses: SavedAddress[]) => void;
   setHydrated: (value: boolean) => void;
+  clearAddresses: () => void;
 };
 
 export const useAddressesStore = create<AddressesStoreState>()(
@@ -19,6 +20,7 @@ export const useAddressesStore = create<AddressesStoreState>()(
       hydrated: false,
       setAddresses: (addresses) => set(() => ({ addresses })),
       setHydrated: (value) => set(() => ({ hydrated: value })),
+      clearAddresses: () => set(() => ({ addresses: [] })),
     }),
     {
       name: 'luxekeys-profile-addresses',

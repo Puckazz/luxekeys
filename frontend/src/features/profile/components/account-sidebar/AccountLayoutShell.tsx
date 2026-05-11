@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import AccountSidebar from '@/features/profile/components/account-sidebar/AccountSidebar';
 import { RouteTopLoader } from '@/shared/components/ui/route-top-loader';
+import { canAccessAdminPanel } from '@/lib/rbac';
 import { useAuthStore } from '@/stores/auth/auth.store';
 
 export default function AccountLayoutShell({
@@ -12,13 +13,9 @@ export default function AccountLayoutShell({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const sessionUser = useAuthStore((state) => state.user);
   const authStatus = useAuthStore((state) => state.status);
-  const search = searchParams.toString();
-  const currentPath = search ? `${pathname}?${search}` : pathname;
 
   useEffect(() => {
     if (authStatus === 'idle' || authStatus === 'loading') {
@@ -26,12 +23,21 @@ export default function AccountLayoutShell({
     }
 
     if (!sessionUser) {
-      const params = new URLSearchParams({ next: currentPath });
-      router.replace(`/login?${params.toString()}`);
+      router.replace('/login');
+      return;
     }
-  }, [authStatus, currentPath, router, sessionUser]);
 
-  if (authStatus === 'idle' || authStatus === 'loading' || !sessionUser) {
+    if (canAccessAdminPanel(sessionUser.role)) {
+      router.replace('/admin');
+    }
+  }, [authStatus, router, sessionUser]);
+
+  if (
+    authStatus === 'idle' ||
+    authStatus === 'loading' ||
+    !sessionUser ||
+    canAccessAdminPanel(sessionUser.role)
+  ) {
     return <RouteTopLoader />;
   }
 

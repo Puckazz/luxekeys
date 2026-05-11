@@ -3,41 +3,40 @@ import type { UserRole } from '@/lib/rbac';
 
 export type ProfileUserDto = {
   id: string;
-  full_name: string;
+  fullName: string;
   email: string;
   phone: string;
-  joined_at: string;
+  createdAt: string;
   role: UserRole;
 };
 
 export type SavedAddressDto = {
   id: string;
-  label: string;
-  full_name: string;
+  fullName: string;
   phone: string;
-  street_address: string;
+  streetAddress: string;
+  country?: string;
+  province: string;
   city: string;
-  district: string;
-  is_default: boolean;
-  created_at: string;
+  isDefault: boolean;
+  createdAt: string;
 };
 
 export type OrderLineItemDto = {
   id: string;
-  name: string;
-  image: string;
-  variant_label: string;
+  productName: string;
+  variantName: string;
+  thumbnailUrl: string;
   quantity: number;
-  unit_price: number;
+  unitPrice: number;
 };
 
 export type OrderDetailDto = {
-  order_id: string;
-  created_at: string;
+  id: string;
+  placedAt: string;
   status: OrderStatus;
-  total: number;
-  item_count: number;
-  payment_method_label: string;
-  shipping_address: SavedAddressDto;
+  totalAmount: number;
+  paymentMethod: string;
+  address: SavedAddressDto;
   items: OrderLineItemDto[];
 };

@@ -48,10 +48,8 @@ model Address {
   userId    String
   fullName  String
   phone     String
-  line1     String
-  line2     String?
-  ward      String?
-  district  String?
+  streetAddress String
+  province  String
   city      String
   country   String    @default("United States")
   isDefault Boolean   @default(false)

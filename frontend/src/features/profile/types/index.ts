@@ -22,8 +22,9 @@ export type SavedAddress = {
   fullName: string;
   phone: string;
   streetAddress: string;
+  country: string;
+  province: string;
   city: string;
-  district: string;
   isDefault: boolean;
   createdAt: string;
 };

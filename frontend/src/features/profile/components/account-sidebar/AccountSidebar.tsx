@@ -120,8 +120,8 @@ export default function AccountSidebar() {
       await authApi.logout();
     } catch {
     } finally {
-      clearSession();
       router.replace('/login');
+      clearSession();
     }
   };
 

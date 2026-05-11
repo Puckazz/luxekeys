@@ -15,10 +15,10 @@ import type {
 export const mapProfileDtoToModel = (dto: ProfileUserDto): ProfileUser => {
   return {
     id: dto.id,
-    fullName: dto.full_name,
+    fullName: dto.fullName,
     email: dto.email,
     phone: dto.phone,
-    joinedAt: dto.joined_at,
+    joinedAt: dto.createdAt,
     role: dto.role,
   };
 };
@@ -26,37 +26,48 @@ export const mapProfileDtoToModel = (dto: ProfileUserDto): ProfileUser => {
 export const mapAddressDtoToModel = (dto: SavedAddressDto): SavedAddress => {
   return {
     id: dto.id,
-    label: dto.label,
-    fullName: dto.full_name,
+    label: 'Home', // Label is no longer in backend, default to Home
+    fullName: dto.fullName,
     phone: dto.phone,
-    streetAddress: dto.street_address,
+    streetAddress: dto.streetAddress,
+    country: dto.country ?? 'Vietnam',
+    province: dto.province,
     city: dto.city,
-    district: dto.district,
-    isDefault: dto.is_default,
-    createdAt: dto.created_at,
+    isDefault: dto.isDefault,
+    createdAt: dto.createdAt,
   };
 };
 
 const mapOrderLineItemDtoToModel = (dto: OrderLineItemDto): OrderLineItem => {
   return {
     id: dto.id,
-    name: dto.name,
-    image: dto.image,
-    variantLabel: dto.variant_label,
+    name: dto.productName,
+    image: dto.thumbnailUrl,
+    variantLabel: dto.variantName,
     quantity: dto.quantity,
-    unitPrice: dto.unit_price,
+    unitPrice: dto.unitPrice,
   };
+};
+
+const getPaymentMethodLabel = (method: string): string => {
+  const map: Record<string, string> = {
+    cod: 'Cash on Delivery',
+    card: 'Credit Card',
+    momo: 'MoMo',
+    paypal: 'PayPal',
+  };
+  return map[method] || method;
 };
 
 export const mapOrderDetailDtoToModel = (dto: OrderDetailDto): OrderDetail => {
   return {
-    orderId: dto.order_id,
-    createdAt: dto.created_at,
+    orderId: dto.id,
+    createdAt: dto.placedAt,
     status: dto.status,
-    total: dto.total,
-    itemCount: dto.item_count,
-    paymentMethodLabel: dto.payment_method_label,
-    shippingAddress: mapAddressDtoToModel(dto.shipping_address),
+    total: dto.totalAmount,
+    itemCount: dto.items.reduce((sum, item) => sum + item.quantity, 0),
+    paymentMethodLabel: getPaymentMethodLabel(dto.paymentMethod),
+    shippingAddress: mapAddressDtoToModel(dto.address),
     items: dto.items.map(mapOrderLineItemDtoToModel),
   };
 };

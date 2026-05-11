@@ -10,6 +10,7 @@ type ProfileStoreState = {
   hydrated: boolean;
   setProfile: (profile: ProfileUser | null) => void;
   setHydrated: (value: boolean) => void;
+  clearProfile: () => void;
 };
 
 export const useProfileStore = create<ProfileStoreState>()(
@@ -19,6 +20,7 @@ export const useProfileStore = create<ProfileStoreState>()(
       hydrated: false,
       setProfile: (profile) => set(() => ({ profile })),
       setHydrated: (value) => set(() => ({ hydrated: value })),
+      clearProfile: () => set(() => ({ profile: null })),
     }),
     {
       name: 'luxekeys-profile',

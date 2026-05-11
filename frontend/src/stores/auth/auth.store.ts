@@ -8,6 +8,10 @@ import {
   persistAuthSession,
   subscribeAuthSession,
 } from '@/lib/auth-session';
+import { useCartStore } from '@/stores/shop/cart.store';
+import { useCheckoutStore } from '@/stores/shop/checkout.store';
+import { useProfileStore } from '@/stores/profile/profile.store';
+import { useAddressesStore } from '@/stores/profile/addresses.store';
 
 type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'anonymous';
 
@@ -61,6 +65,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   clearSession: () => {
     clearAuthSession();
+    useCartStore.getState().reset();
+    useCheckoutStore.getState().clearCheckout();
+    useProfileStore.getState().clearProfile();
+    useAddressesStore.getState().clearAddresses();
     set({ user: null, status: 'anonymous' });
   },
 }));

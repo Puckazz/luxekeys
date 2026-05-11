@@ -33,12 +33,10 @@ export class AddressesService {
         userId,
         fullName: dto.fullName,
         phone: dto.phone,
-        line1: dto.line1,
-        line2: dto.line2 ?? null,
-        ward: dto.ward ?? null,
-        district: dto.district ?? null,
+        streetAddress: dto.streetAddress,
+        province: dto.province,
         city: dto.city,
-        country: dto.country ?? 'United States',
+        country: dto.country ?? 'Vietnam',
         isDefault: dto.isDefault ?? false,
       },
       include: ADDRESS_INCLUDE,
@@ -76,10 +74,10 @@ export class AddressesService {
       data: {
         ...(dto.fullName !== undefined && { fullName: dto.fullName }),
         ...(dto.phone !== undefined && { phone: dto.phone }),
-        ...(dto.line1 !== undefined && { line1: dto.line1 }),
-        ...(dto.line2 !== undefined && { line2: dto.line2 }),
-        ...(dto.ward !== undefined && { ward: dto.ward }),
-        ...(dto.district !== undefined && { district: dto.district }),
+        ...(dto.streetAddress !== undefined && {
+          streetAddress: dto.streetAddress,
+        }),
+        ...(dto.province !== undefined && { province: dto.province }),
         ...(dto.city !== undefined && { city: dto.city }),
         ...(dto.country !== undefined && { country: dto.country }),
         ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
@@ -108,6 +106,52 @@ export class AddressesService {
       data: { isDefault: true },
       include: ADDRESS_INCLUDE,
     });
+  }
+
+  async getProvinces(): Promise<{ name: string; code: number }[]> {
+    const response = await fetch('https://provinces.open-api.vn/api/p/');
+    return response.json() as Promise<{ name: string; code: number }[]>;
+  }
+
+  async getDistricts(
+    provinceCode: string,
+  ): Promise<{ name: string; code: number }[]> {
+    const response = await fetch(
+      `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`,
+    );
+    const data = (await response.json()) as {
+      districts?: { name: string; code: number }[];
+    };
+    return data.districts || [];
+  }
+
+  async getStates(country: string): Promise<{ name: string; code: string }[]> {
+    if (country === 'Vietnam') {
+      const provinces = await this.getProvinces();
+      return provinces.map((p) => ({
+        name: p.name,
+        code: String(p.code),
+      }));
+    }
+
+    try {
+      const response = await fetch(
+        'https://countriesnow.space/api/v0.1/countries/states',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ country }),
+        },
+      );
+      const data = (await response.json()) as {
+        data?: { states?: { name: string }[] };
+      };
+      return (
+        data.data?.states?.map((s) => ({ name: s.name, code: s.name })) || []
+      );
+    } catch {
+      return [];
+    }
   }
 
   private assertOwnership(ownerId: string, requesterId: string): void {
