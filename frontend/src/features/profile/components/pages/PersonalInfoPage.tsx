@@ -36,7 +36,6 @@ export default function PersonalInfoPage() {
     resolver: zodResolver(personalInfoSchema),
     defaultValues: {
       fullName: profile?.fullName ?? '',
-      email: profile?.email ?? '',
       phone: profile?.phone ?? '',
     },
   });
@@ -45,8 +44,7 @@ export default function PersonalInfoPage() {
     if (profile) {
       reset({
         fullName: profile.fullName,
-        email: profile.email,
-        phone: profile.phone,
+        phone: profile.phone ?? '',
       });
     }
   }, [profile, reset]);
@@ -101,12 +99,7 @@ export default function PersonalInfoPage() {
               <label className="text-foreground text-sm font-semibold">
                 Email
               </label>
-              <Input {...register('email')} />
-              {errors.email ? (
-                <p className="text-destructive text-xs font-medium">
-                  {errors.email.message}
-                </p>
-              ) : null}
+              <Input value={profile?.email ?? ''} readOnly disabled />
             </div>
 
             <div className="space-y-2">

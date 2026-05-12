@@ -1,8 +1,10 @@
-import type { ProfileUser } from '@/features/profile/types';
+export type PersonalInfoFormValues = {
+  fullName: string;
+  phone: string;
+};
 
-export type PersonalInfoFormValues = Pick<
-  ProfileUser,
-  'fullName' | 'email' | 'phone'
->;
-
-export type ProfileUpdatePayload = PersonalInfoFormValues;
+export type ProfileUpdatePayload = {
+  fullName: string;
+  phone?: string;
+  avatarUrl?: string;
+};

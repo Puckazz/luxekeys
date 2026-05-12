@@ -11,7 +11,8 @@ export type ProfileUser = {
   id: string;
   fullName: string;
   email: string;
-  phone: string;
+  phone: string | null;
+  avatarUrl: string | null;
   joinedAt: string;
   role: UserRole;
 };

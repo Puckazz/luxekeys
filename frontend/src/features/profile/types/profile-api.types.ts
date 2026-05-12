@@ -11,7 +11,8 @@ export type ProfileUserDto = {
   id: string;
   fullName: string;
   email: string;
-  phone: string;
+  phone: string | null;
+  avatarUrl: string | null;
   createdAt: string;
   role: UserRole;
 };

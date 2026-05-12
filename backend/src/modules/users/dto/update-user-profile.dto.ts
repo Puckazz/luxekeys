@@ -20,6 +20,16 @@ export class UpdateUserProfileDto {
   fullName?: string;
 
   @ApiPropertyOptional({
+    description: 'Phone number',
+    type: String,
+    example: '+1-415-555-0199',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  phone?: string;
+
+  @ApiPropertyOptional({
     description: 'Avatar URL from cloud storage',
     type: String,
     example: 'https://res.cloudinary.com/...',

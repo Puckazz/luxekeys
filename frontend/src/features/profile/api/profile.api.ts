@@ -35,6 +35,8 @@ export const profileApi = {
       method: 'PATCH',
       body: JSON.stringify({
         fullName: payload.fullName,
+        ...(payload.phone !== undefined && { phone: payload.phone }),
+        ...(payload.avatarUrl !== undefined && { avatarUrl: payload.avatarUrl }),
       }),
     });
     return mapProfileDtoToModel(data);

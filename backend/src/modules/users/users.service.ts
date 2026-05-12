@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -94,10 +95,17 @@ export class UsersService {
     userId: string,
     dto: UpdateUserProfileDto,
   ): Promise<UserProfile> {
+    const normalizedPhone = this.normalizeOptionalString(dto.phone);
+
+    if (normalizedPhone) {
+      await this.ensurePhoneAvailable(normalizedPhone, userId);
+    }
+
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        fullName: dto.fullName,
+        ...(dto.fullName !== undefined && { fullName: dto.fullName.trim() }),
+        ...(dto.phone !== undefined && { phone: normalizedPhone }),
         avatarUrl: dto.avatarUrl,
       },
       select: {
@@ -242,5 +250,31 @@ export class UsersService {
     hash: string,
   ): Promise<boolean> {
     return bcrypt.compare(password, hash);
+  }
+
+  private normalizeOptionalString(value?: string): string | null | undefined {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    const normalized = value.trim();
+    return normalized.length > 0 ? normalized : null;
+  }
+
+  private async ensurePhoneAvailable(
+    phone: string,
+    userId: string,
+  ): Promise<void> {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        phone,
+        deletedAt: null,
+        id: { not: userId },
+      },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Phone number is already in use');
+    }
   }
 }

@@ -18,6 +18,7 @@ export const mapProfileDtoToModel = (dto: ProfileUserDto): ProfileUser => {
     fullName: dto.fullName,
     email: dto.email,
     phone: dto.phone,
+    avatarUrl: dto.avatarUrl,
     joinedAt: dto.createdAt,
     role: dto.role,
   };

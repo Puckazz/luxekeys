@@ -5,11 +5,13 @@ export const personalInfoSchema = z.object({
     .string()
     .trim()
     .min(2, 'Full name must be at least 2 characters.'),
-  email: z.email('Please enter a valid email.'),
   phone: z
     .string()
     .trim()
-    .regex(/^[0-9+()\s-]{8,18}$/, 'Please enter a valid phone number.'),
+    .refine(
+      (value) => value.length === 0 || /^[0-9+()\s-]{8,18}$/.test(value),
+      'Please enter a valid phone number.'
+    ),
 });
 
 export const addressSchema = z.object({

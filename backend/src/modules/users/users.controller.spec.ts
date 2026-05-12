@@ -52,15 +52,19 @@ describe('UsersController', () => {
   });
 
   it('updateMe should delegate to service.updateMe', async () => {
-    const userObj = createMockUser({ fullName: 'New Name' });
+    const userObj = createMockUser({
+      fullName: 'New Name',
+      phone: '0901234567',
+    });
     service.updateMe.mockResolvedValue(userObj as never);
     const user = { id: userObj.id };
     const result = await controller.updateMe(
       user as never,
-      { fullName: 'New Name' } as never,
+      { fullName: 'New Name', phone: '0901234567' } as never,
     );
     expect(service.updateMe).toHaveBeenCalledWith(userObj.id, {
       fullName: 'New Name',
+      phone: '0901234567',
     });
     expect(result).toBe(userObj);
   });

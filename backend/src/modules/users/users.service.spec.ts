@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   BadRequestException,
+  ConflictException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -73,13 +74,56 @@ describe('UsersService', () => {
 
   describe('updateMe', () => {
     it('should update user profile fields', async () => {
-      const user = createMockUser({ fullName: 'Updated Name' });
+      const user = createMockUser({
+        fullName: 'Updated Name',
+        phone: '0901234567',
+      });
+      prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.update.mockResolvedValue(user as never);
 
       const result = await service.updateMe(user.id, {
         fullName: 'Updated Name',
+        phone: '0901234567',
       } as never);
       expect(result.fullName).toBe('Updated Name');
+      expect(result.phone).toBe('0901234567');
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            fullName: 'Updated Name',
+            phone: '0901234567',
+          }),
+        }),
+      );
+    });
+
+    it('should store null when phone is submitted as empty string', async () => {
+      const user = createMockUser({ phone: null });
+      prisma.user.update.mockResolvedValue(user as never);
+
+      await service.updateMe(user.id, {
+        phone: '   ',
+      } as never);
+
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            phone: null,
+          }),
+        }),
+      );
+    });
+
+    it('should throw ConflictException when phone belongs to another user', async () => {
+      prisma.user.findFirst.mockResolvedValue(
+        createMockUser({ phone: '0901234567' }) as never,
+      );
+
+      await expect(
+        service.updateMe(uuid(), {
+          phone: '0901234567',
+        } as never),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
