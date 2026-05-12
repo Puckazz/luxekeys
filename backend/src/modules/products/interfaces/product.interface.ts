@@ -9,7 +9,10 @@ export const PRODUCT_DETAIL_INCLUDE = {
     where: { deletedAt: null, isActive: true },
     orderBy: { isDefault: 'desc' as const },
     include: {
-      switchOptions: { orderBy: { sortOrder: 'asc' as const } },
+      switchOptions: {
+        where: { deletedAt: null, isActive: true },
+        orderBy: { sortOrder: 'asc' as const },
+      },
     },
   },
   _count: { select: { reviews: true, wishlistItems: true } },
@@ -23,7 +26,10 @@ export const PRODUCT_LIST_INCLUDE = {
     where: { isDefault: true, deletedAt: null, isActive: true },
     take: 1,
     include: {
-      switchOptions: { orderBy: { sortOrder: 'asc' as const } },
+      switchOptions: {
+        where: { deletedAt: null, isActive: true },
+        orderBy: { sortOrder: 'asc' as const },
+      },
     },
   },
   _count: { select: { reviews: true } },

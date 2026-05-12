@@ -15,7 +15,7 @@ import {
   createMockProduct,
   uuid,
 } from '../../common/testing/index.js';
-import { OrderStatus } from '../../generated/prisma/index.js';
+import { OrderStatus, UserRole } from '../../generated/prisma/index.js';
 
 const buildCart = (userId: string, items: unknown[] = []) => ({
   id: uuid(),
@@ -59,13 +59,28 @@ describe('OrdersService', () => {
       const order = { ...createMockOrder(), address: null, items: [] };
       prisma.order.findFirst.mockResolvedValue(order as never);
 
-      const result = await service.findOne(order.id);
+      const result = await service.findOne(
+        order.id,
+        order.userId,
+        UserRole.CUSTOMER,
+      );
       expect(result.id).toBe(order.id);
     });
 
     it('should throw NotFoundException when order not found', async () => {
       prisma.order.findFirst.mockResolvedValue(null);
-      await expect(service.findOne(uuid())).rejects.toThrow(NotFoundException);
+      await expect(
+        service.findOne(uuid(), uuid(), UserRole.CUSTOMER),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ForbiddenException when requester does not own the order', async () => {
+      const order = { ...createMockOrder(), address: null, items: [] };
+      prisma.order.findFirst.mockResolvedValue(order as never);
+
+      await expect(
+        service.findOne(order.id, uuid(), UserRole.CUSTOMER),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -76,15 +91,19 @@ describe('OrdersService', () => {
       const order = { ...createMockOrder(), address: null, items: [] };
       prisma.order.findFirst.mockResolvedValue(order as never);
 
-      const result = await service.findByCode(order.orderCode);
+      const result = await service.findByCode(
+        order.orderCode,
+        order.userId,
+        UserRole.CUSTOMER,
+      );
       expect(result.orderCode).toBe(order.orderCode);
     });
 
     it('should throw NotFoundException when code not found', async () => {
       prisma.order.findFirst.mockResolvedValue(null);
-      await expect(service.findByCode('INVALID-CODE')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.findByCode('INVALID-CODE', uuid(), UserRole.CUSTOMER),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -121,9 +140,9 @@ describe('OrdersService', () => {
       prisma.$transaction.mockImplementation(
         async (fn: (tx: typeof prisma) => Promise<unknown>) => {
           prisma.order.create.mockResolvedValue(order as never);
-          prisma.productVariant.update.mockResolvedValue(
-            createMockVariant() as never,
-          );
+          prisma.productVariant.updateMany.mockResolvedValue({
+            count: 1,
+          } as never);
           prisma.cartItem.deleteMany.mockResolvedValue({ count: 1 } as never);
           return fn(prisma as never);
         },
@@ -174,6 +193,7 @@ describe('OrdersService', () => {
       prisma.cart.findUnique.mockResolvedValue(
         buildCart(userId, [cartItem]) as never,
       );
+      prisma.productVariant.updateMany.mockResolvedValue({ count: 0 } as never);
 
       await expect(
         service.create(userId, {
@@ -191,6 +211,7 @@ describe('OrdersService', () => {
       prisma.cart.findUnique.mockResolvedValue(
         buildCart(userId, [cartItem]) as never,
       );
+      prisma.productVariant.updateMany.mockResolvedValue({ count: 0 } as never);
 
       await expect(
         service.create(userId, {

@@ -145,23 +145,6 @@ describe('ReviewsService', () => {
   // ─── remove ─────────────────────────────────────────────────────────────────
 
   describe('remove', () => {
-    it('should allow owner to soft-delete their review', async () => {
-      const userId = uuid();
-      const review = createMockReview({ userId });
-      const deleted = { ...review, deletedAt: new Date() };
-
-      prisma.review.findFirst.mockResolvedValue(review as never);
-      prisma.review.update.mockResolvedValue(deleted as never);
-
-      const result = await service.remove(
-        review.productId as string,
-        review.id,
-        userId,
-        UserRole.CUSTOMER,
-      );
-      expect(result.deletedAt).not.toBeNull();
-    });
-
     it('should allow admin to delete any review', async () => {
       const review = createMockReview({ userId: uuid() });
       const deleted = { ...review, deletedAt: new Date() };
@@ -178,7 +161,7 @@ describe('ReviewsService', () => {
       expect(result.deletedAt).not.toBeNull();
     });
 
-    it('should throw ForbiddenException when non-owner, non-admin tries to delete', async () => {
+    it('should throw ForbiddenException when customer tries to delete a review', async () => {
       const review = createMockReview({ userId: uuid() });
       prisma.review.findFirst.mockResolvedValue(review as never);
 

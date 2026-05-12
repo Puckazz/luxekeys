@@ -17,8 +17,10 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from '../../common/decorators/index.js';
 import { CurrentUser } from '../../common/decorators/index.js';
-import { JwtAuthGuard } from '../../common/guards/index.js';
+import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
+import { UserRole } from '../../generated/prisma/index.js';
 import type { AuthUser } from '../auth/interfaces/auth-user.interface.js';
 import { CreateReviewDto } from './dto/create-review.dto.js';
 import { GetReviewsQueryDto } from './dto/get-reviews-query.dto.js';
@@ -70,9 +72,10 @@ export class ReviewsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Soft-delete a review (owner or admin)' })
+  @ApiOperation({ summary: 'Soft-delete a review (admin moderation only)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   remove(

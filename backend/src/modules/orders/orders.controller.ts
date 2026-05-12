@@ -62,8 +62,11 @@ export class OrdersController {
   @ApiParam({ name: 'orderCode', type: String, description: 'Order code' })
   @ApiOkResponse({ description: 'Order detail', type: Object })
   @ApiNotFoundResponse({ description: 'Order not found' })
-  findByCode(@Param('orderCode') orderCode: string) {
-    return this.ordersService.findByCode(orderCode);
+  findByCode(
+    @CurrentUser() user: AuthUser,
+    @Param('orderCode') orderCode: string,
+  ) {
+    return this.ordersService.findByCode(orderCode, user.id, user.role);
   }
 
   @Get(':id')
@@ -73,8 +76,11 @@ export class OrdersController {
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   @ApiOkResponse({ description: 'Order detail', type: Object })
   @ApiNotFoundResponse({ description: 'Order not found' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.ordersService.findOne(id);
+  findOne(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.ordersService.findOne(id, user.id, user.role);
   }
 
   @Patch(':id/cancel')

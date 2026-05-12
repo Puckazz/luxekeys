@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -63,20 +63,23 @@ export class ReviewsService {
     dto: CreateReviewDto,
   ): Promise<ReviewDetail> {
     await this.assertProductExists(productId);
-    await this.assertPurchasedProduct(userId, productId);
+    await this.assertPurchasedProduct(userId, productId, dto.orderItemId);
 
-    const existing = await this.prisma.review.findFirst({
-      where: { productId, userId, deletedAt: null },
+    const existingReview = await this.prisma.review.findFirst({
+      where: { orderItemId: dto.orderItemId },
     });
 
-    if (existing) {
-      throw new ConflictException('You have already reviewed this product');
+    if (existingReview) {
+      throw new ConflictException(
+        'This purchase already has a review. Please update the existing review instead.',
+      );
     }
 
     return this.prisma.review.create({
       data: {
         productId,
         userId,
+        orderItemId: dto.orderItemId,
         rating: dto.rating,
         title: dto.title ?? null,
         content: dto.content ?? null,
@@ -111,10 +114,10 @@ export class ReviewsService {
     userId: string,
     role: UserRole,
   ): Promise<ReviewDetail> {
-    const review = await this.findOneForProduct(productId, id);
+    await this.findOneForProduct(productId, id);
 
     if (role !== UserRole.ADMIN) {
-      this.assertOwnership(review.userId, userId);
+      throw new ForbiddenException('Only admins can moderate reviews');
     }
 
     return this.prisma.review.update({
@@ -154,17 +157,21 @@ export class ReviewsService {
   private async assertPurchasedProduct(
     userId: string,
     productId: string,
+    orderItemId: string,
   ): Promise<void> {
-    const orderItem = await this.prisma.orderItem.findFirst({
+    const item = await this.prisma.orderItem.findFirst({
       where: {
+        id: orderItemId,
         productId,
         order: { userId, status: OrderStatus.DELIVERED },
       },
       select: { id: true },
     });
 
-    if (!orderItem) {
-      throw new BadRequestException('You can only review purchased products');
+    if (!item) {
+      throw new BadRequestException(
+        'You can only review items from your delivered orders',
+      );
     }
   }
 

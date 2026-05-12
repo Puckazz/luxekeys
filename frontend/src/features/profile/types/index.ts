@@ -1,4 +1,4 @@
-import type { UserRole } from '@/lib/rbac';
+﻿import type { UserRole } from '@/lib/rbac';
 
 export type OrderStatus =
   | 'pending'
@@ -31,15 +31,25 @@ export type SavedAddress = {
 
 export type OrderLineItem = {
   id: string;
+  productId: string;
+  switchOptionName: string | null;
   name: string;
   image: string;
   variantLabel: string;
   quantity: number;
   unitPrice: number;
+  isReviewed: boolean;
+  review: {
+    id: string;
+    rating: number;
+    title: string | null;
+    content: string | null;
+  } | null;
 };
 
 export type OrderSummary = {
   orderId: string;
+  orderCode: string;
   createdAt: string;
   status: OrderStatus;
   total: number;

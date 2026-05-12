@@ -1,4 +1,4 @@
-import {
+﻿import {
   mapApiProductToDetail,
   mapApiProductToListItem,
   mapApiReviewToReviewItem,
@@ -18,7 +18,7 @@ import type {
   CustomerProductListApiData,
   CustomerReviewApiItem,
 } from '@/features/shop/types/product-api.types';
-import { apiRequest, apiRequestWithMeta } from '@/shared/api/http-client';
+import { apiRequest, apiRequestWithMeta, authFetch } from '@/shared/api/http-client';
 
 export const PRODUCT_LIST_PAGE_SIZE = 6;
 
@@ -57,6 +57,19 @@ const mapPaginationMeta = (
 };
 
 export const PRODUCT_SEARCH_LIMIT = 8;
+
+export interface CreateReviewPayload {
+  orderItemId: string;
+  rating: number;
+  title?: string;
+  content?: string;
+}
+
+export interface UpdateReviewPayload {
+  rating?: number;
+  title?: string;
+  content?: string;
+}
 
 export const productsApi = {
   searchProducts: async (query: string): Promise<ProductListItem[]> => {
@@ -148,5 +161,36 @@ export const productsApi = {
     >(`/products/${product.id}/reviews?${query}`);
 
     return response.data.map(mapApiReviewToReviewItem);
+  },
+
+  createReview: async (
+    productId: string,
+    payload: CreateReviewPayload
+  ): Promise<ProductReviewItem> => {
+    const data = await authFetch<CustomerReviewApiItem>(
+      `/products/${productId}/reviews`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    );
+
+    return mapApiReviewToReviewItem(data);
+  },
+
+  updateReview: async (
+    productId: string,
+    reviewId: string,
+    payload: UpdateReviewPayload
+  ): Promise<ProductReviewItem> => {
+    const data = await authFetch<CustomerReviewApiItem>(
+      `/products/${productId}/reviews/${reviewId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      }
+    );
+
+    return mapApiReviewToReviewItem(data);
   },
 };

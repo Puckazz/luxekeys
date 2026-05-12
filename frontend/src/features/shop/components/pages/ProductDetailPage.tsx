@@ -318,7 +318,7 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
       <ProductReviewsSection
         heading={product.reviewsHeading}
         reviews={reviews}
-        isLoading={productReviewsQuery.isPending}
+        isLoading={productReviewsQuery.isPending && product.reviewCount > 0}
         canLoadMore={canLoadMore}
         onLoadMore={handleLoadMore}
       />

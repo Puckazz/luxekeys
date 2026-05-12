@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   OrderDetail,
   OrderLineItem,
   OrderSummary,
@@ -38,23 +38,44 @@ export const mapAddressDtoToModel = (dto: SavedAddressDto): SavedAddress => {
   };
 };
 
+const createFallbackAddress = (): SavedAddress => {
+  return {
+    id: 'unknown-address',
+    label: 'Home',
+    fullName: 'Unavailable',
+    phone: '',
+    streetAddress: 'Address unavailable',
+    country: 'Vietnam',
+    province: '',
+    city: '',
+    isDefault: false,
+    createdAt: new Date(0).toISOString(),
+  };
+};
+
 const mapOrderLineItemDtoToModel = (dto: OrderLineItemDto): OrderLineItem => {
+  const variantLabel = dto.switchOptionName
+    ? `${dto.variantName ?? 'Standard'} / ${dto.switchOptionName}`
+    : dto.variantName ?? 'Standard';
+
   return {
     id: dto.id,
+    productId: dto.productId,
+    switchOptionName: dto.switchOptionName,
     name: dto.productName,
-    image: dto.thumbnailUrl,
-    variantLabel: dto.variantName,
+    image: dto.thumbnailUrl ?? '',
+    variantLabel,
     quantity: dto.quantity,
     unitPrice: dto.unitPrice,
+    isReviewed: dto.isReviewed,
+    review: dto.review,
   };
 };
 
 const getPaymentMethodLabel = (method: string): string => {
   const map: Record<string, string> = {
-    cod: 'Cash on Delivery',
-    card: 'Credit Card',
-    momo: 'MoMo',
-    paypal: 'PayPal',
+    COD: 'Cash on Delivery',
+    PAYPAL: 'PayPal',
   };
   return map[method] || method;
 };
@@ -81,12 +102,15 @@ const mapOrderStatusDtoToModel = (
 export const mapOrderDetailDtoToModel = (dto: OrderDetailDto): OrderDetail => {
   return {
     orderId: dto.id,
+    orderCode: dto.orderCode,
     createdAt: dto.placedAt,
     status: mapOrderStatusDtoToModel(dto.status),
     total: dto.totalAmount,
     itemCount: dto.items.reduce((sum, item) => sum + item.quantity, 0),
     paymentMethodLabel: getPaymentMethodLabel(dto.paymentMethod),
-    shippingAddress: mapAddressDtoToModel(dto.address),
+    shippingAddress: dto.address
+      ? mapAddressDtoToModel(dto.address)
+      : createFallbackAddress(),
     items: dto.items.map(mapOrderLineItemDtoToModel),
   };
 };
@@ -94,6 +118,7 @@ export const mapOrderDetailDtoToModel = (dto: OrderDetailDto): OrderDetail => {
 export const mapOrderDetailToSummary = (order: OrderDetail): OrderSummary => {
   return {
     orderId: order.orderId,
+    orderCode: order.orderCode,
     createdAt: order.createdAt,
     status: order.status,
     total: order.total,

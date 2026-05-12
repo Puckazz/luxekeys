@@ -7,7 +7,6 @@ import {
   Plus,
   RotateCcw,
   ShieldCheck,
-  ShoppingCart,
   Star,
   Truck,
 } from 'lucide-react';
@@ -53,7 +52,7 @@ const calculateDiscountedPrice = (
 };
 
 function ProductStockBadge({ status, label }: ProductStockBadgeProps) {
-  return <Badge variant={stockBadgeVariantMap[status]}>{label}</Badge>;
+  return <Badge className="absolute top-5 left-5" variant={stockBadgeVariantMap[status]}>{label}</Badge>;
 }
 
 const paymentMethods = ['VISA', 'PayPal', 'Mastercard', 'AMEX', 'Amazon Pay'];
@@ -197,12 +196,10 @@ export default function ProductDetailHeroSection({
                         priority={index === 0}
                       />
 
-                      <Badge
-                        className="absolute top-5 left-5"
-                        variant="default"
-                      >
-                        Premium Edition
-                      </Badge>
+                      <ProductStockBadge
+                        status={stockStatus}
+                        label={stockLabel}
+                      />
                     </div>
                   </CarouselItem>
                 ))}
@@ -266,32 +263,30 @@ export default function ProductDetailHeroSection({
               </h1>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1">
-                {Array.from({ length: 5 }).map((_, index) => {
-                  const isFilled = index < Math.round(product.rating);
+            {product.reviewCount > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 5 }).map((_, index) => {
+                    const isFilled = index < Math.round(product.rating);
 
-                  return (
-                    <Star
-                      key={`${product.slug}-star-${index + 1}`}
-                      className={
-                        isFilled
-                          ? 'size-4 fill-amber-400 text-amber-400'
-                          : 'text-muted-foreground/50 size-4'
-                      }
-                    />
-                  );
-                })}
+                    return (
+                      <Star
+                        key={`${product.slug}-star-${index + 1}`}
+                        className={
+                          isFilled
+                            ? 'size-4 fill-amber-400 text-amber-400'
+                            : 'text-muted-foreground/50 size-4'
+                        }
+                      />
+                    );
+                  })}
+                </div>
+                <p className="text-muted-foreground text-xs sm:text-sm">
+                  {product.rating.toFixed(1)} (
+                  {product.reviewCount.toLocaleString()} reviews)
+                </p>
               </div>
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                {product.rating.toFixed(1)} (
-                {product.reviewCount.toLocaleString()} reviews)
-              </p>
-              <ProductStockBadge
-                status={stockStatus}
-                label={stockLabel}
-              />
-            </div>
+            )}
 
             <div className="mt-5 flex flex-wrap items-end gap-2">
               <p className="text-foreground text-2xl font-bold lg:text-3xl">
@@ -422,8 +417,7 @@ export default function ProductDetailHeroSection({
                 onClick={onAddToCart}
                 disabled={!canPurchase}
               >
-                <ShoppingCart className="mr-2 size-4" />
-                {canPurchase ? 'Add to Cart' : 'Out of Stock'}
+                {canPurchase ? 'Add to Cart' : 'Out of Stock'} - {formatCurrency(discountedPrice, { minimumFractionDigits: 2 })}
               </Button>
               <Button
                 type="button"

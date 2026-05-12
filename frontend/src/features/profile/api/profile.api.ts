@@ -1,4 +1,4 @@
-import { authFetch } from '@/shared/api/http-client';
+import { authFetch, authFetchWithMeta } from '@/shared/api/http-client';
 import type {
   AddressUpsertPayload,
   OrdersFilterValue,
@@ -107,16 +107,20 @@ export const profileApi = {
       cancelled: 'CANCELLED',
     };
     const query = new URLSearchParams();
+    query.append('limit', '100');
+
     if (status !== 'all') {
       query.append('status', statusToApiValue[status]);
     }
 
     const queryString = query.toString();
-    const response = await authFetch<OrderDetailDto[]>(
+    const response = await authFetchWithMeta<OrderDetailDto[]>(
       queryString ? `/orders?${queryString}` : '/orders'
     );
 
-    return response.map(mapOrderDetailDtoToModel).map(mapOrderDetailToSummary);
+    return response.data
+      .map(mapOrderDetailDtoToModel)
+      .map(mapOrderDetailToSummary);
   },
 
   getOrderDetail: async (orderId: string): Promise<OrderDetail> => {

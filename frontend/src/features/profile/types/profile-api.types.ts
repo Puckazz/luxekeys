@@ -1,4 +1,4 @@
-import type { UserRole } from '@/lib/rbac';
+﻿import type { UserRole } from '@/lib/rbac';
 
 export type OrderStatusDto =
   | 'PENDING'
@@ -30,19 +30,29 @@ export type SavedAddressDto = {
 
 export type OrderLineItemDto = {
   id: string;
+  productId: string;
+  switchOptionName: string | null;
   productName: string;
-  variantName: string;
-  thumbnailUrl: string;
+  variantName: string | null;
+  thumbnailUrl: string | null;
   quantity: number;
   unitPrice: number;
+  isReviewed: boolean;
+  review: {
+    id: string;
+    rating: number;
+    title: string | null;
+    content: string | null;
+  } | null;
 };
 
 export type OrderDetailDto = {
   id: string;
+  orderCode: string;
   placedAt: string;
   status: OrderStatusDto;
   totalAmount: number;
   paymentMethod: string;
-  address: SavedAddressDto;
+  address: SavedAddressDto | null;
   items: OrderLineItemDto[];
 };

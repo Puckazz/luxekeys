@@ -1,4 +1,4 @@
-import {
+﻿import {
   Prisma,
   OrderStatus,
   PaymentMethod,
@@ -9,6 +9,8 @@ export interface OrderItemResponse {
   id: string;
   productId: string;
   variantId: string | null;
+  switchOptionId: string | null;
+  switchOptionName: string | null;
   productName: string;
   variantName: string | null;
   sku: string | null;
@@ -16,6 +18,13 @@ export interface OrderItemResponse {
   unitPrice: number;
   quantity: number;
   subtotalAmount: number;
+  isReviewed: boolean;
+  review: {
+    id: string;
+    rating: number;
+    title: string | null;
+    content: string | null;
+  } | null;
 }
 
 export interface OrderAddressSnapshot {
@@ -48,17 +57,13 @@ export interface OrderResponse {
 }
 
 export const ORDER_WITH_ITEMS_INCLUDE = {
-  items: true,
-  address: {
-    select: {
-      fullName: true,
-      phone: true,
-      streetAddress: true,
-      province: true,
-      city: true,
-      country: true,
+  items: {
+    include: {
+      review: true,
+      switchOption: true,
     },
   },
+  address: true,
 } satisfies Prisma.OrderInclude;
 
 export type OrderWithItems = Prisma.OrderGetPayload<{

@@ -208,3 +208,36 @@ export const authFetch = async <T>(
     }
   }
 };
+
+export const authFetchWithMeta = async <T, TMeta = unknown>(
+  path: string,
+  options: RequestInit = {}
+): Promise<ApiResponseWithMeta<T, TMeta>> => {
+  const requestWithToken = (token: string | null) => {
+    return apiRequestWithMeta<T, TMeta>(path, {
+      ...options,
+      ...(token && { authToken: token }),
+    });
+  };
+
+  try {
+    return await requestWithToken(getAuthAccessToken());
+  } catch (error) {
+    if (
+      !(error instanceof ApiError) ||
+      error.statusCode !== 401 ||
+      !refreshAuthSession
+    ) {
+      throw error;
+    }
+
+    try {
+      const refreshedSession = await refreshAuthSession();
+      persistAuthSession(refreshedSession);
+      return await requestWithToken(refreshedSession.accessToken);
+    } catch (refreshError) {
+      clearAuthSession();
+      throw refreshError;
+    }
+  }
+};

@@ -1,10 +1,15 @@
-import {
+﻿import {
   BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, OrderStatus } from '../../generated/prisma/index.js';
+import {
+  Prisma,
+  OrderStatus,
+  ProductStatus,
+  UserRole,
+} from '../../generated/prisma/index.js';
 import { PrismaService } from '../database/prisma.service.js';
 import { PaginatedResponse } from '../../common/interfaces/pagination.interface.js';
 import {
@@ -22,7 +27,28 @@ import {
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private assertCanAccessOrder(
+    orderUserId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): void {
+    if (requesterRole !== UserRole.ADMIN && orderUserId !== requesterId) {
+      throw new ForbiddenException('You do not have access to this order');
+    }
+  }
+
   private mapToResponse(order: OrderWithItems): OrderResponse {
+    const address = order.shippingFullName
+      ? {
+          fullName: order.shippingFullName,
+          phone: order.shippingPhone || '',
+          streetAddress: order.shippingStreetAddress || '',
+          province: order.shippingProvince || '',
+          city: order.shippingCity || '',
+          country: order.shippingCountry || '',
+        }
+      : order.address;
+
     return {
       id: order.id,
       orderCode: order.orderCode,
@@ -39,11 +65,13 @@ export class OrdersService {
       placedAt: order.placedAt,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
-      address: order.address,
+      address,
       items: order.items.map((item) => ({
         id: item.id,
         productId: item.productId,
         variantId: item.variantId,
+        switchOptionId: item.switchOptionId ?? null,
+        switchOptionName: item.switchOption?.name ?? null,
         productName: item.productName,
         variantName: item.variantName,
         sku: item.sku,
@@ -51,6 +79,15 @@ export class OrdersService {
         unitPrice: Number(item.unitPrice),
         quantity: item.quantity,
         subtotalAmount: Number(item.subtotalAmount),
+        isReviewed: !!item.review,
+        review: item.review
+          ? {
+              id: item.review.id,
+              rating: item.review.rating,
+              title: item.review.title,
+              content: item.review.content,
+            }
+          : null,
       })),
     };
   }
@@ -61,7 +98,11 @@ export class OrdersService {
     return `LK-${timestamp}-${random}`;
   }
 
-  async findOne(id: string): Promise<OrderResponse> {
+  async findOne(
+    id: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<OrderResponse> {
     const order = await this.prisma.order.findFirst({
       where: { id },
       include: ORDER_WITH_ITEMS_INCLUDE,
@@ -71,10 +112,16 @@ export class OrdersService {
       throw new NotFoundException(`Order with ID "${id}" not found`);
     }
 
-    return this.mapToResponse(order as OrderWithItems);
+    this.assertCanAccessOrder(order.userId, requesterId, requesterRole);
+
+    return this.mapToResponse(order);
   }
 
-  async findByCode(orderCode: string): Promise<OrderResponse> {
+  async findByCode(
+    orderCode: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<OrderResponse> {
     const order = await this.prisma.order.findFirst({
       where: { orderCode },
       include: ORDER_WITH_ITEMS_INCLUDE,
@@ -84,7 +131,9 @@ export class OrdersService {
       throw new NotFoundException(`Order with code "${orderCode}" not found`);
     }
 
-    return this.mapToResponse(order as OrderWithItems);
+    this.assertCanAccessOrder(order.userId, requesterId, requesterRole);
+
+    return this.mapToResponse(order);
   }
 
   async findMyOrders(
@@ -122,7 +171,7 @@ export class OrdersService {
     ]);
 
     return {
-      data: (orders as OrderWithItems[]).map((o) => this.mapToResponse(o)),
+      data: orders.map((order) => this.mapToResponse(order)),
       pagination: {
         page,
         limit,
@@ -166,7 +215,7 @@ export class OrdersService {
     ]);
 
     return {
-      data: (orders as OrderWithItems[]).map((o) => this.mapToResponse(o)),
+      data: orders.map((order) => this.mapToResponse(order)),
       pagination: {
         page,
         limit,
@@ -187,55 +236,134 @@ export class OrdersService {
       );
     }
 
-    const cart = await this.prisma.cart.findUnique({
-      where: { userId },
-      include: {
-        items: {
-          include: {
-            variant: {
-              include: { product: true },
+    const order = await this.prisma.$transaction(async (tx) => {
+      const cart = await tx.cart.findUnique({
+        where: { userId },
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: { product: true },
+              },
+              switchOption: true,
             },
           },
         },
-      },
-    });
+      });
 
-    if (!cart || cart.items.length === 0) {
-      throw new BadRequestException('Cart is empty');
-    }
-
-    for (const item of cart.items) {
-      if (!item.variant.isActive) {
-        throw new BadRequestException(
-          `Variant "${item.variant.name}" is no longer available`,
-        );
+      if (!cart || cart.items.length === 0) {
+        throw new BadRequestException('Cart is empty');
       }
-      if (item.variant.stock < item.quantity) {
-        throw new BadRequestException(
-          `Insufficient stock for "${item.variant.name}". Available: ${item.variant.stock}`,
-        );
+
+      for (const item of cart.items) {
+        if (
+          item.variant.product.status !== ProductStatus.ACTIVE ||
+          item.variant.product.deletedAt
+        ) {
+          throw new BadRequestException(
+            `Product "${item.variant.product.name}" is no longer available`,
+          );
+        }
+
+        if (!item.variant.isActive) {
+          throw new BadRequestException(
+            `Variant "${item.variant.name}" is no longer available`,
+          );
+        }
+
+        if (item.switchOptionId) {
+          if (!item.switchOption) {
+            throw new BadRequestException(
+              `Switch option for "${item.variant.name}" is not available`,
+            );
+          }
+
+          if (!item.switchOption.isActive || item.switchOption.deletedAt) {
+            throw new BadRequestException(
+              `Switch option "${item.switchOption.name}" for "${item.variant.name}" is no longer available`,
+            );
+          }
+        }
+
+        const variantUpdate = await tx.productVariant.updateMany({
+          where: {
+            id: item.variantId,
+            isActive: true,
+            deletedAt: null,
+            stock: {
+              gte: item.quantity,
+            },
+          },
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+
+        if (variantUpdate.count === 0) {
+          throw new BadRequestException(
+            `Insufficient stock for "${item.variant.name}"`,
+          );
+        }
+
+        if (item.switchOptionId) {
+          const switchUpdate = await tx.productSwitchOption.updateMany({
+            where: {
+              id: item.switchOptionId,
+              variantId: item.variantId,
+              isActive: true,
+              deletedAt: null,
+              stock: {
+                gte: item.quantity,
+              },
+            },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+
+          if (switchUpdate.count === 0) {
+            throw new BadRequestException(
+              `Insufficient switch option stock for "${item.variant.name}"`,
+            );
+          }
+        }
       }
-    }
 
-    const subtotalAmount = cart.items.reduce(
-      (sum, item) => sum + Number(item.variant.price) * item.quantity,
-      0,
-    );
+      const subtotalAmount = cart.items.reduce(
+        (sum, item) => sum + Number(item.variant.price) * item.quantity,
+        0,
+      );
 
-    const order = await this.prisma.$transaction(async (tx) => {
+      const discountAmount = 0;
+      const shippingAmount = 0;
+      const totalAmount = subtotalAmount - discountAmount + shippingAmount;
+
       const newOrder = await tx.order.create({
         data: {
           orderCode: this.generateOrderCode(),
           userId,
           addressId: address.id,
+          shippingFullName: address.fullName,
+          shippingPhone: address.phone,
+          shippingStreetAddress: address.streetAddress,
+          shippingProvince: address.province,
+          shippingCity: address.city,
+          shippingCountry: address.country,
           paymentMethod: dto.paymentMethod,
           note: dto.note,
           subtotalAmount,
-          totalAmount: subtotalAmount,
+          discountAmount,
+          shippingAmount,
+          totalAmount,
           items: {
             create: cart.items.map((item) => ({
               productId: item.variant.productId,
               variantId: item.variantId,
+              switchOptionId: item.switchOptionId ?? null,
               productName: item.variant.product.name,
               variantName: item.variant.name,
               sku: item.variant.sku,
@@ -249,21 +377,12 @@ export class OrdersService {
         include: ORDER_WITH_ITEMS_INCLUDE,
       });
 
-      await Promise.all(
-        cart.items.map((item) =>
-          tx.productVariant.update({
-            where: { id: item.variantId },
-            data: { stock: { decrement: item.quantity } },
-          }),
-        ),
-      );
-
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
       return newOrder;
     });
 
-    return this.mapToResponse(order as OrderWithItems);
+    return this.mapToResponse(order);
   }
 
   async cancelOrder(id: string, userId: string): Promise<OrderResponse> {
@@ -297,18 +416,31 @@ export class OrdersService {
       });
 
       await Promise.all(
-        order.items.map((item) =>
-          tx.productVariant.update({
-            where: { id: item.variantId ?? undefined },
-            data: { stock: { increment: item.quantity } },
-          }),
-        ),
+        order.items.flatMap((item) => {
+          const updates: Prisma.PrismaPromise<unknown>[] = [
+            tx.productVariant.update({
+              where: { id: item.variantId ?? undefined },
+              data: { stock: { increment: item.quantity } },
+            }),
+          ];
+
+          if (item.switchOptionId) {
+            updates.push(
+              tx.productSwitchOption.update({
+                where: { id: item.switchOptionId },
+                data: { stock: { increment: item.quantity } },
+              }),
+            );
+          }
+
+          return updates;
+        }),
       );
 
       return cancelled;
     });
 
-    return this.mapToResponse(updated as OrderWithItems);
+    return this.mapToResponse(updated);
   }
 
   async updateStatus(
@@ -333,6 +465,6 @@ export class OrdersService {
       include: ORDER_WITH_ITEMS_INCLUDE,
     });
 
-    return this.mapToResponse(updated as OrderWithItems);
+    return this.mapToResponse(updated);
   }
 }

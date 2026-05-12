@@ -23,6 +23,24 @@ function hashPassword(plain: string): string {
   return crypto.createHash('sha256').update(plain).digest('hex');
 }
 
+function buildOrderAddressSnapshot(address: {
+  fullName: string;
+  phone: string;
+  streetAddress: string;
+  province: string;
+  city: string;
+  country: string;
+}) {
+  return {
+    shippingFullName: address.fullName,
+    shippingPhone: address.phone,
+    shippingStreetAddress: address.streetAddress,
+    shippingProvince: address.province,
+    shippingCity: address.city,
+    shippingCountry: address.country,
+  };
+}
+
 async function syncVariantStocksFromSwitchOptions(): Promise<number> {
   const variants = await prisma.productVariant.findMany({
     where: { deletedAt: null },
@@ -52,6 +70,22 @@ async function syncVariantStocksFromSwitchOptions(): Promise<number> {
   }
 
   return updatedCount;
+}
+
+async function findDefaultSwitchOptionId(
+  variantId: string,
+): Promise<string | null> {
+  const switchOption = await prisma.productSwitchOption.findFirst({
+    where: {
+      variantId,
+      isDefault: true,
+      isActive: true,
+      deletedAt: null,
+    },
+    select: { id: true },
+  });
+
+  return switchOption?.id ?? null;
 }
 
 // ─── Main ────────────────────────────────────────────────────────────────────
@@ -2005,6 +2039,19 @@ async function main() {
   // ── 8. Orders ─────────────────────────────────────────────────────────────
   console.log('📦  Seeding orders...');
 
+  const q3ProDefaultSwitchOptionId = await findDefaultSwitchOptionId(
+    varQ3ProBlackRed.id,
+  );
+  const duckyDaybreakDefaultSwitchOptionId = await findDefaultSwitchOptionId(
+    varDuckyDaybreakRed.id,
+  );
+  const tofu65DefaultSwitchOptionId = await findDefaultSwitchOptionId(
+    varTofu65Silver.id,
+  );
+  const k8ProDefaultSwitchOptionId = await findDefaultSwitchOptionId(
+    varK8ProGray.id,
+  );
+
   // Order 1: Alice — DELIVERED via PayPal
   const order1 = await prisma.order.create({
     data: {
@@ -2020,14 +2067,16 @@ async function main() {
       totalAmount: 209.98,
       paypalOrderId: 'PAYID-L3ABCXYZ123456789',
       placedAt: new Date('2024-11-15T08:30:00Z'),
+      ...buildOrderAddressSnapshot(addr1),
     },
   });
 
-  await prisma.orderItem.create({
+  const order1ItemQ3Pro = await prisma.orderItem.create({
     data: {
       orderId: order1.id,
       productId: prodQ3Pro.id,
       variantId: varQ3ProBlackRed.id,
+      switchOptionId: q3ProDefaultSwitchOptionId,
       productName: prodQ3Pro.name,
       variantName: varQ3ProBlackRed.name,
       sku: varQ3ProBlackRed.sku,
@@ -2053,6 +2102,7 @@ async function main() {
       totalAmount: 43.97,
       note: 'Please leave package at front door.',
       placedAt: new Date('2024-12-01T14:00:00Z'),
+      ...buildOrderAddressSnapshot(addr2),
     },
   });
 
@@ -2087,6 +2137,7 @@ async function main() {
       paypalOrderId: 'PAYID-M4DEFGHI987654321',
       trackingCode: 'UPS1Z999AA10123456784',
       placedAt: new Date('2025-01-10T09:15:00Z'),
+      ...buildOrderAddressSnapshot(addr3),
     },
   });
 
@@ -2096,6 +2147,7 @@ async function main() {
         orderId: order3.id,
         productId: prodDuckyOne3.id,
         variantId: varDuckyDaybreakRed.id,
+        switchOptionId: duckyDaybreakDefaultSwitchOptionId,
         productName: prodDuckyOne3.name,
         variantName: varDuckyDaybreakRed.name,
         sku: varDuckyDaybreakRed.sku,
@@ -2134,6 +2186,7 @@ async function main() {
       totalAmount: 178.99,
       paypalOrderId: 'PAYID-CANCELLED-000004',
       placedAt: new Date('2025-02-05T11:00:00Z'),
+      ...buildOrderAddressSnapshot(addr1),
     },
   });
 
@@ -2142,6 +2195,7 @@ async function main() {
       orderId: order4.id,
       productId: prodTofu65.id,
       variantId: varTofu65Silver.id,
+      switchOptionId: tofu65DefaultSwitchOptionId,
       productName: prodTofu65.name,
       variantName: varTofu65Silver.name,
       sku: varTofu65Silver.sku,
@@ -2166,6 +2220,7 @@ async function main() {
       shippingAmount: 9.99,
       totalAmount: 119.98,
       placedAt: new Date('2025-03-20T17:45:00Z'),
+      ...buildOrderAddressSnapshot(addr2),
     },
   });
 
@@ -2174,6 +2229,7 @@ async function main() {
       orderId: order5.id,
       productId: prodK8Pro.id,
       variantId: varK8ProGray.id,
+      switchOptionId: k8ProDefaultSwitchOptionId,
       productName: prodK8Pro.name,
       variantName: varK8ProGray.name,
       sku: varK8ProGray.sku,
@@ -2190,6 +2246,7 @@ async function main() {
   const varHolyPanda = await prisma.productVariant.findUniqueOrThrow({
     where: { sku: 'HP-35PK' },
   });
+  const q1DefaultSwitchOptionId = await findDefaultSwitchOptionId(varQ1.id);
 
   // Order 6: Carol — DELIVERED (With newly seeded products)
   const order6 = await prisma.order.create({
@@ -2205,36 +2262,39 @@ async function main() {
       shippingAmount: 0,
       totalAmount: 239.99,
       placedAt: new Date('2025-04-10T10:00:00Z'),
+      ...buildOrderAddressSnapshot(addr3),
     },
   });
 
-  await prisma.orderItem.createMany({
-    data: [
-      {
-        orderId: order6.id,
-        productId: prodQ1.id,
-        variantId: varQ1.id,
-        productName: prodQ1.name,
-        variantName: varQ1.name,
-        sku: varQ1.sku,
-        thumbnailUrl: prodQ1.thumbnailUrl,
-        unitPrice: 169.99,
-        quantity: 1,
-        subtotalAmount: 169.99,
-      },
-      {
-        orderId: order6.id,
-        productId: prodHolyPanda.id,
-        variantId: varHolyPanda.id,
-        productName: prodHolyPanda.name,
-        variantName: varHolyPanda.name,
-        sku: varHolyPanda.sku,
-        thumbnailUrl: prodHolyPanda.thumbnailUrl,
-        unitPrice: 35.0,
-        quantity: 2,
-        subtotalAmount: 70.0,
-      },
-    ],
+  const order6ItemQ1 = await prisma.orderItem.create({
+    data: {
+      orderId: order6.id,
+      productId: prodQ1.id,
+      variantId: varQ1.id,
+      switchOptionId: q1DefaultSwitchOptionId,
+      productName: prodQ1.name,
+      variantName: varQ1.name,
+      sku: varQ1.sku,
+      thumbnailUrl: prodQ1.thumbnailUrl,
+      unitPrice: 169.99,
+      quantity: 1,
+      subtotalAmount: 169.99,
+    },
+  });
+
+  const order6ItemHolyPanda = await prisma.orderItem.create({
+    data: {
+      orderId: order6.id,
+      productId: prodHolyPanda.id,
+      variantId: varHolyPanda.id,
+      productName: prodHolyPanda.name,
+      variantName: varHolyPanda.name,
+      sku: varHolyPanda.sku,
+      thumbnailUrl: prodHolyPanda.thumbnailUrl,
+      unitPrice: 35.0,
+      quantity: 2,
+      subtotalAmount: 70.0,
+    },
   });
 
   console.log(`   ✅  Created 6 orders across all statuses\n`);
@@ -2247,6 +2307,7 @@ async function main() {
       {
         userId: customer1.id,
         productId: prodQ3Pro.id,
+        orderItemId: order1ItemQ3Pro.id,
         rating: 5,
         title: 'Best keyboard I have ever owned',
         content:
@@ -2287,6 +2348,7 @@ async function main() {
       {
         userId: customer3.id,
         productId: prodHolyPanda.id,
+        orderItemId: order6ItemHolyPanda.id,
         rating: 5,
         title: 'The classic tactile experience',
         content:
@@ -2295,6 +2357,7 @@ async function main() {
       {
         userId: customer3.id,
         productId: prodQ1.id,
+        orderItemId: order6ItemQ1.id,
         rating: 5,
         title: 'Amazing custom pre-built',
         content:

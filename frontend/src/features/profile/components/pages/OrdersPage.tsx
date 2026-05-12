@@ -1,15 +1,15 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { Eye, PackageSearch, XCircle } from 'lucide-react';
+import { Eye, PackageSearch, XCircle, Star } from 'lucide-react';
 
 import {
   useCancelOrderMutation,
   useOrderDetailQuery,
   useOrdersQuery,
 } from '@/features/profile/hooks';
-import type { OrdersFilterValue } from '@/features/profile/types';
+import type { OrderLineItem, OrdersFilterValue } from '@/features/profile/types';
 import {
   formatAccountDate,
   orderStatusBadgeVariantByStatus,
@@ -58,6 +58,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
+import { OrderReviewDialog } from './OrderReviewDialog';
 
 const orderStatusFilterOptions: Array<{
   label: string;
@@ -74,6 +75,14 @@ const orderStatusFilterOptions: Array<{
 export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<OrdersFilterValue>('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  
+  // Review Dialog State
+  const [reviewItem, setReviewItem] = useState<{
+    id: string;
+    productId: string;
+    productName: string;
+    review: OrderLineItem['review'];
+  } | null>(null);
 
   const ordersQuery = useOrdersQuery(statusFilter);
   const orderDetailQuery = useOrderDetailQuery(selectedOrderId);
@@ -146,7 +155,7 @@ export default function OrdersPage() {
                 {orders.map((order) => (
                   <TableRow key={order.orderId}>
                     <TableCell className="text-foreground pl-5 font-semibold">
-                      {order.orderId}
+                      {order.orderCode}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatAccountDate(order.createdAt)}
@@ -171,7 +180,7 @@ export default function OrdersPage() {
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          aria-label={`View order ${order.orderId}`}
+                          aria-label={`View order ${order.orderCode}`}
                           onClick={() => setSelectedOrderId(order.orderId)}
                         >
                           <Eye className="size-4" />
@@ -184,7 +193,7 @@ export default function OrdersPage() {
                                 type="button"
                                 variant="ghost"
                                 size="icon-sm"
-                                aria-label={`Cancel order ${order.orderId}`}
+                                aria-label={`Cancel order ${order.orderCode}`}
                                 className="text-destructive hover:text-destructive"
                               >
                                 <XCircle className="size-4" />
@@ -239,7 +248,7 @@ export default function OrdersPage() {
           <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
             <DialogTitle>
               {selectedOrder
-                ? `Order ${selectedOrder.orderId}`
+                ? `Order ${selectedOrder.orderCode}`
                 : 'Order Detail'}
             </DialogTitle>
             <DialogDescription>
@@ -270,33 +279,88 @@ export default function OrdersPage() {
                   {selectedOrder.items.map((item) => (
                     <div
                       key={item.id}
-                      className="border-border/70 bg-card/35 flex items-center gap-3 rounded-lg border p-3"
+                      className="border-border/70 bg-card/35 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center"
                     >
-                      <div className="border-border/70 bg-card/70 relative size-14 shrink-0 overflow-hidden rounded-sm border">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                          sizes="56px"
-                        />
+                      <div className="flex flex-1 items-center gap-3">
+                        <div className="border-border/70 bg-card/70 relative size-14 shrink-0 overflow-hidden rounded-sm border">
+                          {item.image ? (
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                              sizes="56px"
+                            />
+                          ) : (
+                            <div className="text-muted-foreground flex size-full items-center justify-center text-[10px] font-medium">
+                              No image
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-foreground line-clamp-1 text-sm font-semibold">
+                            {item.name}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {item.variantLabel}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            Qty: {item.quantity}
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="min-w-0 flex-1">
-                        <p className="text-foreground line-clamp-1 text-sm font-semibold">
-                          {item.name}
+                      <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:gap-1.5">
+                        <p className="text-foreground text-sm font-semibold">
+                          {formatCurrency(item.quantity * item.unitPrice)}
                         </p>
-                        <p className="text-muted-foreground text-xs">
-                          {item.variantLabel}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          Qty: {item.quantity}
-                        </p>
+                        
+                        {selectedOrder.status === 'delivered' && (
+                          item.isReviewed ? (
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="secondary"
+                                className="h-6 gap-1 border border-amber-400/40 bg-amber-400/10 px-2 text-[10px] font-medium text-amber-200"
+                              >
+                                <Star className="fill-amber-400 text-amber-400 size-2.5" />
+                                Reviewed
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 rounded-full px-2.5 text-[10px] font-medium"
+                                onClick={() =>
+                                  setReviewItem({
+                                    id: item.id,
+                                    productId: item.productId,
+                                    productName: item.name,
+                                    review: item.review,
+                                  })
+                                }
+                              >
+                                Edit Review
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 rounded-full px-3 text-[10px] font-medium"
+                              onClick={() =>
+                                setReviewItem({
+                                  id: item.id,
+                                  productId: item.productId,
+                                  productName: item.name,
+                                  review: item.review,
+                                })
+                              }
+                            >
+                              Write Review
+                            </Button>
+                          )
+                        )}
                       </div>
-
-                      <p className="text-foreground text-sm font-semibold">
-                        {formatCurrency(item.quantity * item.unitPrice)}
-                      </p>
                     </div>
                   ))}
                 </div>
@@ -314,6 +378,18 @@ export default function OrdersPage() {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Review Dialog */}
+      {reviewItem && (
+        <OrderReviewDialog
+          isOpen={!!reviewItem}
+          onOpenChange={(open) => !open && setReviewItem(null)}
+          orderItemId={reviewItem.id}
+          productId={reviewItem.productId}
+          productName={reviewItem.productName}
+          review={reviewItem.review}
+        />
+      )}
     </div>
   );
 }

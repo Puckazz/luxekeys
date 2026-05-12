@@ -35,7 +35,7 @@ const toCartLineItems = (items: OrderResponseDto['items']): CartLineItem[] => {
   return items.map((item) => ({
     id: item.id,
     variantId: item.variantId ?? item.productId,
-    switchOptionId: null,
+    switchOptionId: item.switchOptionId ?? null,
     slug: '',
     name: item.productName,
     variantLabel: item.variantName ?? 'Standard',

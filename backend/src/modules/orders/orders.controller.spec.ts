@@ -5,6 +5,7 @@ import {
 } from './orders.controller.js';
 import { OrdersService } from './orders.service.js';
 import { createMockOrder, uuid } from '../../common/testing/index.js';
+import { UserRole } from '../../generated/prisma/index.js';
 
 describe('OrdersController', () => {
   let controller: OrdersController;
@@ -66,18 +67,31 @@ describe('OrdersController', () => {
     it('findOne should delegate to service.findOne', async () => {
       const order = createMockOrder();
       service.findOne.mockResolvedValue(order as never);
+      const user = { id: order.userId, role: UserRole.CUSTOMER };
 
-      const result = await controller.findOne(order.id);
-      expect(service.findOne).toHaveBeenCalledWith(order.id);
+      const result = await controller.findOne(user as never, order.id);
+      expect(service.findOne).toHaveBeenCalledWith(
+        order.id,
+        user.id,
+        user.role,
+      );
       expect(result).toBe(order);
     });
 
     it('findByCode should delegate to service.findByCode', async () => {
       const order = createMockOrder();
       service.findByCode.mockResolvedValue(order as never);
+      const user = { id: order.userId, role: UserRole.CUSTOMER };
 
-      const result = await controller.findByCode(order.orderCode);
-      expect(service.findByCode).toHaveBeenCalledWith(order.orderCode);
+      const result = await controller.findByCode(
+        user as never,
+        order.orderCode,
+      );
+      expect(service.findByCode).toHaveBeenCalledWith(
+        order.orderCode,
+        user.id,
+        user.role,
+      );
       expect(result).toBe(order);
     });
 

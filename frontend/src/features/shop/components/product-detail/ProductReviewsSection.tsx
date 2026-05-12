@@ -1,4 +1,5 @@
-import { Star, ThumbsUp } from 'lucide-react';
+﻿import { Star, ThumbsUp } from 'lucide-react';
+import Link from 'next/link';
 
 import { Button } from '@/shared/components/ui/button';
 import { Separator } from '@/shared/components/ui/separator';
@@ -17,13 +18,6 @@ export default function ProductReviewsSection({
         <h2 className="text-foreground text-3xl font-black tracking-tight lg:text-4xl">
           {heading}
         </h2>
-        <Button
-          type="button"
-          variant="link"
-          className="h-auto p-0 text-xs font-medium tracking-wide sm:text-sm"
-        >
-          Write a review
-        </Button>
       </div>
 
       <div className="mt-8">
@@ -31,6 +25,29 @@ export default function ProductReviewsSection({
           <p className="text-muted-foreground py-8 text-center text-sm">
             Loading reviews...
           </p>
+        ) : null}
+
+        {!isLoading && reviews.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="bg-card flex h-16 w-16 items-center justify-center rounded-full">
+              <Star className="text-muted-foreground size-8" />
+            </div>
+            <h3 className="text-foreground mt-4 text-lg font-semibold">
+              No reviews yet
+            </h3>
+            <p className="text-muted-foreground mt-2 max-w-70 text-sm">
+              Purchased this item? Share your thoughts with the community in
+              your order history.
+            </p>
+            <Button
+              asChild
+              type="button"
+              variant="outline"
+              className="mt-6 rounded-full"
+            >
+              <Link href="/profile/orders">Go to My Orders</Link>
+            </Button>
+          </div>
         ) : null}
 
         {reviews.map((review, index) => (

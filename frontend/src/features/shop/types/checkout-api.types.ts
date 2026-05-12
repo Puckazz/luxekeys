@@ -11,6 +11,7 @@ export type OrderItemDto = {
   id: string;
   productId: string;
   variantId: string | null;
+  switchOptionId?: string | null;
   productName: string;
   variantName: string | null;
   sku: string | null;

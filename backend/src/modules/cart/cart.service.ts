@@ -121,15 +121,19 @@ export class CartService {
         where: { id: itemDto.variantId },
       });
 
-      if (!variant || !variant.isActive) {
+      if (!variant || !variant.isActive || variant.deletedAt) {
         continue;
       }
 
       // Use switch option stock when available, otherwise fall back to variant stock
       let availableStock = variant.stock;
       if (itemDto.switchOptionId) {
-        const switchOption = await this.prisma.productSwitchOption.findUnique({
-          where: { id: itemDto.switchOptionId },
+        const switchOption = await this.prisma.productSwitchOption.findFirst({
+          where: {
+            id: itemDto.switchOptionId,
+            isActive: true,
+            deletedAt: null,
+          },
         });
         if (!switchOption) continue;
         availableStock = switchOption.stock;
@@ -161,18 +165,20 @@ export class CartService {
       throw new NotFoundException('Product variant not found');
     }
 
-    if (!variant.isActive) {
+    if (!variant.isActive || variant.deletedAt) {
       throw new BadRequestException('Product variant is not available');
     }
 
     // Use switch option stock when available, otherwise fall back to variant stock
     let availableStock = variant.stock;
     if (dto.switchOptionId) {
-      const switchOption = await this.prisma.productSwitchOption.findUnique({
-        where: { id: dto.switchOptionId },
+      const switchOption = await this.prisma.productSwitchOption.findFirst({
+        where: { id: dto.switchOptionId, isActive: true, deletedAt: null },
       });
       if (!switchOption) {
-        throw new NotFoundException('Switch option not found');
+        throw new NotFoundException(
+          'Switch option not found or no longer available',
+        );
       }
       availableStock = switchOption.stock;
     }
@@ -251,8 +257,15 @@ export class CartService {
       throw new NotFoundException('Item not found in cart');
     }
 
-    if (!cartItem.variant.isActive) {
+    if (!cartItem.variant.isActive || cartItem.variant.deletedAt) {
       throw new BadRequestException('Product variant is not available');
+    }
+
+    if (
+      cartItem.switchOption &&
+      (!cartItem.switchOption.isActive || cartItem.switchOption.deletedAt)
+    ) {
+      throw new BadRequestException('Switch option is no longer available');
     }
 
     const availableStock = cartItem.switchOption

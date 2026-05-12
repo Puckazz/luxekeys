@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ReviewsController } from './reviews.controller.js';
 import { ReviewsService } from './reviews.service.js';
 import { createMockReview, uuid } from '../../common/testing/index.js';
+import { UserRole } from '../../generated/prisma/index.js';
 
 describe('ReviewsController', () => {
   let controller: ReviewsController;
@@ -73,7 +74,7 @@ describe('ReviewsController', () => {
     const review = createMockReview();
     service.remove.mockResolvedValue(review as never);
 
-    const user = { id: review.userId, role: 'CUSTOMER' };
+    const user = { id: review.userId, role: UserRole.ADMIN };
     const result = await controller.remove(
       review.productId as string,
       review.id,
