@@ -1,65 +1,8 @@
 import {
   CommunityImage,
   CountdownItem,
-  FeaturedProduct,
   LabNote,
 } from '@/features/shop/types';
-
-export const featuredProducts: FeaturedProduct[] = [
-  {
-    variantId: 'variant-mk-90-pro-default',
-    slug: 'mk-90-pro',
-    name: 'Obsidian TKL Pro',
-    subtitle: 'Gasket Mount / CNC Aluminum',
-    price: '$349.00',
-    discountPercentage: 15,
-    badge: 'In Stock',
-    image:
-      'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    variantId: 'variant-mode-sixtyfive-default',
-    slug: 'mode-sixtyfive',
-    name: 'Ghost 65 Edition',
-    subtitle: 'Polycarbonate / RGB Underglow',
-    price: '$289.00',
-    discountPercentage: 10,
-    badge: 'Limited',
-    image:
-      'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    variantId: 'variant-wuque-zoom75-default',
-    slug: 'wuque-zoom75',
-    name: 'Nebula Keycap Set',
-    subtitle: 'PBT Doubleshot / Cherry Profile',
-    price: '$125.00',
-    badge: null,
-    image:
-      'https://images.unsplash.com/photo-1613141411244-0e4ac259d217?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    variantId: 'variant-tofu60-redux-default',
-    slug: 'tofu60-redux',
-    name: 'Cobalt Silent Linears',
-    subtitle: 'Lubed & Filmed / 36-pack',
-    price: '$42.00',
-    badge: null,
-    image:
-      'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    variantId: 'variant-keychron-q1-pro-default',
-    slug: 'keychron-q1-pro',
-    name: 'Aurora 60 Build Kit',
-    subtitle: 'Hotswap / CNC Frame',
-    price: '$219.00',
-    discountPercentage: 20,
-    badge: null,
-    image:
-      'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=1200&q=80',
-  },
-];
 
 export const countdownItems: CountdownItem[] = [
   { value: '04', label: 'DAYS' },

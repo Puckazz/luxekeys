@@ -4,6 +4,7 @@ export interface FeaturedProduct {
   name: string;
   subtitle: string;
   price: string;
+  originalPrice?: string;
   discountPercentage?: number;
   badge: string | null;
   image: string;
@@ -47,7 +48,13 @@ export type ProductCaseMaterial =
   | 'ABS Plastic'
   | 'Carbon Fiber';
 
-export type ProductSortOption = 'newest' | 'price';
+export type ProductSortOption =
+  | 'featured'
+  | 'newest'
+  | 'price-asc'
+  | 'price-desc'
+  | 'name-asc'
+  | 'name-desc';
 
 export type ProductListViewMode = 'grid' | 'list';
 
@@ -57,17 +64,27 @@ export type ProductCategory =
   | 'switches'
   | 'keycaps';
 
+export type ProductType =
+  | 'KEYBOARD'
+  | 'SWITCH'
+  | 'KEYCAP'
+  | 'ACCESSORY'
+  | 'BAREBONES_KIT';
+
 export type KeycapProfile = 'Cherry' | 'OEM' | 'SA' | 'XDA' | 'DSA' | 'KAT';
 
 export interface ProductListItem {
   id: string;
   slug: string;
+  type: ProductType;
   category: ProductCategory;
   name: string;
   brand: string;
   description: string;
   price: number;
+  originalPrice?: number;
   discountPercentage?: number;
+  stock: number;
   image: string;
   badge?: ProductStockStatus;
   layout: ProductLayout;

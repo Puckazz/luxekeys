@@ -16,28 +16,6 @@ import {
 } from '@/stores/shop/wishlist.store';
 import PageBreadcrumb from '@/shared/components/layout/PageBreadcrumb';
 import { Button } from '@/shared/components/ui/button';
-import { formatCurrency } from '@/lib/formatters';
-
-const toUnitPrice = (price: string) => {
-  const parsedValue = Number(price.replace(/[^0-9.]/g, ''));
-
-  if (!Number.isFinite(parsedValue)) {
-    return 0;
-  }
-
-  return parsedValue;
-};
-
-const getDiscountedPrice = (price: string, discountPercentage?: number) => {
-  const originalPrice = toUnitPrice(price);
-
-  if (!discountPercentage) {
-    return originalPrice;
-  }
-
-  const discountMultiplier = 1 - discountPercentage / 100;
-  return Number((originalPrice * discountMultiplier).toFixed(2));
-};
 
 export default function WishlistPage() {
   const pageSize = 8;
@@ -109,11 +87,6 @@ export default function WishlistPage() {
         <section className="mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
             {paginatedItems.map((item) => {
-              const discountedPrice = getDiscountedPrice(
-                item.price,
-                item.discountPercentage
-              );
-
               return (
                 <ShopProductCard
                   key={item.slug}
@@ -121,12 +94,8 @@ export default function WishlistPage() {
                   image={item.image}
                   name={item.name}
                   brand={item.subtitle}
-                  priceLabel={formatCurrency(discountedPrice, {
-                    minimumFractionDigits: 2,
-                  })}
-                  originalPriceLabel={
-                    item.discountPercentage ? item.price : undefined
-                  }
+                  priceLabel={item.price}
+                  originalPriceLabel={item.originalPrice}
                   badge={
                     item.badge
                       ? {
@@ -146,7 +115,7 @@ export default function WishlistPage() {
                         slug: item.slug,
                         name: item.name,
                         variantLabel: item.subtitle || 'Default',
-                        unitPrice: discountedPrice,
+                        unitPrice: Number(item.price.replace(/[^0-9.]/g, '')) || 0,
                         image: item.image,
                         quantity: 1,
                       });

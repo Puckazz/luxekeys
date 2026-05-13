@@ -1,5 +1,9 @@
 import ShopProductCard from '@/features/shop/components/product-list/ShopProductCard';
 import { useCartActions } from '@/features/shop/hooks/useCartActions';
+import {
+  getStockBadgeLabel,
+  shouldShowStockBadge,
+} from '@/features/shop/mappers/product-api/product-api.shared';
 import { useWishlistStore } from '@/stores/shop/wishlist.store';
 import { ProductStockStatus } from '@/features/shop/types';
 import type { ProductCardProps } from '@/features/shop/types/product-list.types';
@@ -20,24 +24,20 @@ const badgeLabel: Record<ProductStockStatus, string> = {
   'out-of-stock': 'Out of Stock',
 };
 
-const getDiscountedPrice = (price: number, discountPercentage?: number) => {
-  if (!discountPercentage) {
-    return price;
-  }
-
-  const discountMultiplier = 1 - discountPercentage / 100;
-  return Number((price * discountMultiplier).toFixed(2));
-};
-
 export default function ProductCard({ product, viewMode }: ProductCardProps) {
   const { addItem } = useCartActions();
   const wishlistItems = useWishlistStore((state) => state.items);
   const toggleWishlistItem = useWishlistStore((state) => state.toggleItem);
-  const discountedPrice = getDiscountedPrice(
-    product.price,
-    product.discountPercentage
-  );
   const isWished = wishlistItems.some((item) => item.slug === product.slug);
+  const stockBadge =
+    product.badge && shouldShowStockBadge(product.badge)
+      ? {
+          label:
+            getStockBadgeLabel(product.badge, product.stock) ??
+            badgeLabel[product.badge],
+          variant: badgeVariants[product.badge],
+        }
+      : undefined;
 
   const variantLabel = (() => {
     if (product.category === 'keyboards') {
@@ -60,8 +60,11 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
     name: product.name,
     subtitle: variantLabel,
     price: formatCurrency(product.price, { minimumFractionDigits: 0 }),
+    originalPrice: product.originalPrice
+      ? formatCurrency(product.originalPrice, { minimumFractionDigits: 0 })
+      : undefined,
     discountPercentage: product.discountPercentage,
-    badge: product.badge ? badgeLabel[product.badge] : null,
+    badge: stockBadge?.label ?? null,
     image: product.image,
   };
 
@@ -74,20 +77,13 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
       brand={product.brand}
       description={product.description}
       tags={product.tags}
-      priceLabel={formatCurrency(discountedPrice, { minimumFractionDigits: 0 })}
+      priceLabel={formatCurrency(product.price, { minimumFractionDigits: 0 })}
       originalPriceLabel={
-        product.discountPercentage
-          ? formatCurrency(product.price, { minimumFractionDigits: 0 })
+        product.originalPrice
+          ? formatCurrency(product.originalPrice, { minimumFractionDigits: 0 })
           : undefined
       }
-      badge={
-        product.badge
-          ? {
-              label: badgeLabel[product.badge],
-              variant: badgeVariants[product.badge],
-            }
-          : undefined
-      }
+      badge={stockBadge}
       discountPercentage={product.discountPercentage}
       wishlistToggle={{
         active: isWished,
@@ -107,7 +103,7 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
             slug: product.slug,
             name: product.name,
             variantLabel,
-            unitPrice: discountedPrice,
+            unitPrice: product.price,
             image: product.image,
             quantity: 1,
           });

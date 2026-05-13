@@ -30,6 +30,7 @@ import type {
 import {
   getStockLabel,
   getStockStatus,
+  shouldShowStockBadge,
 } from '@/features/shop/mappers/product-api/product-api.shared';
 import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
@@ -39,17 +40,6 @@ const stockBadgeVariantMap = {
   'low-stock': 'warning',
   'out-of-stock': 'secondary',
 } as const;
-
-const calculateDiscountedPrice = (
-  price: number,
-  discountPercentage?: number
-) => {
-  if (!discountPercentage || discountPercentage <= 0) {
-    return price;
-  }
-
-  return Number((price * (1 - discountPercentage / 100)).toFixed(2));
-};
 
 function ProductStockBadge({ status, label }: ProductStockBadgeProps) {
   return <Badge className="absolute top-5 left-5" variant={stockBadgeVariantMap[status]}>{label}</Badge>;
@@ -76,7 +66,8 @@ export default function ProductDetailHeroSection({
   const hasDiscount =
     typeof product.discountPercentage === 'number' &&
     product.discountPercentage > 0;
-  const showsKeyboardSelectors = product.category === 'keyboards';
+  const showsColorSelector = product.category === 'keyboards';
+  const showsSwitchSelector = product.type === 'KEYBOARD';
 
   const canPurchase = currentStock > 0;
   const stockStatus = getStockStatus(currentStock);
@@ -85,10 +76,6 @@ export default function ProductDetailHeroSection({
   // Switch names available for the currently selected color variant
   const availableSwitchOptions = currentVariant?.switchOptions ?? [];
 
-  const discountedPrice = calculateDiscountedPrice(
-    product.price,
-    product.discountPercentage
-  );
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const thumbnailScrollerRef = useRef<HTMLDivElement | null>(null);
   const thumbnailButtonRefs = useRef<Record<string, HTMLButtonElement | null>>(
@@ -196,10 +183,12 @@ export default function ProductDetailHeroSection({
                         priority={index === 0}
                       />
 
-                      <ProductStockBadge
-                        status={stockStatus}
-                        label={stockLabel}
-                      />
+                      {shouldShowStockBadge(stockStatus) ? (
+                        <ProductStockBadge
+                          status={stockStatus}
+                          label={stockLabel}
+                        />
+                      ) : null}
                     </div>
                   </CarouselItem>
                 ))}
@@ -290,17 +279,17 @@ export default function ProductDetailHeroSection({
 
             <div className="mt-5 flex flex-wrap items-end gap-2">
               <p className="text-foreground text-2xl font-bold lg:text-3xl">
-                {formatCurrency(discountedPrice, { minimumFractionDigits: 2 })}
+                {formatCurrency(product.price, { minimumFractionDigits: 2 })}
               </p>
-              {hasDiscount ? (
+              {hasDiscount && product.originalPrice ? (
                 <p className="text-muted-foreground text-lg line-through">
-                  {formatCurrency(product.price, { minimumFractionDigits: 2 })}
+                  {formatCurrency(product.originalPrice, { minimumFractionDigits: 2 })}
                 </p>
               ) : null}
             </div>
 
             <div className="mt-8 space-y-6">
-              {showsKeyboardSelectors ? (
+              {showsColorSelector ? (
                 <>
                   {/* Color selector (primary dimension) */}
                   <div>
@@ -308,13 +297,21 @@ export default function ProductDetailHeroSection({
                       Color
                     </p>
                     <div className="mt-3.5 flex flex-wrap gap-2.5">
-                      {product.colorOptions.map((color) => {
-                        const isActive = color === selectedColor;
-                        const isOutOfStock = !product.variants?.some(
-                          (v) =>
-                            (v.color ?? product.defaultColor) === color &&
-                            v.switchOptions.some((sw) => sw.stock > 0)
-                        );
+                        {product.colorOptions.map((color) => {
+                          const isActive = color === selectedColor;
+                          const isOutOfStock = !product.variants?.some((v) => {
+                            if (
+                              (v.color ?? product.defaultColor) !== color
+                            ) {
+                              return false;
+                            }
+
+                            if (product.type === 'KEYBOARD') {
+                              return v.switchOptions.some((sw) => sw.stock > 0);
+                            }
+
+                            return v.stock > 0;
+                          });
 
                         return (
                           <Button
@@ -338,7 +335,7 @@ export default function ProductDetailHeroSection({
                   </div>
 
                   {/* Switch name selector (secondary — specific switches for selected color) */}
-                  {availableSwitchOptions.length > 0 ? (
+                  {showsSwitchSelector && availableSwitchOptions.length > 0 ? (
                     <div>
                       <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
                         Switch
@@ -417,7 +414,7 @@ export default function ProductDetailHeroSection({
                 onClick={onAddToCart}
                 disabled={!canPurchase}
               >
-                {canPurchase ? 'Add to Cart' : 'Out of Stock'} - {formatCurrency(discountedPrice, { minimumFractionDigits: 2 })}
+                {canPurchase ? 'Add to Cart' : 'Out of Stock'} - {formatCurrency(product.price, { minimumFractionDigits: 2 })}
               </Button>
               <Button
                 type="button"

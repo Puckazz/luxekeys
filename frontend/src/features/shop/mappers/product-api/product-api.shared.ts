@@ -131,12 +131,25 @@ export const getStockStatus = (stock: number): ProductStockStatus => {
   return stock <= 5 ? 'low-stock' : 'in-stock';
 };
 
-export const getStockLabel = (stock: number): string => {
-  if (stock <= 0) {
-    return 'Out of Stock';
-  }
-
-  return stock <= 5 ? 'Low Stock' : 'In Stock';
+export const shouldShowStockBadge = (status: ProductStockStatus): boolean => {
+  return status !== 'in-stock';
 };
 
+export const getStockBadgeLabel = (
+  status: ProductStockStatus,
+  stock: number
+): string | null => {
+  if (!shouldShowStockBadge(status)) {
+    return null;
+  }
 
+  if (status === 'low-stock') {
+    return `Only ${stock} left`;
+  }
+
+  return 'Out of Stock';
+};
+
+export const getStockLabel = (stock: number): string => {
+  return getStockBadgeLabel(getStockStatus(stock), stock) ?? 'In Stock';
+};

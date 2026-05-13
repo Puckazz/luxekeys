@@ -1,10 +1,12 @@
 ﻿import {
   mapApiProductToDetail,
+  mapApiProductToFeaturedProduct,
   mapApiProductToListItem,
   mapApiReviewToReviewItem,
   mapProductQueryStateToApiParams,
 } from '@/features/shop/mappers/product-api.mapper';
 import type {
+  FeaturedProduct,
   ProductDetail,
   ProductListApiResponse,
   ProductListItem,
@@ -16,6 +18,7 @@ import type {
   CustomerProductApiPaginationMeta,
   CustomerProductDetailApiItem,
   CustomerProductListApiData,
+  CustomerProductSummaryApiItem,
   CustomerReviewApiItem,
 } from '@/features/shop/types/product-api.types';
 import { apiRequest, apiRequestWithMeta, authFetch } from '@/shared/api/http-client';
@@ -87,6 +90,16 @@ export const productsApi = {
     >(`/products?${qs}`);
 
     return response.data.items.map(mapApiProductToListItem);
+  },
+  getFeaturedProducts: async (): Promise<FeaturedProduct[]> => {
+    const data = await apiRequest<CustomerProductSummaryApiItem[]>(
+      '/products/featured',
+      {
+        cache: 'no-store',
+      }
+    );
+
+    return data.map(mapApiProductToFeaturedProduct);
   },
   getBrandOptions: async (): Promise<ProductBrandOptionItem[]> => {
     const query = toQueryString({

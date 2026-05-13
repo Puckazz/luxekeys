@@ -158,7 +158,7 @@ export type ProductApiQueryParams = {
   maxPrice: number;
   page: number;
   limit: number;
-  sortBy: 'createdAt' | 'basePrice';
+  sortBy: 'createdAt' | 'basePrice' | 'name' | 'isFeatured';
   sortOrder: 'asc' | 'desc';
 };
 

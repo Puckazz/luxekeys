@@ -17,33 +17,28 @@ import { ProductSwitchType } from '@/features/shop/types';
 import type { ProductDetailPageProps } from '@/features/shop/types/product-detail.types';
 import { Separator } from '@/shared/components/ui/separator';
 
-const calculateDiscountedPrice = (
-  price: number,
-  discountPercentage?: number
-) => {
-  if (!discountPercentage || discountPercentage <= 0) {
-    return price;
-  }
-
-  return Number((price * (1 - discountPercentage / 100)).toFixed(2));
-};
-
 const buildVariantLabel = ({
+  type,
   category,
   selectedColor,
   selectedSwitch,
   selectedSwitchName,
   keycapProfile,
 }: {
+  type: ProductDetailPageProps['product']['type'];
   category: ProductDetailPageProps['product']['category'];
   selectedColor: string;
   selectedSwitch: ProductSwitchType;
   selectedSwitchName: string;
   keycapProfile?: ProductDetailPageProps['product']['keycapProfile'];
 }) => {
-  if (category === 'keyboards') {
+  if (type === 'KEYBOARD') {
     const switchLabel = selectedSwitchName || selectedSwitch;
     return `${selectedColor} / ${switchLabel}`;
+  }
+
+  if (type === 'BAREBONES_KIT') {
+    return selectedColor || 'Default';
   }
 
   if (category === 'keycaps' && keycapProfile) {
@@ -134,7 +129,8 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     setVisibleReviews(Math.min(2, product.reviewCount));
   }, [product, searchParams]);
 
-  const isKeyboard = product.category === 'keyboards';
+  const usesKeyboardSwitchOptions = product.type === 'KEYBOARD';
+  const supportsColorVariants = product.category === 'keyboards';
 
   // Get the variant matching the selected color
   const currentVariant = useMemo(() => {
@@ -142,10 +138,16 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     return (
       product.variants.find(
         (v) =>
-          !isKeyboard || (v.color ?? product.defaultColor) === selectedColor
+          !supportsColorVariants ||
+          (v.color ?? product.defaultColor) === selectedColor
       ) ?? product.variants[0]
     );
-  }, [product.variants, product.defaultColor, selectedColor, isKeyboard]);
+  }, [
+    product.variants,
+    product.defaultColor,
+    selectedColor,
+    supportsColorVariants,
+  ]);
 
   // Get the specific switch option matching selected name+type within this variant
   const currentSwitchOption = useMemo(() => {
@@ -169,11 +171,16 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
 
   // Stock from the specific switch option; fall back to variant-level stock for non-keyboards
   const currentStock = useMemo(() => {
-    if (isKeyboard) {
+    if (usesKeyboardSwitchOptions) {
       return currentSwitchOption?.stock ?? 0;
     }
     return currentVariant?.stock ?? product.quantityLimit;
-  }, [isKeyboard, currentSwitchOption, currentVariant, product.quantityLimit]);
+  }, [
+    usesKeyboardSwitchOptions,
+    currentSwitchOption,
+    currentVariant,
+    product.quantityLimit,
+  ]);
 
   // Auto-sync selectedSwitchName when switch type or variant changes
   useEffect(() => {
@@ -246,24 +253,20 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   const handleAddToCart = () => {
     if (currentStock <= 0 || !currentVariant) return;
 
-    const discountedUnitPrice = calculateDiscountedPrice(
-      product.price,
-      product.discountPercentage
-    );
-
     addItem({
       variantId: currentVariant.id,
       switchOptionId: currentSwitchOption?.id,
       slug: product.slug,
       name: product.name,
       variantLabel: buildVariantLabel({
+        type: product.type,
         category: product.category,
         selectedColor,
         selectedSwitch,
         selectedSwitchName,
         keycapProfile: product.keycapProfile,
       }),
-      unitPrice: discountedUnitPrice,
+      unitPrice: product.price,
       image: product.image,
       quantity,
     });

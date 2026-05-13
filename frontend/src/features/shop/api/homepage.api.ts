@@ -1,20 +1,10 @@
+import { productsApi } from '@/features/shop/api/products.api';
 import {
   communityShowcaseImages,
   countdownItems,
-  featuredProducts,
   labNotes,
 } from '@/features/shop/mocks/homepage.data';
 import type { HomePageContent } from '@/features/shop/types/homepage-sections.types';
-
-const MOCK_DELAY = 140;
-
-const delay = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-const cloneFeaturedProducts = (items: HomePageContent['featuredProducts']) => {
-  return items.map((item) => ({ ...item }));
-};
 
 const cloneCountdownItems = (items: HomePageContent['countdownItems']) => {
   return items.map((item) => ({ ...item }));
@@ -32,10 +22,10 @@ const cloneLabNotes = (items: HomePageContent['labNotes']) => {
 
 export const homepageApi = {
   getHomepageContent: async (): Promise<HomePageContent> => {
-    await delay(MOCK_DELAY);
+    const featuredProducts = await productsApi.getFeaturedProducts();
 
     return {
-      featuredProducts: cloneFeaturedProducts(featuredProducts),
+      featuredProducts,
       countdownItems: cloneCountdownItems(countdownItems),
       communityShowcaseImages: cloneCommunityImages(communityShowcaseImages),
       labNotes: cloneLabNotes(labNotes),

@@ -20,7 +20,18 @@ import {
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/formatters';
+
+const stockBadgeVariantMap = {
+  'In Stock': 'success',
+  'Low Stock': 'warning',
+  'Out of Stock': 'secondary',
+} as const;
+
+type StockBadgeLabel = keyof typeof stockBadgeVariantMap;
+
+const isStockBadgeLabel = (badge: string | null): badge is StockBadgeLabel => {
+  return badge !== null && badge in stockBadgeVariantMap;
+};
 
 export default function ProductCollectionSection({
   title,
@@ -37,26 +48,11 @@ export default function ProductCollectionSection({
   const { addItem } = useCartActions();
   const wishlistItems = useWishlistStore(selectWishlistItems);
   const toggleWishlistItem = useWishlistStore((state) => state.toggleItem);
-
-  const toUnitPrice = (price: string) => {
-    const parsedValue = Number(price.replace(/[^0-9.]/g, ''));
-
-    if (!Number.isFinite(parsedValue)) {
-      return 0;
-    }
-
-    return parsedValue;
+  const shouldRenderStockBadge = (badge: string | null) => {
+    return badge !== null && badge !== 'In Stock';
   };
-
-  const getDiscountedPrice = (price: string, discountPercentage?: number) => {
-    const originalPrice = toUnitPrice(price);
-
-    if (!discountPercentage) {
-      return originalPrice;
-    }
-
-    const discountMultiplier = 1 - discountPercentage / 100;
-    return Number((originalPrice * discountMultiplier).toFixed(2));
+  const getStockBadgeVariant = (badge: StockBadgeLabel | null) => {
+    return badge ? stockBadgeVariantMap[badge] : 'default';
   };
 
   const handleAddToCart = (
@@ -65,15 +61,14 @@ export default function ProductCollectionSection({
     name: string,
     price: string,
     image: string,
-    variantLabel: string,
-    discountPercentage?: number
+    variantLabel: string
   ) => {
     addItem({
       variantId,
       slug,
       name,
       variantLabel: variantLabel || 'Default',
-      unitPrice: getDiscountedPrice(price, discountPercentage),
+      unitPrice: Number(price.replace(/[^0-9.]/g, '')) || 0,
       image,
       quantity: 1,
     });
@@ -165,10 +160,6 @@ export default function ProductCollectionSection({
             const isWished = wishlistItems.some(
               (wishlistItem) => wishlistItem.slug === product.slug
             );
-            const discountedPrice = getDiscountedPrice(
-              product.price,
-              product.discountPercentage
-            );
 
             return (
               <CarouselItem
@@ -195,14 +186,23 @@ export default function ProductCollectionSection({
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         </div>
-                        {product.badge ? (
-                          <Badge className="absolute top-3 right-3">
+                        {shouldRenderStockBadge(product.badge) ? (
+                          <Badge
+                            className="absolute top-3 left-3"
+                            variant={
+                              getStockBadgeVariant(
+                                isStockBadgeLabel(product.badge)
+                                  ? product.badge
+                                  : null
+                              )
+                            }
+                          >
                             {product.badge}
                           </Badge>
                         ) : null}
                         {product.discountPercentage ? (
                           <Badge
-                            className="absolute top-3 left-3"
+                            className="absolute top-3 right-3 font-black"
                             variant="destructive"
                           >
                             -{product.discountPercentage}%
@@ -222,8 +222,7 @@ export default function ProductCollectionSection({
                             product.name,
                             product.price,
                             product.image,
-                            product.subtitle,
-                            product.discountPercentage
+                            product.subtitle
                           )
                         }
                         className="bg-background hover:bg-background/90 pointer-events-auto inline-flex size-11 items-center justify-center rounded-md text-white shadow-sm transition-colors"
@@ -253,13 +252,11 @@ export default function ProductCollectionSection({
                     </p>
                     <div className="mt-2">
                       <p className="text-primary text-lg font-semibold">
-                        {formatCurrency(discountedPrice, {
-                          minimumFractionDigits: 2,
-                        })}
+                        {product.price}
                       </p>
-                      {product.discountPercentage ? (
+                      {product.originalPrice ? (
                         <p className="text-muted-foreground text-xs line-through">
-                          {product.price}
+                          {product.originalPrice}
                         </p>
                       ) : null}
                     </div>

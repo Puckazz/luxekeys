@@ -1,5 +1,6 @@
 export {
   mapApiProductToDetail,
+  mapApiProductToFeaturedProduct,
   mapApiProductToListItem,
   mapApiReviewToReviewItem,
   mapProductQueryStateToApiParams,

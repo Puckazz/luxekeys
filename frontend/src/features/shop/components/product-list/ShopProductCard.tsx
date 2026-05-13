@@ -25,6 +25,7 @@ export default function ShopProductCard({
   secondaryAction,
 }: ShopProductCardProps) {
   const isList = viewMode === 'list';
+  const visibleBadge = badge?.label === 'In Stock' ? undefined : badge;
 
   const onActionClick = (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -62,9 +63,12 @@ export default function ShopProductCard({
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {badge ? (
-          <Badge className="absolute top-3 left-3" variant={badge.variant}>
-            {badge.label}
+        {visibleBadge ? (
+          <Badge
+            className="absolute top-3 left-3"
+            variant={visibleBadge.variant}
+          >
+            {visibleBadge.label}
           </Badge>
         ) : null}
 

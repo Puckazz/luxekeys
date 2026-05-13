@@ -115,8 +115,12 @@ export const PRODUCT_SWITCH_TYPE_OPTIONS: ProductSwitchType[] = [
 ];
 
 export const PRODUCT_SORT_OPTIONS: ProductSortOptionItem[] = [
+  { value: 'featured', label: 'Featured' },
   { value: 'newest', label: 'Newest Arrivals' },
-  { value: 'price', label: 'Price: Low to High' },
+  { value: 'price-asc', label: 'Price: Low to High' },
+  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'name-asc', label: 'Name: A to Z' },
+  { value: 'name-desc', label: 'Name: Z to A' },
 ];
 
 export const PRODUCT_SORT_VALUES: ProductSortOption[] =

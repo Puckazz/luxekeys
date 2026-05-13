@@ -41,7 +41,7 @@ type PriceBounds = {
 
 const sortSchema = z
   .enum(PRODUCT_SORT_VALUES as [ProductSortOption, ...ProductSortOption[]])
-  .catch('newest');
+  .catch('featured');
 
 const pageSchema = z.coerce.number().int().positive().catch(1);
 
@@ -121,7 +121,7 @@ export const getDefaultProductListQueryState = (
       min: priceBounds.min,
       max: priceBounds.max,
     },
-    sort: 'newest',
+    sort: 'featured',
     page: 1,
     search: '',
   };

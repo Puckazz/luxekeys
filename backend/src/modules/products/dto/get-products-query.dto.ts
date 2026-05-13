@@ -13,7 +13,12 @@ import { ProductStatus, ProductType } from '../../../generated/prisma/index.js';
 import { ToBoolean } from '../../../common/decorators';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 
-export const PRODUCT_SORT_FIELDS = ['createdAt', 'basePrice', 'name'] as const;
+export const PRODUCT_SORT_FIELDS = [
+  'createdAt',
+  'basePrice',
+  'name',
+  'isFeatured',
+] as const;
 export type ProductSortField = (typeof PRODUCT_SORT_FIELDS)[number];
 
 const parseStringListQueryParam = (value: unknown): string[] | undefined => {

@@ -9,8 +9,23 @@ export const mapProductQueryStateToApiParams = (
   limit: number,
   brandOptions: ProductBrandOptionItem[] = []
 ): ProductApiQueryParams => {
-  const sortBy = queryState.sort === 'price' ? 'basePrice' : 'createdAt';
-  const sortOrder = queryState.sort === 'price' ? 'asc' : 'desc';
+  const sortConfig = (() => {
+    switch (queryState.sort) {
+      case 'featured':
+        return { sortBy: 'isFeatured', sortOrder: 'desc' } as const;
+      case 'price-asc':
+        return { sortBy: 'basePrice', sortOrder: 'asc' } as const;
+      case 'price-desc':
+        return { sortBy: 'basePrice', sortOrder: 'desc' } as const;
+      case 'name-asc':
+        return { sortBy: 'name', sortOrder: 'asc' } as const;
+      case 'name-desc':
+        return { sortBy: 'name', sortOrder: 'desc' } as const;
+      case 'newest':
+      default:
+        return { sortBy: 'createdAt', sortOrder: 'desc' } as const;
+    }
+  })();
   const selectedBrandIds = brandOptions
     .filter((brand) => queryState.brands.includes(brand.slug))
     .map((brand) => brand.id);
@@ -44,7 +59,7 @@ export const mapProductQueryStateToApiParams = (
     maxPrice: queryState.price.max,
     page: queryState.page,
     limit,
-    sortBy,
-    sortOrder,
+    sortBy: sortConfig.sortBy,
+    sortOrder: sortConfig.sortOrder,
   };
 };

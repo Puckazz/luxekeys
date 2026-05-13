@@ -181,12 +181,15 @@ export class ProductsService {
         where.basePrice.lte = query.maxPrice.toString();
     }
 
-    const orderBy = buildOrderBy<Prisma.ProductOrderByWithRelationInput>(
-      ['basePrice', 'name', 'createdAt'],
-      'createdAt',
-      query.sortBy,
-      query.sortOrder,
-    );
+    const orderBy =
+      query.sortBy === 'isFeatured'
+        ? [{ isFeatured: 'desc' as const }, { createdAt: 'desc' as const }]
+        : buildOrderBy<Prisma.ProductOrderByWithRelationInput>(
+            ['basePrice', 'name', 'createdAt'],
+            'createdAt',
+            query.sortBy,
+            query.sortOrder,
+          );
 
     const [total, data, priceAggregate] = await this.prisma.$transaction([
       this.prisma.product.count({ where }),
