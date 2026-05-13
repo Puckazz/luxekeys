@@ -57,7 +57,6 @@ export class ProductVariantsService {
           compareAtPrice: dto.compareAtPrice ?? null,
           color: dto.color ?? null,
           layout: dto.layout ?? null,
-          connectivity: dto.connectivity ?? null,
           stock: dto.stock ?? 0,
           isDefault,
           isActive: dto.isActive ?? true,
@@ -107,9 +106,6 @@ export class ProductVariantsService {
           }),
           ...(dto.color !== undefined && { color: dto.color }),
           ...(dto.layout !== undefined && { layout: dto.layout }),
-          ...(dto.connectivity !== undefined && {
-            connectivity: dto.connectivity,
-          }),
           ...(dto.stock !== undefined && { stock: dto.stock }),
           ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
           ...(dto.isActive !== undefined && { isActive: dto.isActive }),

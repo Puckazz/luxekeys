@@ -72,6 +72,68 @@ async function syncVariantStocksFromSwitchOptions(): Promise<number> {
   return updatedCount;
 }
 
+async function syncProductPricesFromDefaultVariants(): Promise<number> {
+  const products = await prisma.product.findMany({
+    where: { deletedAt: null },
+    include: {
+      variants: {
+        where: { deletedAt: null, isActive: true },
+        orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+        include: {
+          switchOptions: {
+            where: { deletedAt: null, isActive: true },
+            orderBy: [
+              { isDefault: 'desc' },
+              { sortOrder: 'asc' },
+              { createdAt: 'asc' },
+            ],
+          },
+        },
+      },
+    },
+  });
+
+  let updatedCount = 0;
+
+  for (const product of products) {
+    const defaultVariant =
+      product.variants.find((variant) => variant.isDefault) ??
+      product.variants[0];
+
+    if (!defaultVariant) {
+      continue;
+    }
+
+    const defaultSwitchOption =
+      defaultVariant.switchOptions.find((option) => option.isDefault) ??
+      defaultVariant.switchOptions[0];
+    const basePrice = defaultSwitchOption?.price ?? defaultVariant.price;
+    const compareAtPrice =
+      defaultSwitchOption?.compareAtPrice ?? defaultVariant.compareAtPrice;
+
+    const basePriceMatches = product.basePrice.equals(basePrice);
+    const compareAtPriceMatches =
+      product.compareAtPrice === null
+        ? compareAtPrice === null
+        : compareAtPrice !== null && product.compareAtPrice.equals(compareAtPrice);
+
+    if (basePriceMatches && compareAtPriceMatches) {
+      continue;
+    }
+
+    await prisma.product.update({
+      where: { id: product.id },
+      data: {
+        basePrice,
+        compareAtPrice,
+      },
+    });
+    updatedCount += 1;
+  }
+
+  return updatedCount;
+}
+
 async function findDefaultSwitchOptionId(
   variantId: string,
 ): Promise<string | null> {
@@ -567,7 +629,6 @@ async function main() {
       compareAtPrice: 229.99,
       color: 'Carbon Black',
       layout: 'TKL',
-      connectivity: 'Bluetooth + USB-C',
       stock: 0,
       isDefault: true,
       isActive: true,
@@ -576,6 +637,8 @@ async function main() {
           {
             name: 'Keychron K Pro Red',
             switchType: 'Linear',
+            price: 199.99,
+            compareAtPrice: 229.99,
             stock: 42,
             isDefault: true,
             sortOrder: 1,
@@ -583,6 +646,8 @@ async function main() {
           {
             name: 'Keychron K Pro Brown',
             switchType: 'Tactile',
+            price: 199.99,
+            compareAtPrice: 229.99,
             stock: 18,
             isDefault: false,
             sortOrder: 2,
@@ -590,6 +655,8 @@ async function main() {
           {
             name: 'Keychron K Pro Blue',
             switchType: 'Clicky',
+            price: 199.99,
+            compareAtPrice: 229.99,
             stock: 0,
             isDefault: false,
             sortOrder: 3,
@@ -610,7 +677,6 @@ async function main() {
       compareAtPrice: 229.99,
       color: 'Off-White',
       layout: 'TKL',
-      connectivity: 'Bluetooth + USB-C',
       stock: 0,
       isDefault: false,
       isActive: true,
@@ -619,6 +685,8 @@ async function main() {
           {
             name: 'Keychron K Pro Red',
             switchType: 'Linear',
+            price: 199.99,
+            compareAtPrice: 229.99,
             stock: 28,
             isDefault: false,
             sortOrder: 1,
@@ -626,6 +694,8 @@ async function main() {
           {
             name: 'Keychron K Pro Brown',
             switchType: 'Tactile',
+            price: 199.99,
+            compareAtPrice: 229.99,
             stock: 15,
             isDefault: true,
             sortOrder: 2,
@@ -645,7 +715,6 @@ async function main() {
       price: 199.99,
       color: 'Navy Blue',
       layout: 'TKL',
-      connectivity: 'Bluetooth + USB-C',
       stock: 0,
       isDefault: false,
       isActive: true,
@@ -654,6 +723,7 @@ async function main() {
           {
             name: 'Keychron K Pro Red',
             switchType: 'Linear',
+            price: 199.99,
             stock: 12,
             isDefault: false,
             sortOrder: 1,
@@ -661,6 +731,7 @@ async function main() {
           {
             name: 'Keychron K Pro Brown',
             switchType: 'Tactile',
+            price: 199.99,
             stock: 8,
             isDefault: false,
             sortOrder: 2,
@@ -668,6 +739,7 @@ async function main() {
           {
             name: 'Keychron K Pro Blue',
             switchType: 'Clicky',
+            price: 199.99,
             stock: 15,
             isDefault: true,
             sortOrder: 3,
@@ -781,7 +853,6 @@ async function main() {
       compareAtPrice: 149.99,
       color: 'Daybreak',
       layout: '65%',
-      connectivity: 'USB-C',
       stock: 0,
       isDefault: true,
       isActive: true,
@@ -790,6 +861,8 @@ async function main() {
           {
             name: 'Cherry MX Red',
             switchType: 'Linear',
+            price: 129.99,
+            compareAtPrice: 149.99,
             stock: 55,
             isDefault: true,
             sortOrder: 1,
@@ -797,6 +870,8 @@ async function main() {
           {
             name: 'Cherry MX Speed Silver',
             switchType: 'Linear',
+            price: 129.99,
+            compareAtPrice: 149.99,
             stock: 20,
             isDefault: false,
             sortOrder: 2,
@@ -804,6 +879,8 @@ async function main() {
           {
             name: 'Cherry MX Brown',
             switchType: 'Tactile',
+            price: 129.99,
+            compareAtPrice: 149.99,
             stock: 30,
             isDefault: false,
             sortOrder: 3,
@@ -811,6 +888,8 @@ async function main() {
           {
             name: 'Cherry MX Blue',
             switchType: 'Clicky',
+            price: 129.99,
+            compareAtPrice: 149.99,
             stock: 15,
             isDefault: false,
             sortOrder: 4,
@@ -831,7 +910,6 @@ async function main() {
       compareAtPrice: 149.99,
       color: 'Fuji',
       layout: '65%',
-      connectivity: 'USB-C',
       stock: 0,
       isDefault: false,
       isActive: true,
@@ -840,6 +918,8 @@ async function main() {
           {
             name: 'Cherry MX Red',
             switchType: 'Linear',
+            price: 129.99,
+            compareAtPrice: 149.99,
             stock: 30,
             isDefault: false,
             sortOrder: 1,
@@ -847,6 +927,8 @@ async function main() {
           {
             name: 'Cherry MX Brown',
             switchType: 'Tactile',
+            price: 129.99,
+            compareAtPrice: 149.99,
             stock: 25,
             isDefault: false,
             sortOrder: 2,
@@ -854,6 +936,8 @@ async function main() {
           {
             name: 'Cherry MX Blue',
             switchType: 'Clicky',
+            price: 129.99,
+            compareAtPrice: 149.99,
             stock: 0,
             isDefault: true,
             sortOrder: 3,
@@ -1305,7 +1389,6 @@ async function main() {
       compareAtPrice: 129.99,
       color: 'Space Gray',
       layout: 'TKL',
-      connectivity: 'Bluetooth + USB-C',
       stock: 0,
       isDefault: true,
       isActive: true,
@@ -1314,6 +1397,8 @@ async function main() {
           {
             name: 'Keychron K Pro Red',
             switchType: 'Linear',
+            price: 109.99,
+            compareAtPrice: 129.99,
             stock: 60,
             isDefault: true,
             sortOrder: 1,
@@ -1321,6 +1406,8 @@ async function main() {
           {
             name: 'Keychron K Pro Brown',
             switchType: 'Tactile',
+            price: 109.99,
+            compareAtPrice: 129.99,
             stock: 35,
             isDefault: false,
             sortOrder: 2,
@@ -1328,6 +1415,8 @@ async function main() {
           {
             name: 'Keychron K Pro Blue',
             switchType: 'Clicky',
+            price: 109.99,
+            compareAtPrice: 129.99,
             stock: 20,
             isDefault: false,
             sortOrder: 3,
@@ -1409,6 +1498,7 @@ async function main() {
           {
             name: 'Gateron Red',
             switchType: 'Linear',
+            price: 89.99,
             stock: 50,
             isDefault: false,
             sortOrder: 1,
@@ -1416,6 +1506,7 @@ async function main() {
           {
             name: 'Gateron Brown',
             switchType: 'Tactile',
+            price: 89.99,
             stock: 50,
             isDefault: true,
             sortOrder: 2,
@@ -1423,6 +1514,7 @@ async function main() {
           {
             name: 'Gateron Blue',
             switchType: 'Clicky',
+            price: 89.99,
             stock: 30,
             isDefault: false,
             sortOrder: 3,
@@ -1446,6 +1538,7 @@ async function main() {
           {
             name: 'Gateron Brown',
             switchType: 'Tactile',
+            price: 89.99,
             stock: 20,
             isDefault: false,
             sortOrder: 1,
@@ -1453,6 +1546,7 @@ async function main() {
           {
             name: 'Gateron Blue',
             switchType: 'Clicky',
+            price: 89.99,
             stock: 30,
             isDefault: true,
             sortOrder: 2,
@@ -1531,6 +1625,7 @@ async function main() {
           {
             name: 'Gateron Yellow',
             switchType: 'Linear',
+            price: 169.99,
             stock: 25,
             isDefault: true,
             sortOrder: 1,
@@ -1538,6 +1633,7 @@ async function main() {
           {
             name: 'Gateron Red',
             switchType: 'Linear',
+            price: 169.99,
             stock: 18,
             isDefault: false,
             sortOrder: 2,
@@ -1545,6 +1641,7 @@ async function main() {
           {
             name: 'Gateron Brown',
             switchType: 'Tactile',
+            price: 169.99,
             stock: 12,
             isDefault: false,
             sortOrder: 3,
@@ -1861,6 +1958,7 @@ async function main() {
           {
             name: 'Cherry MX Red',
             switchType: 'Linear',
+            price: 139.99,
             stock: 20,
             isDefault: true,
             sortOrder: 1,
@@ -1868,6 +1966,7 @@ async function main() {
           {
             name: 'Cherry MX Brown',
             switchType: 'Tactile',
+            price: 139.99,
             stock: 15,
             isDefault: false,
             sortOrder: 2,
@@ -1875,6 +1974,7 @@ async function main() {
           {
             name: 'Cherry MX Blue',
             switchType: 'Clicky',
+            price: 139.99,
             stock: 10,
             isDefault: false,
             sortOrder: 3,
@@ -1882,6 +1982,7 @@ async function main() {
           {
             name: 'Cherry MX Silent Red',
             switchType: 'Linear',
+            price: 139.99,
             stock: 8,
             isDefault: false,
             sortOrder: 4,
@@ -1986,6 +2087,10 @@ async function main() {
   const syncedVariantStockCount = await syncVariantStocksFromSwitchOptions();
   console.log(
     `   ✅  Synced ${syncedVariantStockCount} variant stock totals from switch options\n`,
+  );
+  const syncedProductPriceCount = await syncProductPricesFromDefaultVariants();
+  console.log(
+    `   ✅  Synced ${syncedProductPriceCount} product prices from default variants\n`,
   );
 
   // ── 7. Wishlist ───────────────────────────────────────────────────────────

@@ -123,7 +123,7 @@ const buildTopProducts = (
       return {
         id: product.id,
         name: product.name,
-        category: product.category,
+        category: product.catalogCategoryName ?? product.productType,
         unitPrice,
         unitsSold,
         revenue: unitPrice * unitsSold,

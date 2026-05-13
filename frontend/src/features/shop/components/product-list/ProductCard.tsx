@@ -45,13 +45,8 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
       const sw = product.defaultSwitchName || product.switchType;
       return `${color} / ${sw}`;
     }
-    if (product.category === 'keycaps' && product.keycapProfile) {
-      return `${product.keycapProfile} Profile`;
-    }
-    if (product.category === 'switches') {
-      return product.switchType;
-    }
-    return 'Default';
+
+    return product.defaultVariantName || 'Default';
   })();
 
   const featuredProduct = {

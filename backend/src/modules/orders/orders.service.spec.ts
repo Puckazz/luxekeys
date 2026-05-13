@@ -157,6 +157,72 @@ describe('OrdersService', () => {
       expect(prisma.$transaction).toHaveBeenCalled();
     });
 
+    it('should snapshot switch option price when creating order items', async () => {
+      const userId = uuid();
+      const address = createMockAddress({ userId });
+      const variantId = uuid();
+      const switchOptionId = uuid();
+      const cartItem = {
+        ...buildCartItem(variantId, 2, '99.00', 10),
+        switchOptionId,
+        switchOption: {
+          id: switchOptionId,
+          variantId,
+          name: 'Oil King',
+          switchType: 'Linear',
+          price: '125.00',
+          compareAtPrice: null,
+          stock: 10,
+          isDefault: true,
+          sortOrder: 0,
+          isActive: true,
+          deletedAt: null,
+          createdAt: new Date(),
+        },
+      };
+      const cart = buildCart(userId, [cartItem]);
+      const order = { ...createMockOrder({ userId }), address, items: [] };
+
+      prisma.address.findFirst.mockResolvedValue(address as never);
+      prisma.cart.findUnique.mockResolvedValue(cart as never);
+
+      prisma.$transaction.mockImplementation(
+        async (fn: (tx: typeof prisma) => Promise<unknown>) => {
+          prisma.order.create.mockResolvedValue(order as never);
+          prisma.productVariant.updateMany.mockResolvedValue({
+            count: 1,
+          } as never);
+          prisma.productSwitchOption.updateMany.mockResolvedValue({
+            count: 1,
+          } as never);
+          prisma.cartItem.deleteMany.mockResolvedValue({ count: 1 } as never);
+          return fn(prisma as never);
+        },
+      );
+
+      await service.create(userId, {
+        addressId: address.id,
+        paymentMethod: 'PAYPAL',
+      } as never);
+
+      expect(prisma.order.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            subtotalAmount: 250,
+            totalAmount: 250,
+            items: {
+              create: [
+                expect.objectContaining({
+                  unitPrice: 125,
+                  subtotalAmount: 250,
+                }),
+              ],
+            },
+          }),
+        }),
+      );
+    });
+
     it('should throw NotFoundException when address not found', async () => {
       prisma.address.findFirst.mockResolvedValue(null);
 

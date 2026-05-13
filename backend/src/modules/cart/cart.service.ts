@@ -11,6 +11,13 @@ import { CartItemResponse, CartResponse } from './interfaces/index.js';
 export class CartService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private getCartItemUnitPrice(item: {
+    variant: { price: unknown };
+    switchOption?: { price: unknown } | null;
+  }): number {
+    return Number(item.switchOption?.price ?? item.variant.price);
+  }
+
   async getCart(userId: string): Promise<CartResponse> {
     let cart = await this.prisma.cart.findUnique({
       where: { userId },
@@ -63,7 +70,7 @@ export class CartService {
 
     let subtotal = 0;
     const items: CartItemResponse[] = cart.items.map((item) => {
-      const price = Number(item.variant.price);
+      const price = this.getCartItemUnitPrice(item);
       subtotal += price * item.quantity;
       return {
         id: item.id,
@@ -82,6 +89,11 @@ export class CartService {
               id: item.switchOption.id,
               name: item.switchOption.name,
               switchType: item.switchOption.switchType,
+              price: Number(item.switchOption.price),
+              compareAtPrice:
+                item.switchOption.compareAtPrice === null
+                  ? null
+                  : Number(item.switchOption.compareAtPrice),
             }
           : null,
         createdAt: item.createdAt,

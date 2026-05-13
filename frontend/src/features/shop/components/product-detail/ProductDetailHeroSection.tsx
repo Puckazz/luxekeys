@@ -52,22 +52,27 @@ export default function ProductDetailHeroSection({
   selectedImageId,
   selectedSwitchName,
   selectedColor,
+  selectedVariantId,
   quantity,
   currentVariant,
   currentStock,
+  currentPrice,
+  currentOriginalPrice,
   onImageSelect,
   onSwitchSelect,
   onSwitchNameSelect,
   onColorSelect,
+  onVariantSelect,
   onQuantityDecrease,
   onQuantityIncrease,
   onAddToCart,
 }: ProductDetailHeroProps) {
   const hasDiscount =
-    typeof product.discountPercentage === 'number' &&
-    product.discountPercentage > 0;
+    typeof currentOriginalPrice === 'number' && currentOriginalPrice > currentPrice;
   const showsColorSelector = product.category === 'keyboards';
   const showsSwitchSelector = product.type === 'KEYBOARD';
+  const showsVariantSelector =
+    !showsColorSelector && product.variants.length > 1;
 
   const canPurchase = currentStock > 0;
   const stockStatus = getStockStatus(currentStock);
@@ -279,11 +284,11 @@ export default function ProductDetailHeroSection({
 
             <div className="mt-5 flex flex-wrap items-end gap-2">
               <p className="text-foreground text-2xl font-bold lg:text-3xl">
-                {formatCurrency(product.price, { minimumFractionDigits: 2 })}
+                {formatCurrency(currentPrice, { minimumFractionDigits: 2 })}
               </p>
-              {hasDiscount && product.originalPrice ? (
+              {hasDiscount && currentOriginalPrice ? (
                 <p className="text-muted-foreground text-lg line-through">
-                  {formatCurrency(product.originalPrice, { minimumFractionDigits: 2 })}
+                  {formatCurrency(currentOriginalPrice, { minimumFractionDigits: 2 })}
                 </p>
               ) : null}
             </div>
@@ -374,6 +379,40 @@ export default function ProductDetailHeroSection({
                 </>
               ) : null}
 
+              {showsVariantSelector ? (
+                <div>
+                  <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
+                    Variant
+                  </p>
+                  <div className="mt-3.5 flex flex-wrap gap-2.5">
+                    {product.variants.map((variant) => {
+                      const isActive = variant.id === selectedVariantId;
+                      const isOutOfStock = variant.stock <= 0;
+
+                      return (
+                        <Button
+                          key={`${product.slug}-variant-${variant.id}`}
+                          type="button"
+                          variant={isActive ? 'default' : 'outline'}
+                          size="sm"
+                          className={cn(
+                            'rounded-full px-4',
+                            isOutOfStock &&
+                              'text-muted-foreground decoration-muted-foreground/80 line-through opacity-65'
+                          )}
+                          onClick={() => onVariantSelect(variant.id)}
+                          title={
+                            isOutOfStock ? 'Out of stock' : variant.name
+                          }
+                        >
+                          {variant.name}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
               <div>
                 <p className="text-foreground text-[0.7rem] font-semibold tracking-[0.16em] uppercase">
                   Quantity
@@ -414,7 +453,7 @@ export default function ProductDetailHeroSection({
                 onClick={onAddToCart}
                 disabled={!canPurchase}
               >
-                {canPurchase ? 'Add to Cart' : 'Out of Stock'} - {formatCurrency(product.price, { minimumFractionDigits: 2 })}
+                {canPurchase ? 'Add to Cart' : 'Out of Stock'} - {formatCurrency(currentPrice, { minimumFractionDigits: 2 })}
               </Button>
               <Button
                 type="button"

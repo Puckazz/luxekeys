@@ -15,15 +15,7 @@ const getFeaturedSubtitle = (product: ProductListItem) => {
     return `${color} / ${sw}`;
   }
 
-  if (product.category === 'keycaps' && product.keycapProfile) {
-    return `${product.keycapProfile} Profile`;
-  }
-
-  if (product.category === 'switches') {
-    return product.defaultSwitchName || product.switchType;
-  }
-
-  return 'Default';
+  return product.defaultVariantName || 'Default';
 };
 
 export const mapApiProductToFeaturedProduct = (

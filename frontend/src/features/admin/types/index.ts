@@ -1,8 +1,11 @@
+import type { ProductLayout } from '@/features/shop/types';
+
 export const ADMIN_PRODUCT_CATEGORIES = [
   'keyboards',
   'switches',
   'keycaps',
   'accessories',
+  'barebones-kits',
 ] as const;
 
 export type AdminProductCategory = (typeof ADMIN_PRODUCT_CATEGORIES)[number];
@@ -19,26 +22,55 @@ export const ADMIN_VARIANT_STATUSES = ['active', 'draft'] as const;
 
 export type AdminVariantStatus = (typeof ADMIN_VARIANT_STATUSES)[number];
 
+export interface AdminProductSwitchOption {
+  id: string;
+  name: string;
+  switchType: string;
+  originalPrice: number | null;
+  price: number;
+  stock: number;
+  isDefault: boolean;
+  status: AdminVariantStatus;
+}
+
+export interface AdminProductSpec {
+  id: string;
+  specKey: string;
+  specValue: string;
+  groupName: string;
+}
+
 export interface AdminProductVariant {
   id: string;
   color: string;
+  layout: ProductLayout | '';
   switchType: string;
   sku: string;
-  originalPrice: number;
+  originalPrice: number | null;
   price: number;
   stock: number;
+  isDefault: boolean;
   status: AdminVariantStatus;
+  switchOptions: AdminProductSwitchOption[];
 }
 
 export interface AdminProduct {
   id: string;
   name: string;
-  category: AdminProductCategory;
+  shortDescription?: string;
+  productType: AdminProductCategory;
+  brandId?: string;
+  brandName?: string;
+  catalogCategoryId?: string;
+  catalogCategoryName?: string;
   description: string;
   thumbnail: string;
+  tags: string[];
+  isFeatured: boolean;
   status: AdminProductStatus;
   createdAt: string;
   updatedAt: string;
+  specs: AdminProductSpec[];
   variants: AdminProductVariant[];
 }
 

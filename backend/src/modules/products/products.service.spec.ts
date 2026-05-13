@@ -113,7 +113,6 @@ describe('ProductsService', () => {
       await service.findAll({ minPrice: 50, maxPrice: 200 } as never);
       expect(prisma.$transaction).toHaveBeenCalled();
     });
-
   });
 
   // ─── findOne ────────────────────────────────────────────────────────────────

@@ -58,6 +58,51 @@ describe('CartService', () => {
       expect(result.subtotal).toBeCloseTo(100);
     });
 
+    it('should use switch option price when calculating subtotal', async () => {
+      const userId = uuid();
+      const variantId = uuid();
+      const switchOptionId = uuid();
+      const item = createMockCartItem({
+        variantId,
+        switchOptionId,
+        quantity: 2,
+      });
+      const cart = {
+        ...createMockCart({ userId }),
+        items: [
+          {
+            ...item,
+            variant: {
+              ...createMockVariant({ id: variantId, price: '50.00' }),
+              product: createMockProduct(),
+            },
+            switchOption: {
+              id: switchOptionId,
+              variantId,
+              name: 'Oil King',
+              switchType: 'Linear',
+              price: '65.00',
+              compareAtPrice: '75.00',
+              stock: 10,
+              isDefault: true,
+              sortOrder: 0,
+              isActive: true,
+              deletedAt: null,
+              createdAt: new Date(),
+            },
+          },
+        ],
+      };
+
+      prisma.cart.findUnique.mockResolvedValue(cart as never);
+
+      const result = await service.getCart(userId);
+
+      expect(result.subtotal).toBeCloseTo(130);
+      expect(result.items[0].variant.price).toBe(65);
+      expect(result.items[0].switchOption?.price).toBe(65);
+    });
+
     it('should auto-create a cart when user has none', async () => {
       const userId = uuid();
       const newCart = buildCartWithItems(userId);

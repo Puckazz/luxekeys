@@ -27,6 +27,13 @@ import {
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private getCartItemUnitPrice(item: {
+    variant: { price: unknown };
+    switchOption?: { price: unknown } | null;
+  }): number {
+    return Number(item.switchOption?.price ?? item.variant.price);
+  }
+
   private assertCanAccessOrder(
     orderUserId: string,
     requesterId: string,
@@ -333,10 +340,9 @@ export class OrdersService {
         }
       }
 
-      const subtotalAmount = cart.items.reduce(
-        (sum, item) => sum + Number(item.variant.price) * item.quantity,
-        0,
-      );
+      const subtotalAmount = cart.items.reduce((sum, item) => {
+        return sum + this.getCartItemUnitPrice(item) * item.quantity;
+      }, 0);
 
       const discountAmount = 0;
       const shippingAmount = 0;
@@ -360,18 +366,22 @@ export class OrdersService {
           shippingAmount,
           totalAmount,
           items: {
-            create: cart.items.map((item) => ({
-              productId: item.variant.productId,
-              variantId: item.variantId,
-              switchOptionId: item.switchOptionId ?? null,
-              productName: item.variant.product.name,
-              variantName: item.variant.name,
-              sku: item.variant.sku,
-              thumbnailUrl: item.variant.product.thumbnailUrl,
-              unitPrice: item.variant.price,
-              quantity: item.quantity,
-              subtotalAmount: Number(item.variant.price) * item.quantity,
-            })),
+            create: cart.items.map((item) => {
+              const unitPrice = this.getCartItemUnitPrice(item);
+
+              return {
+                productId: item.variant.productId,
+                variantId: item.variantId,
+                switchOptionId: item.switchOptionId ?? null,
+                productName: item.variant.product.name,
+                variantName: item.variant.name,
+                sku: item.variant.sku,
+                thumbnailUrl: item.variant.product.thumbnailUrl,
+                unitPrice,
+                quantity: item.quantity,
+                subtotalAmount: unitPrice * item.quantity,
+              };
+            }),
           },
         },
         include: ORDER_WITH_ITEMS_INCLUDE,

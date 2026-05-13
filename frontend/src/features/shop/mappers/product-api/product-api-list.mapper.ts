@@ -19,10 +19,6 @@ export const mapApiProductToListItem = (
   product: CustomerProductSummaryApiItem
 ): ProductListItem => {
   const defaultVariant = getDefaultVariant(product);
-  const price = toNumber(defaultVariant?.price) || toNumber(product.basePrice);
-  const compareAtPrice =
-    toNumber(defaultVariant?.compareAtPrice) ||
-    toNumber(product.compareAtPrice);
   const stock = defaultVariant?.stock ?? 0;
   const layout = isProductLayout(defaultVariant?.layout)
     ? defaultVariant.layout
@@ -31,6 +27,14 @@ export const mapApiProductToListItem = (
   const defaultSwitchOption = defaultVariant?.switchOptions?.find(
     (sw) => sw.isDefault
   ) ?? defaultVariant?.switchOptions?.[0];
+  const price =
+    toNumber(defaultSwitchOption?.price) ||
+    toNumber(defaultVariant?.price) ||
+    toNumber(product.basePrice);
+  const compareAtPrice =
+    toNumber(defaultSwitchOption?.compareAtPrice) ||
+    toNumber(defaultVariant?.compareAtPrice) ||
+    toNumber(product.compareAtPrice);
   const switchType = isProductSwitchType(defaultSwitchOption?.switchType)
     ? (defaultSwitchOption.switchType as import('@/features/shop/types').ProductSwitchType)
     : DEFAULT_SWITCH_TYPE;
@@ -58,6 +62,7 @@ export const mapApiProductToListItem = (
     popularity: product._count?.wishlistItems ?? 0,
     createdAt: product.createdAt,
     defaultVariantId: defaultVariant?.id,
+    defaultVariantName: defaultVariant?.name ?? undefined,
     defaultColor: defaultVariant?.color ?? undefined,
     defaultSwitchName: defaultSwitchOption?.name,
     defaultSwitchOptionId: defaultSwitchOption?.id,

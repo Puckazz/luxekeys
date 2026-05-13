@@ -23,6 +23,12 @@ import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { GetProductsQueryDto } from './dto/get-products-query.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
+import {
+  AdminInventoryBulkUpdateDto,
+  GetAdminInventoryQueryDto,
+  GetAdminProductsQueryDto,
+  UpsertAdminProductDto,
+} from './dto/admin-product.dto.js';
 import { ProductsService } from './products.service.js';
 
 @ApiTags('Products')
@@ -51,6 +57,77 @@ export class ProductsController {
   @ApiOkResponse({ description: 'List of featured products' })
   findFeatured() {
     return this.productsService.findFeatured();
+  }
+
+  @Get('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List products for admin catalog management' })
+  @ApiOkResponse({ description: 'Paginated admin product list' })
+  findAdminProducts(@Query() query: GetAdminProductsQueryDto) {
+    return this.productsService.findAdminProducts(query);
+  }
+
+  @Post('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a product with variants (Admin)' })
+  createAdminProduct(@Body() dto: UpsertAdminProductDto) {
+    return this.productsService.createAdminProduct(dto);
+  }
+
+  @Get('admin/inventory')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List product variant inventory for admin' })
+  @ApiOkResponse({ description: 'Paginated admin inventory list' })
+  findAdminInventory(@Query() query: GetAdminInventoryQueryDto) {
+    return this.productsService.findAdminInventory(query);
+  }
+
+  @Patch('admin/inventory/stock')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Bulk update product variant stock (Admin)' })
+  bulkUpdateAdminInventoryStock(@Body() dto: AdminInventoryBulkUpdateDto) {
+    return this.productsService.bulkUpdateAdminInventoryStock(dto);
+  }
+
+  @Patch('admin/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a product with variants (Admin)' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid' })
+  updateAdminProduct(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpsertAdminProductDto,
+  ) {
+    return this.productsService.updateAdminProduct(id, dto);
+  }
+
+  @Patch('admin/:id/restore')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Restore a soft-deleted product (Admin)' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid' })
+  restoreAdminProduct(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productsService.restoreAdminProduct(id);
+  }
+
+  @Delete('admin/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Archive a product (Admin)' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid' })
+  archiveAdminProduct(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productsService.archiveAdminProduct(id);
   }
 
   @Get('slug/:slug')

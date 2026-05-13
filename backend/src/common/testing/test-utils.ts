@@ -119,7 +119,6 @@ export function createMockVariant(overrides: Record<string, unknown> = {}) {
     compareAtPrice: null,
     color: 'Black',
     layout: 'TKL',
-    connectivity: 'Wired',
     stock: 100,
     isDefault: true,
     isActive: true,

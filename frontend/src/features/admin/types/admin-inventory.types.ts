@@ -3,6 +3,7 @@ import type {
   AdminProductCategory,
   AdminProductPaginationMeta,
 } from '@/features/admin/types';
+import type { AdminProductApiItem } from '@/features/admin/types/admin-products.types';
 
 export const ADMIN_INVENTORY_SORT_OPTIONS = [
   'updated-desc',
@@ -76,3 +77,30 @@ export interface AdminInventoryBulkUpdateInput {
 export interface AdminInventoryBulkUpdateResponse {
   updatedCount: number;
 }
+
+export type AdminInventoryApiStatusFilter =
+  | 'IN_STOCK'
+  | 'LOW_STOCK'
+  | 'OUT_OF_STOCK';
+
+export type AdminInventoryApiStatusSummary = Record<
+  'all' | AdminInventoryApiStatusFilter,
+  number
+>;
+
+export type AdminInventoryApiItem = {
+  product: AdminProductApiItem;
+  variantId: string;
+  variantSku: string;
+  variantColor: string;
+  variantSwitchType: string;
+  variantStock: number;
+  totalStock: number;
+  stockStatus: AdminInventoryApiStatusFilter;
+};
+
+export type AdminInventoryApiData = {
+  items: AdminInventoryApiItem[];
+  summary: AdminInventoryListSummary;
+  statusSummary: AdminInventoryApiStatusSummary;
+};

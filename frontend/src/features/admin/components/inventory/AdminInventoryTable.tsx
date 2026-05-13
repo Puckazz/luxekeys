@@ -101,7 +101,7 @@ export function AdminInventoryTable({
                       {item.product.name}
                     </p>
                     <p className="text-muted-foreground truncate text-xs capitalize">
-                      {item.product.category}
+                      {item.product.catalogCategoryName ?? item.product.productType}
                     </p>
                   </div>
                 </div>

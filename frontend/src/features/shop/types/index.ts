@@ -97,6 +97,7 @@ export interface ProductListItem {
   popularity: number;
   createdAt: string;
   defaultVariantId?: string;
+  defaultVariantName?: string;
   defaultColor?: string;
   defaultSwitchName?: string;
   defaultSwitchOptionId?: string;
@@ -185,6 +186,8 @@ export interface ProductDetailSwitchOption {
   id: string;
   name: string;
   switchType: string;
+  price: number;
+  compareAtPrice?: number;
   stock: number;
   isDefault: boolean;
 }
@@ -192,6 +195,9 @@ export interface ProductDetailSwitchOption {
 export interface ProductDetailVariant {
   id: string;
   sku: string;
+  name: string;
+  price: number;
+  compareAtPrice?: number;
   color?: string | null;
   stock: number;
   switchOptions: ProductDetailSwitchOption[];

@@ -8,6 +8,7 @@ import {
   getStockStatus,
   isProductSwitchType,
   mapGalleryImages,
+  toNumber,
 } from './product-api.shared';
 
 const mapSpecsToTechnicalSpecs = (
@@ -89,6 +90,14 @@ export const mapApiProductToDetail = (
       product.variants?.map((v) => ({
         id: v.id,
         sku: v.sku,
+        name: v.name,
+        price: toNumber(v.price),
+        compareAtPrice: (() => {
+          const compareAtPrice = toNumber(v.compareAtPrice);
+          const price = toNumber(v.price);
+
+          return compareAtPrice > price ? compareAtPrice : undefined;
+        })(),
         color: v.color,
         stock: v.switchOptions?.length
           ? v.switchOptions.reduce((sum, sw) => sum + sw.stock, 0)
@@ -97,6 +106,13 @@ export const mapApiProductToDetail = (
           id: sw.id,
           name: sw.name,
           switchType: sw.switchType,
+          price: toNumber(sw.price),
+          compareAtPrice: (() => {
+            const compareAtPrice = toNumber(sw.compareAtPrice);
+            const price = toNumber(sw.price);
+
+            return compareAtPrice > price ? compareAtPrice : undefined;
+          })(),
           stock: sw.stock,
           isDefault: sw.isDefault,
         })),

@@ -72,14 +72,14 @@ export function AdminProductsTable({
                       {product.name}
                     </p>
                     <p className="text-muted-foreground truncate text-xs">
-                      {product.description}
+                      {product.shortDescription}
                     </p>
                   </div>
                 </div>
               </TableCell>
 
               <TableCell className="text-muted-foreground capitalize">
-                {product.category}
+                {product.catalogCategoryName ?? product.productType}
               </TableCell>
 
               <TableCell className="text-right font-semibold">

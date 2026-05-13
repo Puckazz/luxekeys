@@ -3,4 +3,6 @@ export { AdminProductsTable } from '@/features/admin/components/products/AdminPr
 export { AdminProductsTableSkeleton } from '@/features/admin/components/products/AdminProductsTableSkeleton';
 export { AdminProductFormDialog } from '@/features/admin/components/products/AdminProductFormDialog';
 export { AdminProductDeleteDialog } from '@/features/admin/components/products/AdminProductDeleteDialog';
+export { AdminProductSpecsEditor } from '@/features/admin/components/products/AdminProductSpecsEditor';
+export { AdminSwitchOptionsEditor } from '@/features/admin/components/products/AdminSwitchOptionsEditor';
 export { AdminVariantEditor } from '@/features/admin/components/products/AdminVariantEditor';

@@ -11,6 +11,7 @@ export interface CartItemResponse {
     product: {
       id: string;
       name: string;
+      slug: string;
       thumbnailUrl: string | null;
     };
   };
@@ -18,6 +19,8 @@ export interface CartItemResponse {
     id: string;
     name: string;
     switchType: string;
+    price: number | string;
+    compareAtPrice?: number | string | null;
   } | null;
   createdAt: Date;
   updatedAt: Date;

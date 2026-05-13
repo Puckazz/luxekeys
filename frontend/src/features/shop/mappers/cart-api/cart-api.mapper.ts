@@ -21,6 +21,8 @@ export interface CartItemResponse {
     id: string;
     name: string;
     switchType: string;
+    price?: number | string;
+    compareAtPrice?: number | string | null;
   } | null;
 }
 
@@ -52,7 +54,7 @@ export const mapCartResponseToSnapshot = (
         slug: item.variant.product.slug,
         name: item.variant.product.name,
         variantLabel,
-        unitPrice: Number(item.variant.price),
+        unitPrice: Number(item.switchOption?.price ?? item.variant.price),
         quantity: item.quantity,
         image: item.variant.product.thumbnailUrl ?? '',
       };

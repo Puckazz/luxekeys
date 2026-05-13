@@ -18,14 +18,18 @@ export type ProductDetailHeroProps = {
   selectedSwitch: ProductSwitchType;
   selectedSwitchName: string;
   selectedColor: string;
+  selectedVariantId: string;
   quantity: number;
   currentVariant: ProductDetail['variants'][number] | null;
   currentSwitchOption: ProductDetail['variants'][number]['switchOptions'][number] | null;
   currentStock: number;
+  currentPrice: number;
+  currentOriginalPrice?: number;
   onImageSelect: (imageId: string) => void;
   onSwitchSelect: (switchType: ProductSwitchType) => void;
   onSwitchNameSelect: (switchName: string) => void;
   onColorSelect: (color: string) => void;
+  onVariantSelect: (variantId: string) => void;
   onQuantityDecrease: () => void;
   onQuantityIncrease: () => void;
   onAddToCart: () => void;

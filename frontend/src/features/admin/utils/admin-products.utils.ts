@@ -1,10 +1,13 @@
 import type {
   AdminProduct,
+  AdminProductSpec,
   AdminProductVariant,
   AdminVariantStatus,
 } from '@/features/admin/types';
 import type {
   AdminComputedProductStatus,
+  AdminProductSpecFormValue,
+  AdminProductVariantFormValue,
   AdminProductSortOption,
 } from '@/features/admin/types/admin-products.types';
 import type {
@@ -128,7 +131,19 @@ export const getComputedProductStatus = (
 };
 
 export const getProductPriceRangeLabel = (product: AdminProduct) => {
-  const prices = product.variants.map((variant) => variant.price);
+  const prices =
+    product.productType === 'keyboards'
+      ? product.variants.flatMap((variant) => {
+          return variant.switchOptions.length > 0
+            ? variant.switchOptions.map((option) => option.price)
+            : [variant.price];
+        })
+      : product.variants.map((variant) => variant.price);
+
+  if (prices.length === 0) {
+    return formatCurrency(0);
+  }
+
   const min = Math.min(...prices);
   const max = Math.max(...prices);
 
@@ -139,14 +154,46 @@ export const getProductPriceRangeLabel = (product: AdminProduct) => {
   return `${formatCurrency(min)} - ${formatCurrency(max)}`;
 };
 
-export const buildDefaultVariant = () => {
+export const buildDefaultProductSpec = (): AdminProductSpecFormValue => {
+  return {
+    groupName: '',
+    specKey: '',
+    specValue: '',
+  };
+};
+
+export const normalizeAdminProductSpec = (
+  spec: AdminProductSpec
+): AdminProductSpecFormValue => {
+  return {
+    id: spec.id,
+    groupName: spec.groupName,
+    specKey: spec.specKey,
+    specValue: spec.specValue,
+  };
+};
+
+export const buildDefaultVariant = (): AdminProductVariantFormValue => {
   return {
     color: '',
+    layout: '',
     switchType: '',
     sku: '',
-    originalPrice: 0,
+    originalPrice: '',
     price: 0,
     stock: 0,
+    isDefault: true,
     status: 'active' as const,
+    switchOptions: [
+      {
+        name: '',
+        switchType: '',
+        originalPrice: '',
+        price: 0,
+        stock: 0,
+        isDefault: true,
+        status: 'active' as const,
+      },
+    ],
   };
 };

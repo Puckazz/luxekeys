@@ -53,6 +53,8 @@ export type CustomerProductSwitchOptionApiItem = {
   variantId: string;
   name: string;
   switchType: string;
+  price: string | number;
+  compareAtPrice?: string | number | null;
   stock: number;
   isDefault: boolean;
   sortOrder: number;

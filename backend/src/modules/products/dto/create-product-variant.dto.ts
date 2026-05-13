@@ -51,12 +51,6 @@ export class CreateProductVariantDto {
   @MaxLength(120)
   switchType?: string;
 
-  @ApiPropertyOptional({ example: 'Wireless' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(80)
-  connectivity?: string;
-
   @ApiPropertyOptional({ example: 10, default: 0, minimum: 0 })
   @IsOptional()
   @Type(() => Number)

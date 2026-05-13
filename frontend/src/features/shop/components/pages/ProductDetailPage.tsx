@@ -19,37 +19,21 @@ import { Separator } from '@/shared/components/ui/separator';
 
 const buildVariantLabel = ({
   type,
-  category,
+  currentVariantName,
   selectedColor,
-  selectedSwitch,
   selectedSwitchName,
-  keycapProfile,
 }: {
   type: ProductDetailPageProps['product']['type'];
-  category: ProductDetailPageProps['product']['category'];
+  currentVariantName?: string;
   selectedColor: string;
-  selectedSwitch: ProductSwitchType;
   selectedSwitchName: string;
-  keycapProfile?: ProductDetailPageProps['product']['keycapProfile'];
 }) => {
   if (type === 'KEYBOARD') {
-    const switchLabel = selectedSwitchName || selectedSwitch;
+    const switchLabel = selectedSwitchName || 'Default';
     return `${selectedColor} / ${switchLabel}`;
   }
 
-  if (type === 'BAREBONES_KIT') {
-    return selectedColor || 'Default';
-  }
-
-  if (category === 'keycaps' && keycapProfile) {
-    return `${keycapProfile} Profile`;
-  }
-
-  if (category === 'switches') {
-    return selectedSwitch;
-  }
-
-  return 'Default';
+  return currentVariantName || 'Default';
 };
 
 export default function ProductDetailPage({ product }: ProductDetailPageProps) {
@@ -65,6 +49,9 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
 
   const initialColor = queryColor || product.defaultColor;
   const [selectedColor, setSelectedColor] = useState(initialColor);
+  const [selectedVariantId, setSelectedVariantId] = useState(
+    () => product.variants[0]?.id ?? ''
+  );
 
   const [selectedSwitch, setSelectedSwitch] = useState<ProductSwitchType>(
     () => {
@@ -106,6 +93,16 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     const resolvedColor = colorParam || product.defaultColor;
     setSelectedColor(resolvedColor);
 
+    const resolvedVariant =
+      product.variants.find((variant) => {
+        if (product.type === 'KEYBOARD') {
+          return (variant.color ?? product.defaultColor) === resolvedColor;
+        }
+
+        return variant.id === product.defaultVariantId;
+      }) ?? product.variants[0];
+    setSelectedVariantId(resolvedVariant?.id ?? '');
+
     if (switchParam) {
       setSelectedSwitchName(switchParam);
       if (product.variants) {
@@ -132,20 +129,25 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   const usesKeyboardSwitchOptions = product.type === 'KEYBOARD';
   const supportsColorVariants = product.category === 'keyboards';
 
-  // Get the variant matching the selected color
   const currentVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) return null;
+    if (supportsColorVariants) {
+      return (
+        product.variants.find(
+          (v) => (v.color ?? product.defaultColor) === selectedColor
+        ) ?? product.variants[0]
+      );
+    }
+
     return (
-      product.variants.find(
-        (v) =>
-          !supportsColorVariants ||
-          (v.color ?? product.defaultColor) === selectedColor
-      ) ?? product.variants[0]
+      product.variants.find((variant) => variant.id === selectedVariantId) ??
+      product.variants[0]
     );
   }, [
     product.variants,
     product.defaultColor,
     selectedColor,
+    selectedVariantId,
     supportsColorVariants,
   ]);
 
@@ -182,6 +184,17 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     product.quantityLimit,
   ]);
 
+  const currentPrice =
+    currentSwitchOption?.price ?? currentVariant?.price ?? product.price;
+  const currentOriginalPrice =
+    currentSwitchOption?.compareAtPrice &&
+    currentSwitchOption.compareAtPrice > currentPrice
+      ? currentSwitchOption.compareAtPrice
+      : currentVariant?.compareAtPrice &&
+          currentVariant.compareAtPrice > currentPrice
+        ? currentVariant.compareAtPrice
+        : undefined;
+
   // Auto-sync selectedSwitchName when switch type or variant changes
   useEffect(() => {
     if (!currentVariant?.switchOptions?.length) return;
@@ -211,6 +224,7 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
     const targetVariant = product.variants?.find(
       (v) => (v.color ?? product.defaultColor) === color
     );
+    setSelectedVariantId(targetVariant?.id ?? '');
     if (targetVariant?.switchOptions?.length) {
       const best =
         targetVariant.switchOptions.find(
@@ -223,6 +237,11 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
         setSelectedSwitchName(best.name);
       }
     }
+    setQuantity(1);
+  };
+
+  const handleVariantSelect = (variantId: string) => {
+    setSelectedVariantId(variantId);
     setQuantity(1);
   };
 
@@ -260,13 +279,11 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
       name: product.name,
       variantLabel: buildVariantLabel({
         type: product.type,
-        category: product.category,
+        currentVariantName: currentVariant.name,
         selectedColor,
-        selectedSwitch,
         selectedSwitchName,
-        keycapProfile: product.keycapProfile,
       }),
-      unitPrice: product.price,
+      unitPrice: currentPrice,
       image: product.image,
       quantity,
     });
@@ -287,14 +304,18 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
         selectedSwitch={selectedSwitch}
         selectedSwitchName={selectedSwitchName}
         selectedColor={selectedColor}
+        selectedVariantId={selectedVariantId}
         quantity={quantity}
         currentVariant={currentVariant}
         currentSwitchOption={currentSwitchOption}
         currentStock={currentStock}
+        currentPrice={currentPrice}
+        currentOriginalPrice={currentOriginalPrice}
         onImageSelect={setSelectedImageId}
         onSwitchSelect={handleSwitchSelect}
         onSwitchNameSelect={setSelectedSwitchName}
         onColorSelect={handleColorSelect}
+        onVariantSelect={handleVariantSelect}
         onQuantityDecrease={decreaseQuantity}
         onQuantityIncrease={increaseQuantity}
         onAddToCart={handleAddToCart}

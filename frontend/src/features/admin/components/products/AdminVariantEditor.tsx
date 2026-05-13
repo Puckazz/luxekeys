@@ -1,12 +1,14 @@
 'use client';
 
-import { Plus, Trash2 } from 'lucide-react';
+import { Check, Plus, Trash2 } from 'lucide-react';
 import {
   Controller,
   FieldErrors,
   UseFieldArrayAppend,
   UseFieldArrayRemove,
   UseFormRegister,
+  UseFormSetValue,
+  useWatch,
   type Control,
   type FieldArrayWithId,
 } from 'react-hook-form';
@@ -14,6 +16,7 @@ import {
 import type { AdminProductFormValues } from '@/features/admin/types/admin-products.types';
 import { LOW_STOCK_THRESHOLD } from '@/features/admin/utils/admin-products.constants';
 import { adminVariantStatusLabelByValue } from '@/features/admin/utils/admin-products.utils';
+import { PRODUCT_LAYOUT_OPTIONS } from '@/features/shop/utils/product-list-options.utils';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -24,10 +27,14 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 
+import { AdminSwitchOptionsEditor } from './AdminSwitchOptionsEditor';
+
 type AdminVariantEditorProps = {
+  productType: AdminProductFormValues['productType'];
   fields: FieldArrayWithId<AdminProductFormValues, 'variants', 'fieldId'>[];
   control: Control<AdminProductFormValues>;
   register: UseFormRegister<AdminProductFormValues>;
+  setValue: UseFormSetValue<AdminProductFormValues>;
   errors: FieldErrors<AdminProductFormValues>;
   appendVariant: UseFieldArrayAppend<AdminProductFormValues, 'variants'>;
   removeVariant: UseFieldArrayRemove;
@@ -35,14 +42,63 @@ type AdminVariantEditorProps = {
 };
 
 export function AdminVariantEditor({
+  productType,
   fields,
   control,
   register,
+  setValue,
   errors,
   appendVariant,
   removeVariant,
   buildEmptyVariant,
 }: AdminVariantEditorProps) {
+  const watchedVariants = useWatch({
+    control,
+    name: 'variants',
+  }) ?? [];
+  const isKeyboardCategory = productType === 'keyboards';
+  const optionFieldLabel = 'Variant Name';
+  const optionFieldPlaceholder = 'Base Kit';
+
+  const setDefaultVariant = (variantIndex: number) => {
+    fields.forEach((_, index) => {
+      setValue(`variants.${index}.isDefault`, index === variantIndex, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    });
+  };
+
+  const removeVariantWithFallbackDefault = (variantIndex: number) => {
+    if (watchedVariants.length <= 1) {
+      return;
+    }
+
+    const isRemovingDefault = watchedVariants[variantIndex]?.isDefault ?? false;
+    const nextVariants = watchedVariants.filter(
+      (_, index) => index !== variantIndex
+    );
+
+    if (isRemovingDefault && nextVariants.length > 0) {
+      const nextDefaultIndex = Math.min(variantIndex, nextVariants.length - 1);
+      nextVariants[nextDefaultIndex] = {
+        ...nextVariants[nextDefaultIndex],
+        isDefault: true,
+      };
+    }
+
+    removeVariant(variantIndex);
+
+    if (isRemovingDefault && nextVariants.length > 0) {
+      nextVariants.forEach((variant, index) => {
+        setValue(`variants.${index}.isDefault`, Boolean(variant.isDefault), {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      });
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -64,6 +120,33 @@ export function AdminVariantEditor({
             key={field.fieldId}
             className="border-border/70 bg-background/30 rounded-xl border p-3"
           >
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold text-muted-foreground">
+                Variant {index + 1}
+              </p>
+              <Button
+                type="button"
+                size="icon"
+                variant={
+                  watchedVariants[index]?.isDefault ? 'default' : 'outline'
+                }
+                className="size-9"
+                title={
+                  watchedVariants[index]?.isDefault
+                    ? 'Default variant'
+                    : 'Set as default variant'
+                }
+                aria-label={
+                  watchedVariants[index]?.isDefault
+                    ? 'Default variant'
+                    : 'Set as default variant'
+                }
+                onClick={() => setDefaultVariant(index)}
+              >
+                <Check className="size-3.5" />
+              </Button>
+            </div>
+
             <div className="grid gap-2 md:grid-cols-2">
               <div className="space-y-1">
                 <label className="text-xs font-semibold">Color</label>
@@ -77,17 +160,61 @@ export function AdminVariantEditor({
                 </p>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold">Switch Type</label>
-                <Input
-                  {...register(`variants.${index}.switchType`)}
-                  placeholder="Linear"
-                  className="h-10"
-                />
-                <p className="text-destructive text-xs">
-                  {errors.variants?.[index]?.switchType?.message}
-                </p>
-              </div>
+              {isKeyboardCategory ? (
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold">Layout</label>
+                  <Controller
+                    control={control}
+                    name={`variants.${index}.layout`}
+                    render={({ field: controllerField }) => (
+                      <Select
+                        value={controllerField.value || '__placeholder__'}
+                        onValueChange={(value) =>
+                          controllerField.onChange(
+                            value === '__placeholder__' ? '' : value
+                          )
+                        }
+                      >
+                        <SelectTrigger
+                          size="sm"
+                          className="h-10! w-full min-w-0"
+                        >
+                          <SelectValue placeholder="Select layout" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__placeholder__" disabled>
+                            Select layout
+                          </SelectItem>
+                          {PRODUCT_LAYOUT_OPTIONS.map((layout) => (
+                            <SelectItem key={layout} value={layout}>
+                              {layout}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  <p className="text-destructive text-xs">
+                    {errors.variants?.[index]?.layout?.message}
+                  </p>
+                </div>
+              ) : null}
+
+              {isKeyboardCategory ? null : (
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold">
+                    {optionFieldLabel}
+                  </label>
+                  <Input
+                    {...register(`variants.${index}.switchType`)}
+                    placeholder={optionFieldPlaceholder}
+                    className="h-10"
+                  />
+                  <p className="text-destructive text-xs">
+                    {errors.variants?.[index]?.switchType?.message}
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold">SKU</label>
@@ -132,43 +259,56 @@ export function AdminVariantEditor({
               </div>
 
               <div className="grid gap-2 md:col-span-2 md:grid-cols-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold">
-                    Original Price
-                  </label>
-                  <Input
-                    {...register(`variants.${index}.originalPrice`, {
-                      valueAsNumber: true,
-                    })}
-                    type="number"
-                    min={0}
-                    step={1}
-                    className="h-10"
-                  />
-                  <p className="text-destructive text-xs">
-                    {errors.variants?.[index]?.originalPrice?.message}
-                  </p>
-                </div>
+                {!isKeyboardCategory ? (
+                  <>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold">
+                        Original Price
+                      </label>
+                      <Input
+                        {...register(`variants.${index}.originalPrice`, {
+                          setValueAs: (value) => {
+                            if (value === '') {
+                              return '';
+                            }
+
+                            const parsed = Number(value);
+                            return Number.isNaN(parsed) ? '' : parsed;
+                          },
+                        })}
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        className="h-10"
+                      />
+                      <p className="text-destructive text-xs">
+                        {errors.variants?.[index]?.originalPrice?.message}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold">Price</label>
+                      <Input
+                        {...register(`variants.${index}.price`, {
+                          valueAsNumber: true,
+                        })}
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        className="h-10"
+                      />
+                      <p className="text-destructive text-xs">
+                        {errors.variants?.[index]?.price?.message}
+                      </p>
+                    </div>
+                  </>
+                ) : null}
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold">Price</label>
-                  <Input
-                    {...register(`variants.${index}.price`, {
-                      valueAsNumber: true,
-                    })}
-                    type="number"
-                    min={0}
-                    step={1}
-                    className="h-10"
-                  />
-                  <p className="text-destructive text-xs">
-                    {errors.variants?.[index]?.price?.message}
-                  </p>
-                </div>
-
-                <div className="space-y-1">
                   <label className="text-xs font-semibold">
-                    Stock (Low-stock at {LOW_STOCK_THRESHOLD} or below)
+                    {isKeyboardCategory
+                      ? 'Stock (Auto-calculated from switch options)'
+                      : `Stock (Low-stock at ${LOW_STOCK_THRESHOLD} or below)`}
                   </label>
                   <Input
                     {...register(`variants.${index}.stock`, {
@@ -178,12 +318,30 @@ export function AdminVariantEditor({
                     min={0}
                     step={1}
                     className="h-10"
+                    readOnly={isKeyboardCategory}
+                    aria-disabled={isKeyboardCategory}
                   />
-                  <p className="text-destructive text-xs">
-                    {errors.variants?.[index]?.stock?.message}
-                  </p>
+                  {errors.variants?.[index]?.stock?.message ? (
+                    <p className="text-destructive text-xs">
+                      {errors.variants?.[index]?.stock?.message}
+                    </p>
+                  ) : isKeyboardCategory ? (
+                    <p className="text-muted-foreground text-xs">
+                      Update switch option stock below to change this total.
+                    </p>
+                  ) : null}
                 </div>
               </div>
+
+              {isKeyboardCategory ? (
+                <AdminSwitchOptionsEditor
+                  variantIndex={index}
+                  control={control}
+                  register={register}
+                  setValue={setValue}
+                  errors={errors}
+                />
+              ) : null}
             </div>
 
             <div className="mt-3 flex justify-end">
@@ -191,7 +349,7 @@ export function AdminVariantEditor({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => removeVariant(index)}
+                onClick={() => removeVariantWithFallbackDefault(index)}
                 disabled={fields.length <= 1}
               >
                 <Trash2 className="size-3.5" />
