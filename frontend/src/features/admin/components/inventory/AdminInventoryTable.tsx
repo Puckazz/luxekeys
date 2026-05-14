@@ -88,7 +88,7 @@ export function AdminInventoryTable({
                 <div className="flex min-w-68 items-center gap-3">
                   <div className="bg-card border-border/70 relative size-12 shrink-0 overflow-hidden rounded-[14px] border">
                     <Image
-                      src={item.product.thumbnail}
+                      src={item.thumbnail}
                       alt={item.product.name}
                       fill
                       className="object-cover"

@@ -134,6 +134,7 @@ model ProductImage {
   createdAt          DateTime @default(now())
   cloudinaryPublicId String?
   product            Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantThumbnails  ProductVariant[]
 
   @@index([productId])
 }
@@ -154,6 +155,7 @@ model ProductSpec {
 model ProductVariant {
   id             String                @id @default(uuid())
   productId      String
+  thumbnailImageId String?
   sku            String                @unique
   name           String
   price          Decimal               @db.Decimal(12, 2)
@@ -169,9 +171,11 @@ model ProductVariant {
   cartItems      CartItem[]
   orderItems     OrderItem[]
   product        Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  thumbnailImage ProductImage?         @relation(fields: [thumbnailImageId], references: [id], onDelete: SetNull)
   switchOptions  ProductSwitchOption[]
 
   @@index([productId])
+  @@index([thumbnailImageId])
   @@index([isDefault])
   @@index([isActive])
 }

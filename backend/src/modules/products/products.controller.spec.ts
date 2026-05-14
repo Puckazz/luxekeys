@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { AdminInventoryService } from './admin-inventory.service.js';
+import { AdminProductsService } from './admin-products.service.js';
 import { ProductsController } from './products.controller.js';
 import { ProductsService } from './products.service.js';
 import { createMockProduct, uuid } from '../../common/testing/index.js';
@@ -6,6 +8,8 @@ import { createMockProduct, uuid } from '../../common/testing/index.js';
 describe('ProductsController', () => {
   let controller: ProductsController;
   let service: jest.Mocked<ProductsService>;
+  let adminProductsService: jest.Mocked<AdminProductsService>;
+  let adminInventoryService: jest.Mocked<AdminInventoryService>;
 
   beforeEach(async () => {
     service = {
@@ -19,10 +23,25 @@ describe('ProductsController', () => {
       update: jest.fn(),
       remove: jest.fn(),
     } as unknown as jest.Mocked<ProductsService>;
+    adminProductsService = {
+      findAdminProducts: jest.fn(),
+      createAdminProduct: jest.fn(),
+      updateAdminProduct: jest.fn(),
+      restoreAdminProduct: jest.fn(),
+      archiveAdminProduct: jest.fn(),
+    } as unknown as jest.Mocked<AdminProductsService>;
+    adminInventoryService = {
+      findAdminInventory: jest.fn(),
+      bulkUpdateAdminInventoryStock: jest.fn(),
+    } as unknown as jest.Mocked<AdminInventoryService>;
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProductsController],
-      providers: [{ provide: ProductsService, useValue: service }],
+      providers: [
+        { provide: ProductsService, useValue: service },
+        { provide: AdminProductsService, useValue: adminProductsService },
+        { provide: AdminInventoryService, useValue: adminInventoryService },
+      ],
     }).compile();
 
     controller = module.get<ProductsController>(ProductsController);

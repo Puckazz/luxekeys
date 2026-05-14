@@ -64,6 +64,7 @@ export type CustomerProductSwitchOptionApiItem = {
 export type CustomerProductVariantApiItem = {
   id: string;
   productId: string;
+  thumbnailImage?: CustomerProductImageApiItem | null;
   sku: string;
   name: string;
   price: string | number;

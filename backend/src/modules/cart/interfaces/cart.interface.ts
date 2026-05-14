@@ -13,7 +13,9 @@ export interface CartItemResponse {
       name: string;
       slug: string;
       thumbnailUrl: string | null;
+      fallbackImageUrl: string | null;
     };
+    thumbnailImageUrl: string | null;
   };
   switchOption?: {
     id: string;

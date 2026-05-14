@@ -6,6 +6,7 @@ import {
   getDefaultVariant,
   getStockLabel,
   getStockStatus,
+  getVariantImage,
   isProductSwitchType,
   mapGalleryImages,
   toNumber,
@@ -91,6 +92,7 @@ export const mapApiProductToDetail = (
         id: v.id,
         sku: v.sku,
         name: v.name,
+        image: getVariantImage(product, v),
         price: toNumber(v.price),
         compareAtPrice: (() => {
           const compareAtPrice = toNumber(v.compareAtPrice);

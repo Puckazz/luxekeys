@@ -6,6 +6,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   Min,
   MinLength,
@@ -17,6 +18,11 @@ export class CreateProductVariantDto {
   @MinLength(2)
   @MaxLength(120)
   sku!: string;
+
+  @ApiPropertyOptional({ example: 'uuid-of-product-image' })
+  @IsOptional()
+  @IsUUID()
+  thumbnailImageId?: string;
 
   @ApiProperty({ example: 'Black / 75% / Gateron Brown' })
   @IsString()

@@ -12,7 +12,6 @@ import {
   mapApiInventoryStatusSummary,
   mapInventoryItem,
   mapPaginationMeta,
-  productCategoryToApiType,
   toQueryString,
 } from '@/features/admin/mappers';
 import { authFetch, authFetchWithMeta } from '@/shared/api/http-client';
@@ -24,10 +23,10 @@ export const adminInventoryApi = {
     const sort = inventorySortToApiParams(queryState.sort);
     const query = toQueryString({
       search: queryState.search,
-      type:
+      categoryId:
         queryState.category === 'all'
           ? undefined
-          : productCategoryToApiType(queryState.category),
+          : queryState.category,
       status: inventoryStatusToApiStatus(queryState.status),
       page: queryState.page,
       limit: queryState.pageSize,

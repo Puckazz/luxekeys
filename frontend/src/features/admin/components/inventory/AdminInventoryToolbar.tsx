@@ -1,20 +1,20 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Layers3 } from 'lucide-react';
 
+import { adminProductsApi } from '@/features/admin/api/admin-products.api';
 import {
   AdminDebouncedSearchInput,
   AdminQuickStatusTabs,
   AdminToolbarFiltersPanel,
   AdminToolbarHeader,
 } from '@/features/admin/components/common';
-import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
   ADMIN_INVENTORY_STATUS_FILTER_OPTIONS,
   type AdminInventoryListQueryState,
   type AdminInventoryStatusSummary,
 } from '@/features/admin/types/admin-inventory.types';
-import { ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE } from '@/features/admin/utils/admin-products.constants';
 import {
   adminInventorySortLabelByValue,
   adminInventoryStockStatusLabelByValue,
@@ -64,6 +64,12 @@ export function AdminInventoryToolbar({
   onSortChange,
   onBulkUpdateClick,
 }: AdminInventoryToolbarProps) {
+  const categoryOptionsQuery = useQuery({
+    queryKey: ['admin-product-category-options'],
+    queryFn: () => adminProductsApi.getCategoryOptions(),
+    staleTime: 60_000,
+  });
+
   return (
     <div className="space-y-4">
       <AdminToolbarHeader
@@ -110,9 +116,9 @@ export function AdminInventoryToolbar({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            {ADMIN_PRODUCT_CATEGORIES.map((category) => (
-              <SelectItem key={category} value={category}>
-                {ADMIN_PRODUCT_CATEGORY_LABEL_BY_VALUE[category]}
+            {(categoryOptionsQuery.data ?? []).map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
               </SelectItem>
             ))}
           </SelectContent>

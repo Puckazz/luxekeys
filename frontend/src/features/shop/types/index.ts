@@ -196,6 +196,7 @@ export interface ProductDetailVariant {
   id: string;
   sku: string;
   name: string;
+  image: string;
   price: number;
   compareAtPrice?: number;
   color?: string | null;

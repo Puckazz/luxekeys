@@ -29,12 +29,18 @@ import {
   GetAdminProductsQueryDto,
   UpsertAdminProductDto,
 } from './dto/admin-product.dto.js';
+import { AdminInventoryService } from './admin-inventory.service.js';
+import { AdminProductsService } from './admin-products.service.js';
 import { ProductsService } from './products.service.js';
 
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly adminProductsService: AdminProductsService,
+    private readonly adminInventoryService: AdminInventoryService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -66,7 +72,7 @@ export class ProductsController {
   @ApiOperation({ summary: 'List products for admin catalog management' })
   @ApiOkResponse({ description: 'Paginated admin product list' })
   findAdminProducts(@Query() query: GetAdminProductsQueryDto) {
-    return this.productsService.findAdminProducts(query);
+    return this.adminProductsService.findAdminProducts(query);
   }
 
   @Post('admin')
@@ -75,7 +81,7 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a product with variants (Admin)' })
   createAdminProduct(@Body() dto: UpsertAdminProductDto) {
-    return this.productsService.createAdminProduct(dto);
+    return this.adminProductsService.createAdminProduct(dto);
   }
 
   @Get('admin/inventory')
@@ -85,7 +91,7 @@ export class ProductsController {
   @ApiOperation({ summary: 'List product variant inventory for admin' })
   @ApiOkResponse({ description: 'Paginated admin inventory list' })
   findAdminInventory(@Query() query: GetAdminInventoryQueryDto) {
-    return this.productsService.findAdminInventory(query);
+    return this.adminInventoryService.findAdminInventory(query);
   }
 
   @Patch('admin/inventory/stock')
@@ -94,7 +100,7 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Bulk update product variant stock (Admin)' })
   bulkUpdateAdminInventoryStock(@Body() dto: AdminInventoryBulkUpdateDto) {
-    return this.productsService.bulkUpdateAdminInventoryStock(dto);
+    return this.adminInventoryService.bulkUpdateAdminInventoryStock(dto);
   }
 
   @Patch('admin/:id')
@@ -107,7 +113,7 @@ export class ProductsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpsertAdminProductDto,
   ) {
-    return this.productsService.updateAdminProduct(id, dto);
+    return this.adminProductsService.updateAdminProduct(id, dto);
   }
 
   @Patch('admin/:id/restore')
@@ -117,7 +123,7 @@ export class ProductsController {
   @ApiOperation({ summary: 'Restore a soft-deleted product (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   restoreAdminProduct(@Param('id', ParseUUIDPipe) id: string) {
-    return this.productsService.restoreAdminProduct(id);
+    return this.adminProductsService.restoreAdminProduct(id);
   }
 
   @Delete('admin/:id')
@@ -127,7 +133,7 @@ export class ProductsController {
   @ApiOperation({ summary: 'Archive a product (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   archiveAdminProduct(@Param('id', ParseUUIDPipe) id: string) {
-    return this.productsService.archiveAdminProduct(id);
+    return this.adminProductsService.archiveAdminProduct(id);
   }
 
   @Get('slug/:slug')

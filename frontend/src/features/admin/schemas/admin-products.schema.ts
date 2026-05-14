@@ -49,6 +49,7 @@ const adminProductSwitchOptionSchema = z.object({
 export const adminProductVariantSchema = z
   .object({
     id: z.string().optional(),
+    thumbnailImageId: z.string().optional(),
     color: z.string().trim().min(1, 'Color is required.'),
     layout: z.union([z.literal(''), productLayoutSchema]),
     switchType: z.string(),
@@ -94,8 +95,10 @@ export const adminProductFormSchema = z
     thumbnail: z
       .string()
       .trim()
-      .min(1, 'Thumbnail URL is required.')
-      .url('Thumbnail must be a valid URL.'),
+      .refine(
+        (value) => value.length === 0 || /^https?:\/\//.test(value),
+        'Thumbnail must be a valid URL.'
+      ),
     tags: z.string(),
     isFeatured: z.boolean(),
     status: productStatusSchema,

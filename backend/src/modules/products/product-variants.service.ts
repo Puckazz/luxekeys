@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -27,12 +28,41 @@ export class ProductVariantsService {
     return { data };
   }
 
+  private async ensureVariantThumbnailBelongsToProduct(
+    productId: string,
+    thumbnailImageId?: string,
+  ): Promise<string | null> {
+    if (!thumbnailImageId) {
+      return null;
+    }
+
+    const image = await this.prisma.productImage.findFirst({
+      where: {
+        id: thumbnailImageId,
+        productId,
+      },
+      select: { id: true },
+    });
+
+    if (!image) {
+      throw new BadRequestException(
+        'Variant thumbnail image must belong to the same product',
+      );
+    }
+
+    return image.id;
+  }
+
   async create(
     productId: string,
     dto: CreateProductVariantDto,
   ): Promise<ProductVariant> {
     await this.productsService.findOne(productId);
     await this.ensureSkuAvailable(dto.sku);
+    const thumbnailImageId = await this.ensureVariantThumbnailBelongsToProduct(
+      productId,
+      dto.thumbnailImageId,
+    );
 
     return this.prisma.$transaction(async (tx) => {
       const activeVariantCount = await tx.productVariant.count({
@@ -58,6 +88,7 @@ export class ProductVariantsService {
           color: dto.color ?? null,
           layout: dto.layout ?? null,
           stock: dto.stock ?? 0,
+          thumbnailImageId,
           isDefault,
           isActive: dto.isActive ?? true,
         },
@@ -79,6 +110,14 @@ export class ProductVariantsService {
     if (dto.sku && dto.sku !== variant.sku) {
       await this.ensureSkuAvailable(dto.sku, id);
     }
+
+    const thumbnailImageId =
+      dto.thumbnailImageId !== undefined
+        ? await this.ensureVariantThumbnailBelongsToProduct(
+            productId,
+            dto.thumbnailImageId,
+          )
+        : undefined;
 
     return this.prisma.$transaction(async (tx) => {
       const nextIsDefault = dto.isDefault ?? variant.isDefault;
@@ -107,6 +146,7 @@ export class ProductVariantsService {
           ...(dto.color !== undefined && { color: dto.color }),
           ...(dto.layout !== undefined && { layout: dto.layout }),
           ...(dto.stock !== undefined && { stock: dto.stock }),
+          ...(thumbnailImageId !== undefined && { thumbnailImageId }),
           ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
           ...(dto.isActive !== undefined && { isActive: dto.isActive }),
         },

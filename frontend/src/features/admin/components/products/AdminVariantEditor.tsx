@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Check, Plus, Trash2 } from 'lucide-react';
 import {
   Controller,
@@ -13,6 +14,7 @@ import {
   type FieldArrayWithId,
 } from 'react-hook-form';
 
+import type { AdminProductImage } from '@/features/admin/types';
 import type { AdminProductFormValues } from '@/features/admin/types/admin-products.types';
 import { LOW_STOCK_THRESHOLD } from '@/features/admin/utils/admin-products.constants';
 import { adminVariantStatusLabelByValue } from '@/features/admin/utils/admin-products.utils';
@@ -31,6 +33,7 @@ import { AdminSwitchOptionsEditor } from './AdminSwitchOptionsEditor';
 
 type AdminVariantEditorProps = {
   productType: AdminProductFormValues['productType'];
+  productImages: AdminProductImage[];
   fields: FieldArrayWithId<AdminProductFormValues, 'variants', 'fieldId'>[];
   control: Control<AdminProductFormValues>;
   register: UseFormRegister<AdminProductFormValues>;
@@ -43,6 +46,7 @@ type AdminVariantEditorProps = {
 
 export function AdminVariantEditor({
   productType,
+  productImages,
   fields,
   control,
   register,
@@ -66,6 +70,16 @@ export function AdminVariantEditor({
         shouldDirty: true,
         shouldValidate: true,
       });
+    });
+  };
+
+  const setVariantThumbnailImage = (
+    variantIndex: number,
+    thumbnailImageId?: string
+  ) => {
+    setValue(`variants.${variantIndex}.thumbnailImageId`, thumbnailImageId, {
+      shouldDirty: true,
+      shouldValidate: true,
     });
   };
 
@@ -256,6 +270,68 @@ export function AdminVariantEditor({
                 <p className="text-destructive text-xs">
                   {errors.variants?.[index]?.status?.message}
                 </p>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-semibold">
+                  Variant Thumbnail
+                </label>
+                {productImages.length > 0 ? (
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    <button
+                      type="button"
+                      className={`border-border bg-background hover:border-primary/50 flex min-h-20 items-center justify-center rounded-md border p-3 text-center text-xs font-medium transition-colors ${
+                        !watchedVariants[index]?.thumbnailImageId
+                          ? 'border-primary ring-primary/20 ring-2'
+                          : ''
+                      }`}
+                      onClick={() => setVariantThumbnailImage(index)}
+                    >
+                      Inherit product thumbnail
+                    </button>
+                    {productImages.map((image) => {
+                      const isSelected =
+                        watchedVariants[index]?.thumbnailImageId === image.id;
+
+                      return (
+                        <button
+                          key={image.id}
+                          type="button"
+                          className={`border-border bg-background hover:border-primary/50 flex overflow-hidden rounded-md border text-left transition-colors ${
+                            isSelected ? 'border-primary ring-primary/20 ring-2' : ''
+                          }`}
+                          onClick={() =>
+                            setVariantThumbnailImage(index, image.id)
+                          }
+                        >
+                          <div className="relative aspect-square w-16 shrink-0 overflow-hidden">
+                            <Image
+                              src={image.imageUrl}
+                              alt={image.altText ?? `Variant ${index + 1}`}
+                              fill
+                              className="object-cover"
+                              sizes="64px"
+                            />
+                          </div>
+                          <div className="flex min-w-0 flex-1 items-center justify-between gap-2 p-2">
+                            <p className="text-muted-foreground truncate text-[11px]">
+                              {image.isPrimary ? 'Product thumbnail' : 'Gallery image'}
+                            </p>
+                            {isSelected ? (
+                              <Check className="text-primary size-3.5 shrink-0" />
+                            ) : null}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="border-border/70 bg-background/40 rounded-md border border-dashed p-3">
+                    <p className="text-muted-foreground text-xs">
+                      Upload product gallery images before choosing variant thumbnails.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="grid gap-2 md:col-span-2 md:grid-cols-3">

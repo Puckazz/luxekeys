@@ -101,6 +101,13 @@ export const getProductImage = (product: CustomerProductSummaryApiItem): string 
   );
 };
 
+export const getVariantImage = (
+  product: CustomerProductSummaryApiItem,
+  variant: CustomerProductVariantApiItem
+): string => {
+  return variant.thumbnailImage?.imageUrl ?? getProductImage(product);
+};
+
 export const mapGalleryImages = (
   product: CustomerProductDetailApiItem
 ): ProductGalleryImage[] => {

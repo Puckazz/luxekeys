@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type {} from 'multer';
-import { ProductImage } from '../../generated/prisma/index.js';
+import { Prisma, ProductImage } from '../../generated/prisma/index.js';
 import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
 import { PrismaService } from '../database/prisma.service.js';
 import { ProductsService } from './products.service.js';
@@ -17,6 +17,28 @@ export class ProductImagesService {
     private readonly productsService: ProductsService,
     private readonly cloudinary: CloudinaryService,
   ) {}
+
+  private async syncProductThumbnailFromImages(
+    productId: string,
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
+    const primaryImage = await tx.productImage.findFirst({
+      where: { productId },
+      orderBy: [
+        { isPrimary: 'desc' },
+        { sortOrder: 'asc' },
+        { createdAt: 'asc' },
+      ],
+      select: { imageUrl: true },
+    });
+
+    await tx.product.update({
+      where: { id: productId },
+      data: {
+        thumbnailUrl: primaryImage?.imageUrl ?? null,
+      },
+    });
+  }
 
   async findAll(productId: string): Promise<{ data: ProductImage[] }> {
     await this.productsService.findOne(productId);
@@ -77,7 +99,7 @@ export class ProductImagesService {
         });
       }
 
-      return tx.productImage.create({
+      const image = await tx.productImage.create({
         data: {
           productId,
           imageUrl: uploaded.secure_url,
@@ -86,6 +108,10 @@ export class ProductImagesService {
           sortOrder: existingCount,
         },
       });
+
+      await this.syncProductThumbnailFromImages(productId, tx);
+
+      return image;
     });
   }
 
@@ -103,22 +129,32 @@ export class ProductImagesService {
           data: { isPrimary: false },
         });
 
-        return tx.productImage.update({
+        const image = await tx.productImage.update({
           where: { id },
           data: {
             isPrimary: true,
             ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
           },
         });
+
+        await this.syncProductThumbnailFromImages(productId, tx);
+
+        return image;
       });
     }
 
-    return this.prisma.productImage.update({
-      where: { id },
-      data: {
-        ...(dto.isPrimary !== undefined && { isPrimary: dto.isPrimary }),
-        ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const image = await tx.productImage.update({
+        where: { id },
+        data: {
+          ...(dto.isPrimary !== undefined && { isPrimary: dto.isPrimary }),
+          ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
+        },
+      });
+
+      await this.syncProductThumbnailFromImages(productId, tx);
+
+      return image;
     });
   }
 
@@ -127,23 +163,27 @@ export class ProductImagesService {
 
     await this.cloudinary.deleteByPublicId(image.cloudinaryPublicId ?? '');
 
-    const removed = await this.prisma.productImage.delete({ where: { id } });
+    return this.prisma.$transaction(async (tx) => {
+      const removed = await tx.productImage.delete({ where: { id } });
 
-    if (image.isPrimary) {
-      const next = await this.prisma.productImage.findFirst({
-        where: { productId },
-        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
-      });
-
-      if (next) {
-        await this.prisma.productImage.update({
-          where: { id: next.id },
-          data: { isPrimary: true },
+      if (image.isPrimary) {
+        const next = await tx.productImage.findFirst({
+          where: { productId },
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
         });
-      }
-    }
 
-    return removed;
+        if (next) {
+          await tx.productImage.update({
+            where: { id: next.id },
+            data: { isPrimary: true },
+          });
+        }
+      }
+
+      await this.syncProductThumbnailFromImages(productId, tx);
+
+      return removed;
+    });
   }
 
   private async findOne(productId: string, id: string): Promise<ProductImage> {

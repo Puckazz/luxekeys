@@ -1,6 +1,5 @@
 import type {
   AdminProduct,
-  AdminProductCategory,
   AdminProductPaginationMeta,
 } from '@/features/admin/types';
 import type { AdminProductApiItem } from '@/features/admin/types/admin-products.types';
@@ -33,7 +32,7 @@ export type AdminInventoryStatusSummary = Record<
 
 export interface AdminInventoryListQueryState {
   search: string;
-  category: AdminProductCategory | 'all';
+  category: string;
   status: AdminInventoryStatusFilter;
   sort: AdminInventorySortOption;
   page: number;
@@ -43,6 +42,7 @@ export interface AdminInventoryListQueryState {
 export interface AdminInventoryItem {
   product: AdminProduct;
   variantId: string;
+  thumbnail: string;
   variantSku: string;
   variantColor: string;
   variantSwitchType: string;
@@ -91,6 +91,7 @@ export type AdminInventoryApiStatusSummary = Record<
 export type AdminInventoryApiItem = {
   product: AdminProductApiItem;
   variantId: string;
+  thumbnailUrl: string | null;
   variantSku: string;
   variantColor: string;
   variantSwitchType: string;

@@ -18,6 +18,18 @@ export class CartService {
     return Number(item.switchOption?.price ?? item.variant.price);
   }
 
+  private resolveVariantFallbackImage(product: {
+    thumbnailUrl: string | null;
+    images?: Array<{ imageUrl: string; isPrimary: boolean }>;
+  }): string | null {
+    return (
+      product.thumbnailUrl ??
+      product.images?.find((image) => image.isPrimary)?.imageUrl ??
+      product.images?.[0]?.imageUrl ??
+      null
+    );
+  }
+
   async getCart(userId: string): Promise<CartResponse> {
     let cart = await this.prisma.cart.findUnique({
       where: { userId },
@@ -32,7 +44,15 @@ export class CartService {
                     name: true,
                     slug: true,
                     thumbnailUrl: true,
+                    images: {
+                      where: { isPrimary: true },
+                      select: { imageUrl: true, isPrimary: true },
+                      take: 1,
+                    },
                   },
+                },
+                thumbnailImage: {
+                  select: { imageUrl: true },
                 },
               },
             },
@@ -57,7 +77,15 @@ export class CartService {
                       name: true,
                       slug: true,
                       thumbnailUrl: true,
+                      images: {
+                        where: { isPrimary: true },
+                        select: { imageUrl: true, isPrimary: true },
+                        take: 1,
+                      },
                     },
+                  },
+                  thumbnailImage: {
+                    select: { imageUrl: true },
                   },
                 },
               },
@@ -71,7 +99,11 @@ export class CartService {
     let subtotal = 0;
     const items: CartItemResponse[] = cart.items.map((item) => {
       const price = this.getCartItemUnitPrice(item);
+      const fallbackImageUrl = this.resolveVariantFallbackImage(
+        item.variant.product,
+      );
       subtotal += price * item.quantity;
+
       return {
         id: item.id,
         variantId: item.variantId,
@@ -82,7 +114,11 @@ export class CartService {
           name: item.variant.name,
           sku: item.variant.sku,
           price,
-          product: item.variant.product,
+          product: {
+            ...item.variant.product,
+            fallbackImageUrl,
+          },
+          thumbnailImageUrl: item.variant.thumbnailImage?.imageUrl ?? null,
         },
         switchOption: item.switchOption
           ? {

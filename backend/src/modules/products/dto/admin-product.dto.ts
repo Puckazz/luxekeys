@@ -98,6 +98,11 @@ export class GetAdminInventoryQueryDto extends PaginationQueryDto {
   @IsEnum(ProductType)
   type?: ProductType;
 
+  @ApiPropertyOptional({ description: 'Filter by catalog category UUID' })
+  @IsOptional()
+  @IsUUID()
+  categoryId?: string;
+
   @ApiPropertyOptional({ enum: ADMIN_INVENTORY_STATUS_FILTERS })
   @IsOptional()
   @IsIn(ADMIN_INVENTORY_STATUS_FILTERS)
@@ -201,6 +206,11 @@ export class AdminProductVariantInputDto {
   @IsOptional()
   @IsUUID()
   id?: string;
+
+  @ApiPropertyOptional({ example: 'uuid-of-product-image' })
+  @IsOptional()
+  @IsUUID()
+  thumbnailImageId?: string;
 
   @ApiProperty({ example: 'Q1P-BLK-BROWN' })
   @IsString()

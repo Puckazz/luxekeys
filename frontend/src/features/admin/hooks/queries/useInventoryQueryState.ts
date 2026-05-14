@@ -2,11 +2,9 @@
 
 import { useMemo } from 'react';
 import {
-  isOneOf,
   parsePositiveIntParam,
 } from '@/features/admin/hooks/query-state.utils';
 import { useQueryStateNavigation } from '@/features/admin/hooks/queries/useQueryStateNavigation';
-import { ADMIN_PRODUCT_CATEGORIES } from '@/features/admin/types';
 import {
   ADMIN_INVENTORY_SORT_OPTIONS,
   ADMIN_INVENTORY_STATUS_FILTER_OPTIONS,
@@ -15,7 +13,7 @@ import {
 
 const queryKeys = {
   search: 'search',
-  category: 'category',
+  category: 'categoryId',
   status: 'status',
   sort: 'sort',
   page: 'page',
@@ -23,24 +21,23 @@ const queryKeys = {
 
 const DEFAULT_PAGE_SIZE = 10;
 
-const isValidCategory = (
-  value: string
-): value is AdminInventoryListQueryState['category'] => {
-  return value === 'all' || isOneOf(value, ADMIN_PRODUCT_CATEGORIES);
-};
-
 const isValidStatus = (
   value: string
 ): value is AdminInventoryListQueryState['status'] => {
   return (
-    value === 'all' || isOneOf(value, ADMIN_INVENTORY_STATUS_FILTER_OPTIONS)
+    value === 'all' ||
+    ADMIN_INVENTORY_STATUS_FILTER_OPTIONS.includes(
+      value as (typeof ADMIN_INVENTORY_STATUS_FILTER_OPTIONS)[number]
+    )
   );
 };
 
 const isValidSort = (
   value: string
 ): value is AdminInventoryListQueryState['sort'] => {
-  return isOneOf(value, ADMIN_INVENTORY_SORT_OPTIONS);
+  return ADMIN_INVENTORY_SORT_OPTIONS.includes(
+    value as (typeof ADMIN_INVENTORY_SORT_OPTIONS)[number]
+  );
 };
 
 export const useAdminInventoryQueryState = () => {
@@ -56,7 +53,7 @@ export const useAdminInventoryQueryState = () => {
 
     return {
       search,
-      category: isValidCategory(rawCategory) ? rawCategory : 'all',
+      category: rawCategory.trim() || 'all',
       status: isValidStatus(rawStatus) ? rawStatus : 'all',
       sort: isValidSort(rawSort) ? rawSort : 'updated-desc',
       page: parsePositiveIntParam(searchParams.get(queryKeys.page), 1),

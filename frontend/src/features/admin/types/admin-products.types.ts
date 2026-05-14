@@ -46,6 +46,7 @@ export interface AdminProductListQueryState {
 
 export interface AdminProductVariantFormValue {
   id?: string;
+  thumbnailImageId?: string;
   color: string;
   layout: ProductLayout | '';
   switchType: string;
@@ -86,6 +87,7 @@ export interface AdminProductFormValues {
 
 export interface UpsertAdminProductInput {
   id?: string;
+  imageFiles?: File[];
   name: string;
   shortDescription?: string;
   productType: AdminProduct['productType'];
@@ -127,6 +129,7 @@ export interface AdminProductSwitchOptionUpsertInput {
 
 export interface AdminProductVariantUpsertInput {
   id?: string;
+  thumbnailImageId?: string;
   color: string;
   layout?: string;
   switchType: string;
@@ -174,8 +177,23 @@ export type AdminProductSwitchOptionApiItem = {
   sortOrder?: number;
 };
 
+export type AdminProductImageApiItem = {
+  id: string;
+  productId: string;
+  imageUrl: string;
+  altText?: string | null;
+  sortOrder: number;
+  isPrimary: boolean;
+  createdAt: string;
+  cloudinaryPublicId?: string | null;
+};
+
 export type AdminProductVariantApiItem = {
   id: string;
+  thumbnailImage?: {
+    id: string;
+    imageUrl: string;
+  } | null;
   sku: string;
   name: string;
   price: string | number;
@@ -211,6 +229,7 @@ export type AdminProductApiItem = {
     name: string;
     slug: string;
   } | null;
+  images?: AdminProductImageApiItem[];
   specs?: Array<{
     id: string;
     specKey: string;

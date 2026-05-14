@@ -67,9 +67,12 @@ export const mapApiInventoryStatusSummary = (
 };
 
 export const mapInventoryItem = (item: AdminInventoryApiItem): AdminInventoryItem => {
+  const product = mapApiProductToAdminProduct(item.product);
+
   return {
-    product: mapApiProductToAdminProduct(item.product),
+    product,
     variantId: item.variantId,
+    thumbnail: item.thumbnailUrl ?? product.thumbnail,
     variantSku: item.variantSku,
     variantColor: item.variantColor,
     variantSwitchType: item.variantSwitchType,

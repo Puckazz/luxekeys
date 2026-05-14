@@ -40,8 +40,19 @@ export interface AdminProductSpec {
   groupName: string;
 }
 
+export interface AdminProductImage {
+  id: string;
+  imageUrl: string;
+  altText?: string | null;
+  sortOrder: number;
+  isPrimary: boolean;
+  createdAt: string;
+  cloudinaryPublicId?: string | null;
+}
+
 export interface AdminProductVariant {
   id: string;
+  thumbnailImageId?: string;
   color: string;
   layout: ProductLayout | '';
   switchType: string;
@@ -70,6 +81,7 @@ export interface AdminProduct {
   status: AdminProductStatus;
   createdAt: string;
   updatedAt: string;
+  images: AdminProductImage[];
   specs: AdminProductSpec[];
   variants: AdminProductVariant[];
 }

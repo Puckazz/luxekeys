@@ -95,8 +95,10 @@ const parseJson = async (response: Response): Promise<unknown> => {
 
 const createHeaders = (options: ApiRequestOptions): Headers => {
   const headers = new Headers(options.headers);
+  const isFormDataBody =
+    typeof FormData !== 'undefined' && options.body instanceof FormData;
 
-  if (!headers.has('Content-Type') && options.body) {
+  if (!headers.has('Content-Type') && options.body && !isFormDataBody) {
     headers.set('Content-Type', 'application/json');
   }
 

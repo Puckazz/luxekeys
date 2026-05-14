@@ -6,6 +6,7 @@ import type {
   AdminProductBrandOption,
   AdminProductCategoryOption,
   AdminProductApiItem,
+  AdminProductImageApiItem,
   AdminProductListApiData,
   AdminProductListResponse,
   AdminProductListQueryState,
@@ -94,8 +95,13 @@ export const adminProductsApi = {
       method: 'POST',
       body: JSON.stringify(mapUpsertInputToPayload(input)),
     });
+    const mappedProduct = mapApiProductToAdminProduct(product);
 
-    return mapApiProductToAdminProduct(product);
+    for (const file of input.imageFiles ?? []) {
+      await adminProductsApi.uploadProductImage(mappedProduct.id, file);
+    }
+
+    return mappedProduct;
   },
 
   updateProduct: async (
@@ -112,6 +118,10 @@ export const adminProductsApi = {
         body: JSON.stringify(mapUpsertInputToPayload(input)),
       }
     );
+
+    for (const file of input.imageFiles ?? []) {
+      await adminProductsApi.uploadProductImage(input.id, file);
+    }
 
     return mapApiProductToAdminProduct(product);
   },
@@ -136,5 +146,50 @@ export const adminProductsApi = {
     );
 
     return mapApiProductToAdminProduct(product);
+  },
+
+  getProductImages: async (
+    productId: string
+  ): Promise<AdminProductImageApiItem[]> => {
+    return authFetch<AdminProductImageApiItem[]>(`/products/${productId}/images`);
+  },
+
+  uploadProductImage: async (
+    productId: string,
+    file: File
+  ): Promise<AdminProductImageApiItem> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return authFetch<AdminProductImageApiItem>(`/products/${productId}/images`, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  updateProductImage: async (
+    productId: string,
+    imageId: string,
+    input: { isPrimary?: boolean; sortOrder?: number }
+  ): Promise<AdminProductImageApiItem> => {
+    return authFetch<AdminProductImageApiItem>(
+      `/products/${productId}/images/${imageId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(input),
+      }
+    );
+  },
+
+  deleteProductImage: async (
+    productId: string,
+    imageId: string
+  ): Promise<AdminProductImageApiItem> => {
+    return authFetch<AdminProductImageApiItem>(
+      `/products/${productId}/images/${imageId}`,
+      {
+        method: 'DELETE',
+      }
+    );
   },
 };

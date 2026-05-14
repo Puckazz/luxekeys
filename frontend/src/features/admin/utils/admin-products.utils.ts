@@ -175,6 +175,7 @@ export const normalizeAdminProductSpec = (
 
 export const buildDefaultVariant = (): AdminProductVariantFormValue => {
   return {
+    thumbnailImageId: undefined,
     color: '',
     layout: '',
     switchType: '',

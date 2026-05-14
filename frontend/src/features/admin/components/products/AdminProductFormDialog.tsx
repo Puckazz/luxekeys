@@ -1,11 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
+import Image from 'next/image';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type MouseEvent,
+} from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ImageUp, LoaderCircle, Star, Trash2, X } from 'lucide-react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
 import { adminProductsApi } from '@/features/admin/api/admin-products.api';
+import { ADMIN_PRODUCTS_QUERY_KEYS } from '@/features/admin/hooks/products.key';
 import { adminProductFormSchema } from '@/features/admin/schemas/admin-products.schema';
 import type { AdminProduct, AdminProductStatus } from '@/features/admin/types';
 import type {
@@ -30,6 +40,7 @@ import {
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
+import { PrimaryButton } from '@/shared/components/ui/primary-button';
 import {
   Select,
   SelectContent,
@@ -49,6 +60,12 @@ type AdminProductFormDialogProps = {
   isSubmitting: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (input: UpsertAdminProductInput) => void;
+};
+
+type PendingProductImage = {
+  id: string;
+  file: File;
+  previewUrl: string;
 };
 
 const toFormValues = (product: AdminProduct | null): AdminProductFormValues => {
@@ -85,6 +102,7 @@ const toFormValues = (product: AdminProduct | null): AdminProductFormValues => {
     specs: product.specs.map(normalizeAdminProductSpec),
     variants: product.variants.map((variant) => ({
       id: variant.id,
+      thumbnailImageId: variant.thumbnailImageId,
       color: variant.color,
       layout: variant.layout,
       switchType: variant.switchType,
@@ -121,6 +139,9 @@ export function AdminProductFormDialog({
   onOpenChange,
   onSubmit,
 }: AdminProductFormDialogProps) {
+  const queryClient = useQueryClient();
+  const [pendingImages, setPendingImages] = useState<PendingProductImage[]>([]);
+  const pendingImagesRef = useRef<PendingProductImage[]>([]);
   const form = useForm<AdminProductFormValues>({
     resolver: zodResolver(adminProductFormSchema),
     defaultValues: toFormValues(product),
@@ -146,6 +167,86 @@ export function AdminProductFormDialog({
     queryFn: () => adminProductsApi.getCategoryOptions(),
     staleTime: 60_000,
   });
+  const productImagesQuery = useQuery({
+    queryKey: ['admin-product-images', product?.id],
+    queryFn: () => adminProductsApi.getProductImages(product!.id),
+    enabled: open && Boolean(product?.id),
+    staleTime: 15_000,
+  });
+  const productImages = productImagesQuery.data ?? product?.images ?? [];
+  const uploadProductImageMutation = useMutation({
+    mutationFn: ({ productId, file }: { productId: string; file: File }) => {
+      return adminProductsApi.uploadProductImage(productId, file);
+    },
+    onSuccess: (image) => {
+      queryClient.invalidateQueries({
+        queryKey: ['admin-product-images', product?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_PRODUCTS_QUERY_KEYS.all,
+      });
+
+      if (image.isPrimary) {
+        setValue('thumbnail', image.imageUrl, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+    },
+  });
+  const setPrimaryProductImageMutation = useMutation({
+    mutationFn: ({
+      productId,
+      imageId,
+    }: {
+      productId: string;
+      imageId: string;
+    }) => {
+      return adminProductsApi.updateProductImage(productId, imageId, {
+        isPrimary: true,
+      });
+    },
+    onSuccess: (image) => {
+      queryClient.invalidateQueries({
+        queryKey: ['admin-product-images', product?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_PRODUCTS_QUERY_KEYS.all,
+      });
+      setValue('thumbnail', image.imageUrl, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+  });
+  const deleteProductImageMutation = useMutation({
+    mutationFn: ({
+      productId,
+      imageId,
+    }: {
+      productId: string;
+      imageId: string;
+    }) => {
+      return adminProductsApi.deleteProductImage(productId, imageId);
+    },
+    onSuccess: (image) => {
+      queryClient.invalidateQueries({
+        queryKey: ['admin-product-images', product?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ADMIN_PRODUCTS_QUERY_KEYS.all,
+      });
+
+      getValues('variants').forEach((variant, index) => {
+        if (variant.thumbnailImageId === image.id) {
+          setValue(`variants.${index}.thumbnailImageId`, undefined, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+        }
+      });
+    },
+  });
 
   const variantsFieldArray = useFieldArray({
     control,
@@ -162,7 +263,29 @@ export function AdminProductFormDialog({
     if (open) {
       reset(toFormValues(product));
     }
+
+    setPendingImages((previous) => {
+      previous.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+      return [];
+    });
   }, [open, product, reset]);
+
+  useEffect(() => {
+    pendingImagesRef.current = pendingImages;
+  }, [pendingImages]);
+
+  useEffect(() => {
+    return () => {
+      pendingImagesRef.current.forEach((image) =>
+        URL.revokeObjectURL(image.previewUrl)
+      );
+    };
+  }, []);
+
+  const isUpdatingProductImages =
+    uploadProductImageMutation.isPending ||
+    setPrimaryProductImageMutation.isPending ||
+    deleteProductImageMutation.isPending;
 
   useEffect(() => {
     const variants = getValues('variants');
@@ -199,6 +322,7 @@ export function AdminProductFormDialog({
       catalogCategoryId: values.catalogCategoryId || undefined,
       description: values.description,
       thumbnail: values.thumbnail,
+      imageFiles: pendingImages.map((image) => image.file),
       tags: values.tags
         .split(',')
         .map((tag) => tag.trim())
@@ -222,6 +346,7 @@ export function AdminProductFormDialog({
             values.productType === 'keyboards'
               ? defaultSwitchOption?.switchType || ''
               : variant.switchType,
+          thumbnailImageId: variant.thumbnailImageId,
           originalPrice:
             values.productType === 'keyboards'
               ? defaultSwitchOption?.originalPrice === ''
@@ -244,6 +369,76 @@ export function AdminProductFormDialog({
               : [],
         };
       }),
+    });
+  };
+
+  const handleProductImageUpload = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = Array.from(event.target.files ?? []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    if (!product?.id) {
+      setPendingImages((previous) => [
+        ...previous,
+        ...files.map((file) => ({
+          id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        })),
+      ]);
+      event.target.value = '';
+      return;
+    }
+
+    for (const file of files) {
+      await uploadProductImageMutation.mutateAsync({
+        productId: product.id,
+        file,
+      });
+    }
+
+    event.target.value = '';
+  };
+
+  const removePendingImage = useCallback((id: string) => {
+    setPendingImages((previous) => {
+      const image = previous.find((item) => item.id === id);
+      if (image) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+
+      return previous.filter((item) => item.id !== id);
+    });
+  }, []);
+
+  const handleSetPrimaryProductImage = (imageId: string) => {
+    if (!product?.id) {
+      return;
+    }
+
+    setPrimaryProductImageMutation.mutate({
+      productId: product.id,
+      imageId,
+    });
+  };
+
+  const handleDeleteProductImage = (
+    event: MouseEvent<HTMLButtonElement>,
+    imageId: string
+  ) => {
+    event.stopPropagation();
+
+    if (!product?.id) {
+      return;
+    }
+
+    deleteProductImageMutation.mutate({
+      productId: product.id,
+      imageId,
     });
   };
 
@@ -388,13 +583,160 @@ export function AdminProductFormDialog({
                 </p>
               </div>
 
+              <div className="space-y-1 md:col-span-2">
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-xs font-semibold">Product Images</label>
+                  <div className="flex items-center gap-2">
+                    {isUpdatingProductImages ? (
+                      <LoaderCircle className="text-muted-foreground size-4 animate-spin" />
+                    ) : null}
+                    <Input
+                      type="file"
+                      multiple
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      onChange={handleProductImageUpload}
+                      disabled={isUpdatingProductImages}
+                      className="h-10 max-w-64 cursor-pointer text-xs file:mr-2"
+                    />
+                  </div>
+                </div>
+
+                {product?.id ? (
+                  productImages.length ? (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {productImages.map((image) => (
+                          <div
+                            key={image.id}
+                            className="border-border bg-background flex overflow-hidden rounded-md border text-left transition-colors"
+                          >
+                            <button
+                              type="button"
+                              className="hover:border-primary/50 flex min-w-0 flex-1 text-left disabled:opacity-70"
+                              onClick={() =>
+                                handleSetPrimaryProductImage(image.id)
+                              }
+                              disabled={isUpdatingProductImages}
+                            >
+                              <div className="relative aspect-square w-24 shrink-0 overflow-hidden">
+                                <Image
+                                  src={image.imageUrl}
+                                  alt={image.altText ?? product.name}
+                                  fill
+                                  className="object-cover"
+                                  sizes="96px"
+                                />
+                              </div>
+                              <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-xs font-semibold">
+                                    {image.isPrimary
+                                      ? 'Current thumbnail'
+                                      : 'Use as thumbnail'}
+                                  </p>
+                                  <p className="text-muted-foreground mt-1 truncate text-[11px]">
+                                    {image.imageUrl}
+                                  </p>
+                                </div>
+                                <span className="text-muted-foreground mt-2 inline-flex items-center gap-1 text-[11px]">
+                                  <Star
+                                    className={`size-3 ${
+                                      image.isPrimary
+                                        ? 'fill-current text-amber-500'
+                                        : ''
+                                    }`}
+                                  />
+                                  {image.isPrimary
+                                    ? 'Primary image'
+                                    : 'Click to set primary'}
+                                </span>
+                              </div>
+                            </button>
+                            <button
+                              type="button"
+                              className="text-muted-foreground hover:text-destructive self-start rounded-md p-3 transition-colors disabled:opacity-50"
+                              aria-label="Delete product image"
+                              title="Delete product image"
+                              disabled={isUpdatingProductImages}
+                              onClick={(event) =>
+                                handleDeleteProductImage(event, image.id)
+                              }
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="border-border/70 bg-background/40 rounded-md border border-dashed p-4">
+                      <div className="flex items-center gap-2">
+                        <ImageUp className="text-muted-foreground size-4" />
+                        <p className="text-sm font-medium">
+                          Upload the first product image to create the thumbnail.
+                        </p>
+                      </div>
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        The primary product image now syncs automatically to the product thumbnail.
+                      </p>
+                    </div>
+                  )
+                ) : pendingImages.length ? (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {pendingImages.map((image, index) => (
+                      <div
+                        key={image.id}
+                        className="border-border bg-background flex overflow-hidden rounded-md border text-left"
+                      >
+                        <div
+                          className="relative aspect-square w-24 shrink-0 overflow-hidden bg-cover bg-center"
+                          style={{
+                            backgroundImage: `url("${image.previewUrl}")`,
+                          }}
+                        />
+                        <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-semibold">
+                              {index === 0 ? 'Pending thumbnail' : 'Pending image'}
+                            </p>
+                            <p className="text-muted-foreground mt-1 truncate text-[11px]">
+                              {image.file.name}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-destructive mt-2 inline-flex w-fit items-center gap-1 text-[11px]"
+                            onClick={() => removePendingImage(image.id)}
+                          >
+                            <X className="size-3" />
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="border-border/70 bg-background/40 rounded-md border border-dashed p-4">
+                    <p className="text-sm font-medium">
+                      Upload images now and they will attach after the product is created.
+                    </p>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      The first uploaded image will become the product thumbnail automatically.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-1">
-                <label className="text-xs font-semibold">Thumbnail URL</label>
+                <label className="text-xs font-semibold">
+                  Thumbnail URL Override
+                </label>
                 <Input
                   {...register('thumbnail')}
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://images.example.com/fallback-thumbnail.jpg"
                   className="h-10"
                 />
+                <p className="text-muted-foreground text-xs">
+                  Optional. The primary product image will be used automatically when available.
+                </p>
                 <p className="text-destructive text-xs">
                   {formState.errors.thumbnail?.message}
                 </p>
@@ -465,6 +807,7 @@ export function AdminProductFormDialog({
 
             <AdminVariantEditor
               productType={productType}
+              productImages={productImages}
               fields={variantsFieldArray.fields}
               control={control}
               register={register}
@@ -497,9 +840,14 @@ export function AdminProductFormDialog({
                 Close
               </Button>
             </DialogClose>
-            <Button type="submit" size="lg" disabled={isSubmitting}>
+            <PrimaryButton
+              type="submit"
+              size="lg"
+              isLoading={isSubmitting}
+              className="h-9 w-auto min-w-36 text-sm font-semibold"
+            >
               {mode === 'create' ? 'Create Product' : 'Save Changes'}
-            </Button>
+            </PrimaryButton>
           </div>
         </form>
       </DialogContent>

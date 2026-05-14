@@ -163,6 +163,16 @@ export const mapApiProductToAdminProduct = (
     status: product.deletedAt ? 'archived' : apiStatusToStatus[product.status],
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
+    images:
+      product.images?.map((image) => ({
+        id: image.id,
+        imageUrl: image.imageUrl,
+        altText: image.altText ?? undefined,
+        sortOrder: image.sortOrder,
+        isPrimary: image.isPrimary,
+        createdAt: image.createdAt,
+        cloudinaryPublicId: image.cloudinaryPublicId ?? undefined,
+      })) ?? [],
     specs:
       product.specs?.map((spec) => ({
         id: spec.id,
@@ -176,6 +186,7 @@ export const mapApiProductToAdminProduct = (
 
       return {
         id: variant.id,
+        thumbnailImageId: variant.thumbnailImage?.id,
         color: variant.color ?? '',
         layout: (isKeyboardProduct
           ? (variant.layout ?? '')
@@ -235,7 +246,7 @@ export const mapUpsertInputToPayload = (input: UpsertAdminProductInput) => {
     brandId: input.brandId || undefined,
     categoryId: input.catalogCategoryId || undefined,
     status: statusToApiStatus[input.status],
-    thumbnailUrl: input.thumbnail,
+    thumbnailUrl: input.thumbnail.trim() || undefined,
     tags: input.tags,
     isFeatured: input.isFeatured,
     specs: input.specs.map((spec, index) => ({
@@ -250,6 +261,7 @@ export const mapUpsertInputToPayload = (input: UpsertAdminProductInput) => {
 
       return {
         id: variant.id,
+        thumbnailImageId: variant.thumbnailImageId,
         sku: variant.sku,
         color: variant.color,
         layout: input.productType === 'keyboards' ? variant.layout || undefined : undefined,

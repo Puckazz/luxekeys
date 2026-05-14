@@ -15,7 +15,9 @@ export interface CartItemResponse {
       name: string;
       slug: string;
       thumbnailUrl: string | null;
+      fallbackImageUrl: string | null;
     };
+    thumbnailImageUrl: string | null;
   };
   switchOption?: {
     id: string;
@@ -56,7 +58,10 @@ export const mapCartResponseToSnapshot = (
         variantLabel,
         unitPrice: Number(item.switchOption?.price ?? item.variant.price),
         quantity: item.quantity,
-        image: item.variant.product.thumbnailUrl ?? '',
+        image:
+          item.variant.thumbnailImageUrl ??
+          item.variant.product.fallbackImageUrl ??
+          '',
       };
     }),
     updatedAt: new Date(response.updatedAt).getTime(),

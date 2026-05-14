@@ -34,6 +34,24 @@ export class OrdersService {
     return Number(item.switchOption?.price ?? item.variant.price);
   }
 
+  private resolveVariantThumbnailUrl(item: {
+    variant: {
+      thumbnailImage?: { imageUrl: string } | null;
+      product: {
+        thumbnailUrl: string | null;
+        images?: Array<{ imageUrl: string; isPrimary: boolean }>;
+      };
+    };
+  }): string | null {
+    return (
+      item.variant.thumbnailImage?.imageUrl ??
+      item.variant.product.thumbnailUrl ??
+      item.variant.product.images?.find((image) => image.isPrimary)?.imageUrl ??
+      item.variant.product.images?.[0]?.imageUrl ??
+      null
+    );
+  }
+
   private assertCanAccessOrder(
     orderUserId: string,
     requesterId: string,
@@ -250,7 +268,20 @@ export class OrdersService {
           items: {
             include: {
               variant: {
-                include: { product: true },
+                include: {
+                  product: {
+                    include: {
+                      images: {
+                        where: { isPrimary: true },
+                        select: { imageUrl: true, isPrimary: true },
+                        take: 1,
+                      },
+                    },
+                  },
+                  thumbnailImage: {
+                    select: { imageUrl: true },
+                  },
+                },
               },
               switchOption: true,
             },
@@ -376,7 +407,7 @@ export class OrdersService {
                 productName: item.variant.product.name,
                 variantName: item.variant.name,
                 sku: item.variant.sku,
-                thumbnailUrl: item.variant.product.thumbnailUrl,
+                thumbnailUrl: this.resolveVariantThumbnailUrl(item),
                 unitPrice,
                 quantity: item.quantity,
                 subtotalAmount: unitPrice * item.quantity,
