@@ -57,6 +57,36 @@ export interface AdminReviewListApiResponse {
   summary: AdminReviewStatusSummary;
 }
 
+export type AdminReviewApiStatus =
+  | 'PENDING'
+  | 'PUBLISHED'
+  | 'HIDDEN'
+  | 'REJECTED';
+
+export interface AdminReviewApiItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productImage?: string | null;
+  reviewerName: string;
+  reviewerEmail: string;
+  title?: string | null;
+  content?: string | null;
+  rating: number;
+  helpfulCount: number;
+  status: AdminReviewApiStatus;
+  moderationNote?: string | null;
+  moderatedAt?: string | null;
+  moderatedById?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminReviewListApiData {
+  items: AdminReviewApiItem[];
+  summary: Record<AdminReviewApiStatus | 'all', number>;
+}
+
 export interface UpdateAdminReviewStatusInput {
   reviewId: string;
   status: AdminReviewStatus;

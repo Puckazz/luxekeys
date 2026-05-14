@@ -6,6 +6,7 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -24,6 +25,8 @@ import { PaginatedResponse } from '../../common/interfaces/index.js';
 import type { AuthUser } from '../auth/interfaces/auth-user.interface.js';
 import {
   ChangePasswordDto,
+  CreateAdminUserDto,
+  GetAdminUsersQueryDto,
   GetUsersQueryDto,
   UpdateUserDto,
   UpdateUserProfileDto,
@@ -49,6 +52,34 @@ export class UsersController {
     @Query() query: GetUsersQueryDto,
   ): Promise<PaginatedResponse<UserListItem>> {
     return this.usersService.getAll(query);
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create user (Admin only)' })
+  @ApiOkResponse({
+    description: 'Created user profile',
+    type: Object,
+  })
+  createAdminUser(
+    @Body() dto: CreateAdminUserDto,
+  ): Promise<UserProfile> {
+    return this.usersService.createAdminUser(dto);
+  }
+
+  @Get('management')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List users for management (Admin only)' })
+  @ApiOkResponse({
+    description: 'Paginated management user list',
+    type: Object,
+  })
+  findManagementUsers(@Query() query: GetAdminUsersQueryDto) {
+    return this.usersService.findManagementUsers(query);
   }
 
   @Get('me')
@@ -126,6 +157,21 @@ export class UsersController {
     return this.usersService.updateUser(id, dto);
   }
 
+  @Patch(':id/restore')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Restore archived user (Admin only)' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid' })
+  @ApiOkResponse({
+    description: 'Restored user profile',
+    type: Object,
+  })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  restore(@Param('id', ParseUUIDPipe) id: string): Promise<UserProfile> {
+    return this.usersService.restore(id);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -133,13 +179,11 @@ export class UsersController {
   @ApiOperation({ summary: 'Soft delete user (Admin only)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   @ApiOkResponse({
-    description: 'User deleted successfully',
+    description: 'Archived user profile',
     type: Object,
   })
   @ApiNotFoundResponse({ description: 'User not found' })
-  softDelete(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<{ deleted: boolean }> {
+  softDelete(@Param('id', ParseUUIDPipe) id: string): Promise<UserProfile> {
     return this.usersService.softDelete(id);
   }
 }

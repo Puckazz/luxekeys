@@ -14,7 +14,7 @@ import {
   createMockUser,
   uuid,
 } from '../../common/testing/index.js';
-import { UserRole } from '../../generated/prisma/index.js';
+import { UserRole, UserStatus } from '../../generated/prisma/index.js';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -50,6 +50,92 @@ describe('UsersService', () => {
       prisma.$transaction.mockResolvedValue([0, []] as never);
       await service.getAll({ search: 'john' } as never);
       expect(prisma.$transaction).toHaveBeenCalled();
+    });
+  });
+
+  // ─── createAdminUser ───────────────────────────────────────────────────────
+
+  describe('createAdminUser', () => {
+    it('should create a user with a hashed password', async () => {
+      const user = createMockUser({
+        email: 'new@example.com',
+        fullName: 'New User',
+        status: UserStatus.INACTIVE,
+      });
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue(user as never);
+
+      const result = await service.createAdminUser({
+        email: ' New@Example.com ',
+        fullName: 'New User',
+        password: 'password123',
+        role: UserRole.CUSTOMER,
+        status: UserStatus.INACTIVE,
+      });
+
+      expect(result.email).toBe('new@example.com');
+      expect(prisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            email: 'new@example.com',
+            role: UserRole.CUSTOMER,
+            status: UserStatus.INACTIVE,
+            passwordHash: expect.stringMatching(/^\$2[ab]\$/),
+          }),
+        }),
+      );
+    });
+
+    it('should throw ConflictException when email is already registered', async () => {
+      prisma.user.findFirst.mockResolvedValue(createMockUser() as never);
+
+      await expect(
+        service.createAdminUser({
+          email: 'test@example.com',
+          fullName: 'Test User',
+          password: 'password123',
+          role: UserRole.CUSTOMER,
+          status: UserStatus.ACTIVE,
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  // ─── findManagementUsers ───────────────────────────────────────────────────
+
+  describe('findManagementUsers', () => {
+    it('should return paginated users with status summary', async () => {
+      const users = [
+        createMockUser({ status: UserStatus.ACTIVE }),
+        createMockUser({ status: UserStatus.SUSPENDED }),
+        createMockUser({ deletedAt: new Date() }),
+      ];
+      prisma.user.findMany.mockResolvedValue(users as never);
+
+      const result = await service.findManagementUsers({} as never);
+
+      expect(result.data.items).toHaveLength(2);
+      expect(result.data.summary).toEqual({
+        all: 2,
+        ACTIVE: 1,
+        INACTIVE: 0,
+        SUSPENDED: 1,
+        ARCHIVED: 1,
+      });
+    });
+
+    it('should filter archived users', async () => {
+      const archivedUser = createMockUser({ deletedAt: new Date() });
+      prisma.user.findMany.mockResolvedValue([
+        createMockUser(),
+        archivedUser,
+      ] as never);
+
+      const result = await service.findManagementUsers({
+        status: 'ARCHIVED',
+      } as never);
+
+      expect(result.data.items).toEqual([archivedUser]);
     });
   });
 
@@ -188,20 +274,34 @@ describe('UsersService', () => {
   // ─── updateUser (admin) ─────────────────────────────────────────────────────
 
   describe('updateUser', () => {
-    it('should update role and fullName', async () => {
+    it('should update email, role, fullName, and status', async () => {
       const user = createMockUser();
       const updated = createMockUser({
+        email: 'admin@example.com',
         fullName: 'Admin User',
         role: UserRole.ADMIN,
+        status: UserStatus.SUSPENDED,
       });
       prisma.user.findUnique.mockResolvedValue(user as never);
+      prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.update.mockResolvedValue(updated as never);
 
       const result = await service.updateUser(user.id, {
+        email: ' Admin@Example.com ',
         fullName: 'Admin User',
         role: UserRole.ADMIN,
+        status: UserStatus.SUSPENDED,
       } as never);
       expect(result.role).toBe(UserRole.ADMIN);
+      expect(result.status).toBe(UserStatus.SUSPENDED);
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            email: 'admin@example.com',
+            status: UserStatus.SUSPENDED,
+          }),
+        }),
+      );
     });
 
     it('should throw NotFoundException when user not found', async () => {
@@ -209,6 +309,15 @@ describe('UsersService', () => {
       await expect(
         service.updateUser(uuid(), { fullName: 'x' } as never),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ConflictException when email belongs to another user', async () => {
+      prisma.user.findUnique.mockResolvedValue(createMockUser() as never);
+      prisma.user.findFirst.mockResolvedValue(createMockUser() as never);
+
+      await expect(
+        service.updateUser(uuid(), { email: 'taken@example.com' } as never),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
@@ -225,7 +334,7 @@ describe('UsersService', () => {
       prisma.refreshToken.updateMany.mockResolvedValue({ count: 0 } as never);
 
       const result = await service.softDelete(user.id);
-      expect(result).toEqual({ deleted: true });
+      expect(result.deletedAt).toBeInstanceOf(Date);
       expect(prisma.refreshToken.updateMany).toHaveBeenCalled();
     });
 
@@ -233,6 +342,32 @@ describe('UsersService', () => {
       prisma.user.findUnique.mockResolvedValue(null);
       await expect(service.softDelete(uuid())).rejects.toThrow(
         NotFoundException,
+      );
+    });
+  });
+
+  // ─── restore ───────────────────────────────────────────────────────────────
+
+  describe('restore', () => {
+    it('should restore archived user as inactive', async () => {
+      const user = createMockUser({ deletedAt: new Date() });
+      const restored = createMockUser({
+        deletedAt: null,
+        status: UserStatus.INACTIVE,
+      });
+      prisma.user.findUnique.mockResolvedValue(user as never);
+      prisma.user.update.mockResolvedValue(restored as never);
+
+      const result = await service.restore(user.id);
+
+      expect(result.status).toBe(UserStatus.INACTIVE);
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            deletedAt: null,
+            status: UserStatus.INACTIVE,
+          },
+        }),
       );
     });
   });

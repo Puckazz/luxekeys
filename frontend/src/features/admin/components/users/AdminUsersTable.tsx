@@ -61,6 +61,7 @@ export function AdminUsersTable({
       <TableHeader>
         <TableRow className="hover:bg-transparent">
           <TableHead className="pl-5">User</TableHead>
+          <TableHead>Phone</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Last login</TableHead>
@@ -88,6 +89,10 @@ export function AdminUsersTable({
                 </div>
               </TableCell>
 
+              <TableCell className="text-muted-foreground text-sm">
+                {user.phone || 'Not set'}
+              </TableCell>
+
               <TableCell>
                 <Badge variant="secondary">
                   {adminUserRoleLabelByValue[user.role]}
@@ -101,7 +106,9 @@ export function AdminUsersTable({
               </TableCell>
 
               <TableCell className="text-muted-foreground text-sm">
-                {new Date(user.lastLoginAt).toLocaleString()}
+                {user.lastLoginAt
+                  ? new Date(user.lastLoginAt).toLocaleString()
+                  : 'Never'}
               </TableCell>
 
               <TableCell className="pr-5">

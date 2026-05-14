@@ -1,1 +1,5 @@
-export type { UserListItem, UserProfile } from './user-profile.interface.js';
+export type {
+  AdminUserStatusSummary,
+  UserListItem,
+  UserProfile,
+} from './user-profile.interface.js';

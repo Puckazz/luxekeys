@@ -10,11 +10,14 @@ describe('UsersController', () => {
   beforeEach(async () => {
     service = {
       getAll: jest.fn(),
+      createAdminUser: jest.fn(),
+      findManagementUsers: jest.fn(),
       getMe: jest.fn(),
       updateMe: jest.fn(),
       changePassword: jest.fn(),
       getUserById: jest.fn(),
       updateUser: jest.fn(),
+      restore: jest.fn(),
       softDelete: jest.fn(),
     } as unknown as jest.Mocked<UsersService>;
 
@@ -49,6 +52,45 @@ describe('UsersController', () => {
     const result = await controller.getMe(user as never);
     expect(service.getMe).toHaveBeenCalledWith(userObj.id);
     expect(result).toBe(userObj);
+  });
+
+  it('createAdminUser should delegate to service.createAdminUser', async () => {
+    const userObj = createMockUser();
+    const dto = {
+      email: userObj.email,
+      fullName: userObj.fullName,
+      password: 'password123',
+      role: userObj.role,
+      status: userObj.status,
+    };
+    service.createAdminUser.mockResolvedValue(userObj as never);
+
+    const result = await controller.createAdminUser(dto as never);
+
+    expect(service.createAdminUser).toHaveBeenCalledWith(dto);
+    expect(result).toBe(userObj);
+  });
+
+  it('findManagementUsers should delegate to service.findManagementUsers', async () => {
+    const response = {
+      data: {
+        items: [],
+        summary: {
+          all: 0,
+          ACTIVE: 0,
+          INACTIVE: 0,
+          SUSPENDED: 0,
+          ARCHIVED: 0,
+        },
+      },
+      pagination: { page: 1, limit: 7, total: 0, totalPages: 1 },
+    };
+    service.findManagementUsers.mockResolvedValue(response as never);
+
+    const result = await controller.findManagementUsers({} as never);
+
+    expect(service.findManagementUsers).toHaveBeenCalledWith({});
+    expect(result).toBe(response);
   });
 
   it('updateMe should delegate to service.updateMe', async () => {

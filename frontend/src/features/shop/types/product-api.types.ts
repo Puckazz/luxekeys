@@ -123,6 +123,7 @@ export type CustomerReviewApiItem = {
   rating: number;
   title?: string | null;
   content?: string | null;
+  helpfulCount?: number;
   createdAt: string;
   updatedAt: string;
   user?: {

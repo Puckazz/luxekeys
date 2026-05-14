@@ -7,7 +7,12 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { Prisma, User, UserRole } from '../../generated/prisma/index.js';
+import {
+  Prisma,
+  User,
+  UserRole,
+  UserStatus,
+} from '../../generated/prisma/index.js';
 import { PrismaService } from '../database/prisma.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
@@ -80,6 +85,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('User is no longer active');
+    }
+
     if (!this.isBcryptHash(user.passwordHash)) {
       await this.prisma.user.update({
         where: { id: user.id },
@@ -87,7 +96,12 @@ export class AuthService {
       });
     }
 
-    return this.buildAuthResponse(user, context);
+    const loggedInUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    return this.buildAuthResponse(loggedInUser, context);
   }
 
   async logout(refreshToken?: string) {
@@ -128,7 +142,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    if (storedToken.user.deletedAt) {
+    if (
+      storedToken.user.deletedAt ||
+      storedToken.user.status !== UserStatus.ACTIVE
+    ) {
       throw new UnauthorizedException('User is no longer active');
     }
 
@@ -210,7 +227,7 @@ export class AuthService {
 
   private async findActiveUser(id: string): Promise<User> {
     const user = await this.prisma.user.findFirst({
-      where: { id, deletedAt: null },
+      where: { id, deletedAt: null, status: UserStatus.ACTIVE },
     });
 
     if (!user) {

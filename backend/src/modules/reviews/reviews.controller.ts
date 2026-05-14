@@ -22,6 +22,11 @@ import { CurrentUser } from '../../common/decorators/index.js';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
 import { UserRole } from '../../generated/prisma/index.js';
 import type { AuthUser } from '../auth/interfaces/auth-user.interface.js';
+import {
+  BulkUpdateAdminReviewStatusDto,
+  GetAdminReviewsQueryDto,
+  UpdateAdminReviewStatusDto,
+} from './dto/admin-review.dto.js';
 import { CreateReviewDto } from './dto/create-review.dto.js';
 import { GetReviewsQueryDto } from './dto/get-reviews-query.dto.js';
 import { UpdateReviewDto } from './dto/update-review.dto.js';
@@ -84,5 +89,51 @@ export class ReviewsController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.reviewsService.remove(productId, id, user.id, user.role);
+  }
+}
+
+@ApiTags('Admin — Reviews')
+@Controller('admin/reviews')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
+@ApiBearerAuth()
+export class AdminReviewsController {
+  constructor(private readonly reviewsService: ReviewsService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'List reviews for admin moderation' })
+  @ApiOkResponse({ description: 'Paginated admin review list' })
+  findAll(@Query() query: GetAdminReviewsQueryDto) {
+    return this.reviewsService.findAllAdmin(query);
+  }
+
+  @Patch('bulk-status')
+  @ApiOperation({ summary: 'Update review moderation status in bulk (admin)' })
+  @ApiOkResponse({ description: 'Bulk moderation result' })
+  bulkUpdateStatus(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: BulkUpdateAdminReviewStatusDto,
+  ) {
+    return this.reviewsService.bulkUpdateStatusAdmin(user.id, dto);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get review detail for admin moderation' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid' })
+  @ApiOkResponse({ description: 'Admin review detail' })
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.reviewsService.findOneAdmin(id);
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Update review moderation status (admin)' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid' })
+  @ApiOkResponse({ description: 'Updated review' })
+  updateStatus(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateAdminReviewStatusDto,
+  ) {
+    return this.reviewsService.updateStatusAdmin(id, user.id, dto);
   }
 }

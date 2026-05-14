@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import {
   UserRole,
+  UserStatus,
   ProductType,
   ProductStatus,
   OrderStatus,
@@ -25,6 +26,8 @@ export function createMockUser(overrides: Record<string, unknown> = {}) {
     passwordHash: '$2b$10$hashedpassword',
     avatarUrl: null,
     role: UserRole.CUSTOMER,
+    status: UserStatus.ACTIVE,
+    lastLoginAt: null,
     createdAt: now(),
     updatedAt: now(),
     deletedAt: null,

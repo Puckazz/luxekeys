@@ -47,6 +47,8 @@ const toFormValues = (user: AdminUser | null): AdminUserFormValues => {
     return {
       name: '',
       email: '',
+      phone: '',
+      password: '',
       role: 'customer',
       status: 'active',
     };
@@ -55,6 +57,8 @@ const toFormValues = (user: AdminUser | null): AdminUserFormValues => {
   return {
     name: user.name,
     email: user.email,
+    phone: user.phone,
+    password: '',
     role: user.role,
     status: user.status === 'archived' ? 'inactive' : user.status,
   };
@@ -73,7 +77,7 @@ export function AdminUserFormDialog({
     defaultValues: toFormValues(user),
   });
 
-  const { control, register, handleSubmit, reset, formState } = form;
+  const { control, register, handleSubmit, reset, setError, formState } = form;
 
   useEffect(() => {
     if (open) {
@@ -82,10 +86,21 @@ export function AdminUserFormDialog({
   }, [open, reset, user]);
 
   const submitHandler = (values: AdminUserFormValues) => {
+    const password = values.password.trim();
+
+    if (mode === 'create' && password.length === 0) {
+      setError('password', {
+        message: 'Temporary password is required.',
+      });
+      return;
+    }
+
     onSubmit({
       id: user?.id,
       name: values.name,
       email: values.email,
+      phone: values.phone,
+      ...(mode === 'create' && { password }),
       role: values.role,
       status: values.status,
     });
@@ -130,6 +145,35 @@ export function AdminUserFormDialog({
               {formState.errors.email?.message}
             </p>
           </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-semibold">Phone</label>
+            <Input
+              {...register('phone')}
+              placeholder="+1-415-555-0199"
+              className="h-10"
+            />
+            <p className="text-destructive text-xs">
+              {formState.errors.phone?.message}
+            </p>
+          </div>
+
+          {mode === 'create' ? (
+            <div className="space-y-1">
+              <label className="text-xs font-semibold">
+                Temporary Password
+              </label>
+              <Input
+                type="password"
+                {...register('password')}
+                placeholder="At least 8 characters"
+                className="h-10"
+              />
+              <p className="text-destructive text-xs">
+                {formState.errors.password?.message}
+              </p>
+            </div>
+          ) : null}
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">

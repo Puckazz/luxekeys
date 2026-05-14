@@ -1,305 +1,116 @@
 import {
   type ArchiveAdminUserInput,
   type AdminUser,
+  type AdminUserApiItem,
+  type AdminUserListApiData,
   type AdminUserListApiResponse,
   type AdminUserListQueryState,
-  type AdminUserStatusSummary,
   type RestoreAdminUserInput,
   type UpsertAdminUserInput,
   type UpdateAdminUserRoleInput,
 } from '@/features/admin/types/admin-users.types';
-import { createSeedUsers } from '@/features/admin/mocks/admin-users.mock';
-import { canManageUsersCrud, type UserRole } from '@/lib/rbac';
-
-const MOCK_NETWORK_DELAY = 180;
-
-const delay = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
-const nowIso = () => {
-  return new Date().toISOString();
-};
-
-const createId = (prefix: string) => {
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
-};
-
-const sortUsers = (
-  users: AdminUser[],
-  sort: AdminUserListQueryState['sort']
-): AdminUser[] => {
-  const next = [...users];
-
-  if (sort === 'name-asc') {
-    next.sort((left, right) => left.name.localeCompare(right.name));
-    return next;
-  }
-
-  if (sort === 'name-desc') {
-    next.sort((left, right) => right.name.localeCompare(left.name));
-    return next;
-  }
-
-  if (sort === 'email-asc') {
-    next.sort((left, right) => left.email.localeCompare(right.email));
-    return next;
-  }
-
-  next.sort(
-    (left, right) =>
-      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-  );
-
-  return next;
-};
-
-const filterUsersBySearchAndRole = (
-  users: AdminUser[],
-  queryState: AdminUserListQueryState
-) => {
-  const normalizedSearch = queryState.search.trim().toLowerCase();
-
-  return users.filter((user) => {
-    const matchSearch =
-      !normalizedSearch ||
-      user.name.toLowerCase().includes(normalizedSearch) ||
-      user.email.toLowerCase().includes(normalizedSearch);
-
-    const matchRole =
-      queryState.role === 'all' || user.role === queryState.role;
-
-    return matchSearch && matchRole;
-  });
-};
-
-const filterUsersByStatus = (
-  users: AdminUser[],
-  status: AdminUserListQueryState['status']
-) => {
-  if (status === 'all') {
-    return users;
-  }
-
-  return users.filter((user) => user.status === status);
-};
-
-const buildUserStatusSummary = (users: AdminUser[]): AdminUserStatusSummary => {
-  const initialSummary: AdminUserStatusSummary = {
-    all: users.length,
-    active: 0,
-    inactive: 0,
-    suspended: 0,
-    archived: 0,
-  };
-
-  return users.reduce((summary, user) => {
-    summary[user.status] += 1;
-    return summary;
-  }, initialSummary);
-};
-
-const paginate = (
-  users: AdminUser[],
-  page: number,
-  pageSize: number
-): Pick<AdminUserListApiResponse, 'items' | 'meta'> => {
-  const totalItems = users.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const currentPage = Math.min(Math.max(1, page), totalPages);
-  const start = (currentPage - 1) * pageSize;
-
-  return {
-    items: users.slice(start, start + pageSize),
-    meta: {
-      page: currentPage,
-      pageSize,
-      totalItems,
-      totalPages,
-    },
-  };
-};
-
-let usersStore: AdminUser[] = createSeedUsers();
-
-const canUpdateUserRole = (actorRole: UserRole) => {
-  return canManageUsersCrud(actorRole);
-};
-
-const assertCanManageUsersCrud = (actorRole: UserRole) => {
-  if (!canManageUsersCrud(actorRole)) {
-    throw new Error('You do not have permission to manage users.');
-  }
-};
+import type { AdminPaginationApiMeta } from '@/features/admin/types/admin-products.types';
+import {
+  mapApiUserSummary,
+  mapApiUserToAdminUser,
+  mapPaginationMeta,
+  mapUpsertUserInputToPayload,
+  toQueryString,
+  userRoleToApiRole,
+  userSortToApiParams,
+  userStatusFilterToApiStatus,
+} from '@/features/admin/mappers';
+import { authFetch, authFetchWithMeta } from '@/shared/api/http-client';
 
 export const adminUsersApi = {
   getUsers: async (
     queryState: AdminUserListQueryState
   ): Promise<AdminUserListApiResponse> => {
-    await delay(MOCK_NETWORK_DELAY);
-
-    const withoutArchived = usersStore.filter(
-      (user) => queryState.status === 'archived' || user.status !== 'archived'
-    );
-
-    const withSearchAndRole = filterUsersBySearchAndRole(
-      withoutArchived,
-      queryState
-    );
-    const summary = buildUserStatusSummary(withSearchAndRole);
-    const withStatus = filterUsersByStatus(
-      withSearchAndRole,
-      queryState.status
-    );
-    const sorted = sortUsers(withStatus, queryState.sort);
-    const paginated = paginate(sorted, queryState.page, queryState.pageSize);
+    const sort = userSortToApiParams(queryState.sort);
+    const query = toQueryString({
+      search: queryState.search,
+      role:
+        queryState.role === 'all'
+          ? undefined
+          : userRoleToApiRole(queryState.role),
+      status: userStatusFilterToApiStatus(queryState.status),
+      page: queryState.page,
+      limit: queryState.pageSize,
+      sort: sort.sort,
+    });
+    const response = await authFetchWithMeta<
+      AdminUserListApiData,
+      AdminPaginationApiMeta
+    >(`/users/management?${query}`);
 
     return {
-      ...paginated,
-      summary,
+      items: response.data.items.map(mapApiUserToAdminUser),
+      meta: mapPaginationMeta(
+        response.meta,
+        queryState.page,
+        queryState.pageSize
+      ),
+      summary: mapApiUserSummary(response.data.summary),
     };
   },
 
   updateUserRole: async (
     input: UpdateAdminUserRoleInput
   ): Promise<AdminUser> => {
-    await delay(MOCK_NETWORK_DELAY);
-
-    const target = usersStore.find((user) => user.id === input.userId);
-
-    if (!target) {
-      throw new Error('User not found.');
-    }
-
-    if (!canUpdateUserRole(input.actorRole)) {
-      throw new Error('You do not have permission to update this role.');
-    }
-
-    const nextTarget: AdminUser = {
-      ...target,
-      role: input.nextRole,
-      updatedAt: nowIso(),
-    };
-
-    usersStore = usersStore.map((user) =>
-      user.id === input.userId ? nextTarget : user
+    const user = await authFetch<AdminUserApiItem>(
+      `/users/${input.userId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          role: userRoleToApiRole(input.nextRole),
+        }),
+      }
     );
 
-    return nextTarget;
+    return mapApiUserToAdminUser(user);
   },
 
   createUser: async (input: UpsertAdminUserInput): Promise<AdminUser> => {
-    await delay(MOCK_NETWORK_DELAY);
-    assertCanManageUsersCrud(input.actorRole);
+    const user = await authFetch<AdminUserApiItem>('/users', {
+      method: 'POST',
+      body: JSON.stringify(mapUpsertUserInputToPayload(input)),
+    });
 
-    const isEmailUsed = usersStore.some(
-      (user) => user.email.toLowerCase() === input.email.toLowerCase()
-    );
-
-    if (isEmailUsed) {
-      throw new Error('Email is already used by another account.');
-    }
-
-    const timestamp = nowIso();
-
-    const createdUser: AdminUser = {
-      id: createId('usr'),
-      name: input.name,
-      email: input.email,
-      role: input.role,
-      status: input.status,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-      lastLoginAt: timestamp,
-    };
-
-    usersStore = [createdUser, ...usersStore];
-    return createdUser;
+    return mapApiUserToAdminUser(user);
   },
 
   updateUser: async (input: UpsertAdminUserInput): Promise<AdminUser> => {
-    await delay(MOCK_NETWORK_DELAY);
-    assertCanManageUsersCrud(input.actorRole);
-
     if (!input.id) {
       throw new Error('User id is required for update.');
     }
 
-    const existingUser = usersStore.find((user) => user.id === input.id);
+    const user = await authFetch<AdminUserApiItem>(`/users/${input.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(mapUpsertUserInputToPayload(input)),
+    });
 
-    if (!existingUser) {
-      throw new Error('User not found.');
-    }
-
-    const isEmailUsed = usersStore.some(
-      (user) =>
-        user.id !== input.id &&
-        user.email.toLowerCase() === input.email.toLowerCase()
-    );
-
-    if (isEmailUsed) {
-      throw new Error('Email is already used by another account.');
-    }
-
-    const updatedUser: AdminUser = {
-      ...existingUser,
-      name: input.name,
-      email: input.email,
-      role: input.role,
-      status: input.status,
-      updatedAt: nowIso(),
-    };
-
-    usersStore = usersStore.map((user) =>
-      user.id === input.id ? updatedUser : user
-    );
-
-    return updatedUser;
+    return mapApiUserToAdminUser(user);
   },
 
   softDeleteUser: async (input: ArchiveAdminUserInput): Promise<AdminUser> => {
-    await delay(MOCK_NETWORK_DELAY);
-    assertCanManageUsersCrud(input.actorRole);
-
-    const existingUser = usersStore.find((user) => user.id === input.userId);
-
-    if (!existingUser) {
-      throw new Error('User not found.');
-    }
-
-    const archivedUser: AdminUser = {
-      ...existingUser,
-      status: 'archived',
-      updatedAt: nowIso(),
-    };
-
-    usersStore = usersStore.map((user) =>
-      user.id === input.userId ? archivedUser : user
+    const user = await authFetch<AdminUserApiItem>(
+      `/users/${input.userId}`,
+      {
+        method: 'DELETE',
+      }
     );
 
-    return archivedUser;
+    return mapApiUserToAdminUser(user);
   },
 
   restoreUser: async (input: RestoreAdminUserInput): Promise<AdminUser> => {
-    await delay(MOCK_NETWORK_DELAY);
-    assertCanManageUsersCrud(input.actorRole);
-
-    const existingUser = usersStore.find((user) => user.id === input.userId);
-
-    if (!existingUser) {
-      throw new Error('User not found.');
-    }
-
-    const restoredUser: AdminUser = {
-      ...existingUser,
-      status: 'inactive',
-      updatedAt: nowIso(),
-    };
-
-    usersStore = usersStore.map((user) =>
-      user.id === input.userId ? restoredUser : user
+    const user = await authFetch<AdminUserApiItem>(
+      `/users/${input.userId}/restore`,
+      {
+        method: 'PATCH',
+      }
     );
 
-    return restoredUser;
+    return mapApiUserToAdminUser(user);
   },
 };

@@ -22,11 +22,12 @@ export interface AdminUser {
   id: string;
   name: string;
   email: string;
+  phone: string;
   role: UserRole;
   status: AdminUserStatus;
   createdAt: string;
   updatedAt: string;
-  lastLoginAt: string;
+  lastLoginAt: string | null;
 }
 
 export interface AdminUserPaginationMeta {
@@ -62,6 +63,8 @@ export interface UpdateAdminUserRoleInput {
 export interface AdminUserFormValues {
   name: string;
   email: string;
+  phone: string;
+  password: string;
   role: UserRole;
   status: Exclude<AdminUserStatus, 'archived'>;
 }
@@ -71,6 +74,8 @@ export interface UpsertAdminUserInput {
   id?: string;
   name: string;
   email: string;
+  phone?: string;
+  password?: string;
   role: UserRole;
   status: Exclude<AdminUserStatus, 'archived'>;
 }
@@ -84,3 +89,41 @@ export interface RestoreAdminUserInput {
   actorRole: UserRole;
   userId: string;
 }
+
+export type AdminUserApiRole = 'ADMIN' | 'CUSTOMER';
+
+export type AdminUserApiStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+
+export type AdminUserApiStatusFilter = AdminUserApiStatus | 'ARCHIVED';
+
+export type AdminUserApiSummary = Record<
+  'all' | AdminUserApiStatus | 'ARCHIVED',
+  number
+>;
+
+export type AdminUserApiItem = {
+  id: string;
+  email: string;
+  fullName: string;
+  phone?: string | null;
+  role: AdminUserApiRole;
+  status: AdminUserApiStatus;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+};
+
+export type AdminUserListApiData = {
+  items: AdminUserApiItem[];
+  summary: AdminUserApiSummary;
+};
+
+export type AdminUserApiPayload = {
+  email: string;
+  fullName: string;
+  phone?: string | null;
+  password?: string;
+  role: AdminUserApiRole;
+  status: AdminUserApiStatus;
+};

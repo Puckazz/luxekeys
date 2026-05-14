@@ -32,6 +32,23 @@ export {
 } from '@/features/admin/mappers/admin-brands-api.mapper';
 
 export {
+  mapApiUserSummary,
+  mapApiUserToAdminUser,
+  mapUpsertUserInputToPayload,
+  userRoleToApiRole,
+  userSortToApiParams,
+  userStatusFilterToApiStatus,
+} from '@/features/admin/mappers/admin-users-api.mapper';
+
+export {
+  mapApiReviewSummary,
+  mapApiReviewToAdminReview,
+  reviewSortToApiParams,
+  reviewStatusFilterToApiStatus,
+  reviewStatusToApiStatus,
+} from '@/features/admin/mappers/admin-reviews-api.mapper';
+
+export {
   mapApiOrderToAdminOrder,
   mapApiOrderToAdminOrderDetail,
   mapApiSummaryToAdminSummary,
