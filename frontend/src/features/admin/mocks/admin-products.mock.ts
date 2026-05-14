@@ -15,6 +15,7 @@ export const createSeedProducts = (): AdminProduct[] => {
     status: 'active' as const,
     createdAt,
     updatedAt: createdAt,
+    images: [],
     specs: [],
     variants: [
       {
@@ -48,6 +49,7 @@ export const createSeedProducts = (): AdminProduct[] => {
       status: 'active',
       createdAt,
       updatedAt: createdAt,
+      images: [],
       specs: [],
       variants: [
         {
@@ -114,6 +116,7 @@ export const createSeedProducts = (): AdminProduct[] => {
       status: 'draft',
       createdAt,
       updatedAt: createdAt,
+      images: [],
       specs: [],
       variants: [
         {

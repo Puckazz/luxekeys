@@ -15,6 +15,7 @@ import {
   PackageSearch,
   ShieldAlert,
   Tag,
+  Tags,
   Users,
   User,
 } from 'lucide-react';
@@ -75,6 +76,12 @@ const navItems = [
     label: 'Categories',
     icon: Tag,
     activeIncludes: ['/admin/categories'],
+  },
+  {
+    href: '/admin/brands',
+    label: 'Brands',
+    icon: Tags,
+    activeIncludes: ['/admin/brands'],
   },
   {
     href: '/admin/orders',

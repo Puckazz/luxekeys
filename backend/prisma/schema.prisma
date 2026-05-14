@@ -66,6 +66,7 @@ model Category {
   id        String     @id @default(uuid())
   name      String
   slug      String     @unique
+  description String?
   parentId  String?
   isActive  Boolean    @default(true)
   createdAt DateTime   @default(now())

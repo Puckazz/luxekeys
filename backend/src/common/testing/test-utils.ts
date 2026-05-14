@@ -47,6 +47,7 @@ export function createMockCategory(overrides: Record<string, unknown> = {}) {
     id: uuid(),
     name: 'Keyboards',
     slug: 'keyboards',
+    description: 'Mechanical keyboards and enthusiast typing gear.',
     parentId: null,
     isActive: true,
     createdAt: now(),

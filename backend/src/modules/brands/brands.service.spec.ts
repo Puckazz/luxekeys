@@ -82,6 +82,27 @@ describe('BrandsService', () => {
     });
   });
 
+  describe('findAdminBrands', () => {
+    it('should return admin summary and default non-archived items', async () => {
+      const brands = [
+        createMockBrand({ isActive: true }),
+        createMockBrand({ isActive: false }),
+        createMockBrand({ deletedAt: new Date(), isActive: false }),
+      ];
+      prisma.brand.findMany.mockResolvedValue(brands as never);
+
+      const result = await service.findAdminBrands({} as never);
+
+      expect(result.data.summary).toEqual({
+        all: 2,
+        active: 1,
+        draft: 1,
+        archived: 1,
+      });
+      expect(result.data.items).toHaveLength(2);
+    });
+  });
+
   // ─── findOne ────────────────────────────────────────────────────────────────
 
   describe('findOne', () => {
@@ -180,6 +201,25 @@ describe('BrandsService', () => {
     it('should throw NotFoundException when brand does not exist', async () => {
       prisma.brand.findFirst.mockResolvedValue(null);
       await expect(service.remove(uuid())).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('restoreAdminBrand', () => {
+    it('should restore an archived brand into draft status', async () => {
+      const id = uuid();
+      const archived = createMockBrand({ id, deletedAt: new Date() });
+      const restored = createMockBrand({
+        id,
+        deletedAt: null,
+        isActive: false,
+      });
+      prisma.brand.findFirst.mockResolvedValue(archived as never);
+      prisma.brand.update.mockResolvedValue(restored as never);
+
+      const result = await service.restoreAdminBrand(id);
+
+      expect(result.deletedAt).toBeNull();
+      expect(result.isActive).toBe(false);
     });
   });
 });

@@ -114,6 +114,42 @@ describe('CategoriesService', () => {
     });
   });
 
+  describe('findAdminCategories', () => {
+    it('should return admin summary and default non-archived items', async () => {
+      const categories = [
+        createMockCategory({ isActive: true }),
+        createMockCategory({ isActive: false }),
+        createMockCategory({ deletedAt: new Date(), isActive: false }),
+      ];
+      prisma.category.findMany.mockResolvedValue(categories as never);
+
+      const result = await service.findAdminCategories({} as never);
+
+      expect(result.data.summary).toEqual({
+        all: 2,
+        active: 1,
+        draft: 1,
+        archived: 1,
+      });
+      expect(result.data.items).toHaveLength(2);
+    });
+
+    it('should return archived categories when archived status is requested', async () => {
+      const archived = createMockCategory({
+        deletedAt: new Date(),
+        isActive: false,
+      });
+      prisma.category.findMany.mockResolvedValue([archived] as never);
+
+      const result = await service.findAdminCategories({
+        status: 'archived',
+      } as never);
+
+      expect(result.data.items).toHaveLength(1);
+      expect(result.data.items[0]?.deletedAt).not.toBeNull();
+    });
+  });
+
   // ─── findOne ────────────────────────────────────────────────────────────────
 
   describe('findOne', () => {
@@ -233,6 +269,25 @@ describe('CategoriesService', () => {
       prisma.category.findFirst.mockResolvedValue(null);
 
       await expect(service.remove(uuid())).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('restoreAdminCategory', () => {
+    it('should restore an archived category into draft status', async () => {
+      const id = uuid();
+      const archived = createMockCategory({ id, deletedAt: new Date() });
+      const restored = createMockCategory({
+        id,
+        deletedAt: null,
+        isActive: false,
+      });
+      prisma.category.findFirst.mockResolvedValue(archived as never);
+      prisma.category.update.mockResolvedValue(restored as never);
+
+      const result = await service.restoreAdminCategory(id);
+
+      expect(result.deletedAt).toBeNull();
+      expect(result.isActive).toBe(false);
     });
   });
 });

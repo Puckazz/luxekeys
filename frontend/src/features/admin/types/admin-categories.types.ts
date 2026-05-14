@@ -43,3 +43,28 @@ export interface UpsertAdminCategoryInput {
 export interface AdminCategoryListResponse extends AdminCategoryListApiResponse {
   summary: AdminCategoryStatusSummary;
 }
+
+export type AdminCategoryApiItem = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  _count: {
+    products: number;
+  };
+};
+
+export type AdminCategoryListApiData = {
+  items: AdminCategoryApiItem[];
+  summary: AdminCategoryStatusSummary;
+};
+
+export type AdminCategoryApiPayload = {
+  name: string;
+  description: string;
+  isActive: boolean;
+};

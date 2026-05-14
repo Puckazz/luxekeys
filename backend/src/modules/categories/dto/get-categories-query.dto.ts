@@ -11,6 +11,22 @@ export type { SortOrder };
 export const CATEGORY_SORT_FIELDS = ['createdAt', 'updatedAt', 'name'] as const;
 export type CategorySortField = (typeof CATEGORY_SORT_FIELDS)[number];
 
+export const ADMIN_CATEGORY_STATUS_FILTERS = [
+  'active',
+  'draft',
+  'archived',
+] as const;
+export type AdminCategoryStatusFilter =
+  (typeof ADMIN_CATEGORY_STATUS_FILTERS)[number];
+
+export const ADMIN_CATEGORY_SORT_OPTIONS = [
+  'newest',
+  'name-asc',
+  'products-desc',
+] as const;
+export type AdminCategorySortOption =
+  (typeof ADMIN_CATEGORY_SORT_OPTIONS)[number];
+
 export class GetCategoriesQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'Search by name or slug' })
   @IsOptional()
@@ -30,4 +46,27 @@ export class GetCategoriesQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsEnum(CATEGORY_SORT_FIELDS)
   sortBy?: CategorySortField;
+}
+
+export class GetAdminCategoriesQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Search by name, slug, or description' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    enum: ADMIN_CATEGORY_STATUS_FILTERS,
+    description: 'Filter by admin status',
+  })
+  @IsOptional()
+  @IsEnum(ADMIN_CATEGORY_STATUS_FILTERS)
+  status?: AdminCategoryStatusFilter;
+
+  @ApiPropertyOptional({
+    enum: ADMIN_CATEGORY_SORT_OPTIONS,
+    description: 'Admin sort option',
+  })
+  @IsOptional()
+  @IsEnum(ADMIN_CATEGORY_SORT_OPTIONS)
+  sort?: AdminCategorySortOption;
 }

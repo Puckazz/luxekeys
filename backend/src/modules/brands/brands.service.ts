@@ -9,7 +9,10 @@ import { toSlug } from '../../common/utils/slugify.util.js';
 import { buildOrderBy } from '../../common/utils/query.util.js';
 import { PrismaService } from '../database/prisma.service.js';
 import { CreateBrandDto } from './dto/create-brand.dto.js';
-import { GetBrandsQueryDto } from './dto/get-brands-query.dto.js';
+import {
+  GetAdminBrandsQueryDto,
+  GetBrandsQueryDto,
+} from './dto/get-brands-query.dto.js';
 import { UpdateBrandDto } from './dto/update-brand.dto.js';
 import {
   BRAND_DETAIL_INCLUDE,
@@ -21,6 +24,69 @@ import {
 @Injectable()
 export class BrandsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private buildAdminBrandSummary(
+    brands: BrandSummary[],
+  ): Record<'all' | 'active' | 'draft' | 'archived', number> {
+    return brands.reduce(
+      (summary, brand) => {
+        if (brand.deletedAt) {
+          summary.archived += 1;
+          return summary;
+        }
+
+        summary.all += 1;
+
+        if (brand.isActive) {
+          summary.active += 1;
+          return summary;
+        }
+
+        summary.draft += 1;
+        return summary;
+      },
+      {
+        all: 0,
+        active: 0,
+        draft: 0,
+        archived: 0,
+      },
+    );
+  }
+
+  private sortAdminBrands(
+    brands: BrandSummary[],
+    sort: GetAdminBrandsQueryDto['sort'],
+  ): BrandSummary[] {
+    const next = [...brands];
+
+    if (sort === 'name-asc') {
+      return next.sort((left, right) => left.name.localeCompare(right.name));
+    }
+
+    if (sort === 'products-desc') {
+      return next.sort(
+        (left, right) => right._count.products - left._count.products,
+      );
+    }
+
+    return next.sort(
+      (left, right) => right.createdAt.getTime() - left.createdAt.getTime(),
+    );
+  }
+
+  private async findAdminOne(id: string): Promise<BrandDetail> {
+    const brand = await this.prisma.brand.findFirst({
+      where: { id },
+      include: BRAND_DETAIL_INCLUDE,
+    });
+
+    if (!brand) {
+      throw new NotFoundException(`Brand with ID "${id}" not found`);
+    }
+
+    return brand;
+  }
 
   async create(dto: CreateBrandDto): Promise<BrandDetail> {
     const slug = dto.slug ?? toSlug(dto.name);
@@ -163,6 +229,101 @@ export class BrandsService {
     return this.prisma.brand.update({
       where: { id },
       data: { deletedAt: new Date() },
+      include: BRAND_DETAIL_INCLUDE,
+    });
+  }
+
+  async findAdminBrands(query: GetAdminBrandsQueryDto): Promise<{
+    data: {
+      items: BrandSummary[];
+      summary: Record<'all' | 'active' | 'draft' | 'archived', number>;
+    };
+    pagination: PaginatedResponse<BrandSummary>['pagination'];
+  }> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 8;
+    const search = query.search?.trim();
+    const brands = await this.prisma.brand.findMany({
+      where: {
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: 'insensitive' } },
+                { slug: { contains: search, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      include: BRAND_LIST_INCLUDE,
+    });
+    const summary = this.buildAdminBrandSummary(brands);
+    const filtered = brands.filter((brand) => {
+      if (query.status === 'archived') {
+        return Boolean(brand.deletedAt);
+      }
+
+      if (brand.deletedAt) {
+        return false;
+      }
+
+      if (query.status === 'active') {
+        return brand.isActive;
+      }
+
+      if (query.status === 'draft') {
+        return !brand.isActive;
+      }
+
+      return true;
+    });
+    const sorted = this.sortAdminBrands(filtered, query.sort);
+    const total = sorted.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const currentPage = Math.min(Math.max(1, page), totalPages);
+    const start = (currentPage - 1) * limit;
+
+    return {
+      data: {
+        items: sorted.slice(start, start + limit),
+        summary,
+      },
+      pagination: {
+        page: currentPage,
+        limit,
+        total,
+        totalPages,
+      },
+    };
+  }
+
+  async createAdminBrand(dto: CreateBrandDto): Promise<BrandDetail> {
+    return this.create(dto);
+  }
+
+  async updateAdminBrand(id: string, dto: UpdateBrandDto): Promise<BrandDetail> {
+    return this.update(id, dto);
+  }
+
+  async archiveAdminBrand(id: string): Promise<BrandDetail> {
+    const brand = await this.findAdminOne(id);
+
+    if (brand.deletedAt) {
+      return brand;
+    }
+
+    return this.prisma.brand.update({
+      where: { id },
+      data: { deletedAt: new Date(), isActive: false },
+      include: BRAND_DETAIL_INCLUDE,
+    });
+  }
+
+  async restoreAdminBrand(id: string): Promise<BrandDetail> {
+    await this.findAdminOne(id);
+
+    return this.prisma.brand.update({
+      where: { id },
+      data: { deletedAt: null, isActive: false },
       include: BRAND_DETAIL_INCLUDE,
     });
   }

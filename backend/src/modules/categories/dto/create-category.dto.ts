@@ -19,6 +19,14 @@ export class CreateCategoryDto {
   @MaxLength(100)
   slug?: string;
 
+  @ApiPropertyOptional({
+    example: 'Mechanical keyboards and enthusiast typing gear.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+
   @ApiPropertyOptional({ example: 'uuid-of-parent-category' })
   @IsOptional()
   @IsUUID()
