@@ -12,10 +12,12 @@ import {
   ProductVideoTourSection,
 } from '@/features/shop/components/product-detail';
 import { useCartActions } from '@/features/shop/hooks/useCartActions';
+import { useProductReviewEligibilityQuery } from '@/features/shop/hooks/useProductReviewEligibilityQuery';
 import { useProductReviewsQuery } from '@/features/shop/hooks/useProductReviewsQuery';
 import { ProductSwitchType } from '@/features/shop/types';
 import type { ProductDetailPageProps } from '@/features/shop/types/product-detail.types';
 import { Separator } from '@/shared/components/ui/separator';
+import { useAuthStore } from '@/stores/auth/auth.store';
 
 const buildVariantLabel = ({
   type,
@@ -38,6 +40,7 @@ const buildVariantLabel = ({
 
 export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   const { addItem } = useCartActions();
+  const authStatus = useAuthStore((state) => state.status);
   const searchParams = useSearchParams();
 
   const queryColor = searchParams?.get('color');
@@ -81,6 +84,10 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   const productReviewsQuery = useProductReviewsQuery(
     product.slug,
     visibleReviews
+  );
+  const reviewEligibilityQuery = useProductReviewEligibilityQuery(
+    product.id,
+    authStatus === 'authenticated'
   );
 
   useEffect(() => {
@@ -295,6 +302,26 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
 
   const reviews = productReviewsQuery.data ?? [];
   const canLoadMore = visibleReviews < product.reviewCount;
+  const reviewEligibility = reviewEligibilityQuery.data;
+  const reviewsEmptyActionLabel = reviewEligibility?.hasDeliveredPurchase
+    ? 'Go to My Orders'
+    : undefined;
+  const reviewsEmptyTitle =
+    authStatus === 'anonymous'
+      ? 'Sign in to share a verified review'
+      : reviewEligibility?.canReview
+        ? 'Share your review'
+        : reviewEligibility?.hasDeliveredPurchase
+          ? 'Your review is not published yet'
+          : 'No published reviews yet';
+  const reviewsEmptyDescription =
+    authStatus === 'anonymous'
+      ? 'Only published reviews from verified purchases appear here.'
+      : reviewEligibility?.canReview
+        ? 'You received this product. Write a review from Order History to help other customers decide.'
+        : reviewEligibility?.hasDeliveredPurchase
+          ? 'Reviews appear here after an admin publishes them. You can check or update yours from Order History.'
+          : 'Only customers who bought and received this product can leave a review.';
 
   return (
     <div className="bg-background">
@@ -344,6 +371,9 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
         reviews={reviews}
         isLoading={productReviewsQuery.isPending && product.reviewCount > 0}
         canLoadMore={canLoadMore}
+        emptyTitle={reviewsEmptyTitle}
+        emptyDescription={reviewsEmptyDescription}
+        emptyActionLabel={reviewsEmptyActionLabel}
         onLoadMore={handleLoadMore}
       />
     </div>

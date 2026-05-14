@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AddressesModule } from './modules/addresses/addresses.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BrandsModule } from './modules/brands/brands.module';
 import { CartModule } from './modules/cart/cart.module';
@@ -19,6 +20,7 @@ import { LoggerMiddleware } from './common/middleware';
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     CloudinaryModule,
+    AdminModule,
     AuthModule,
     UsersModule,
     AddressesModule,

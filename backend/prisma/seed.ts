@@ -41,6 +41,14 @@ function buildOrderAddressSnapshot(address: {
   };
 }
 
+function daysAgo(days: number, hour = 10, minute = 0): Date {
+  const date = new Date();
+  date.setUTCHours(hour, minute, 0, 0);
+  date.setUTCDate(date.getUTCDate() - days);
+
+  return date;
+}
+
 async function syncVariantStocksFromSwitchOptions(): Promise<number> {
   const variants = await prisma.productVariant.findMany({
     where: { deletedAt: null },
@@ -115,7 +123,8 @@ async function syncProductPricesFromDefaultVariants(): Promise<number> {
     const compareAtPriceMatches =
       product.compareAtPrice === null
         ? compareAtPrice === null
-        : compareAtPrice !== null && product.compareAtPrice.equals(compareAtPrice);
+        : compareAtPrice !== null &&
+          product.compareAtPrice.equals(compareAtPrice);
 
     if (basePriceMatches && compareAtPriceMatches) {
       continue;
@@ -2160,7 +2169,7 @@ async function main() {
   // Order 1: Alice — DELIVERED via PayPal
   const order1 = await prisma.order.create({
     data: {
-      orderCode: 'LK-2024-000001',
+      orderCode: 'LK-DEMO-000001',
       userId: customer1.id,
       addressId: addr1.id,
       status: OrderStatus.DELIVERED,
@@ -2171,7 +2180,7 @@ async function main() {
       shippingAmount: 9.99,
       totalAmount: 209.98,
       paypalOrderId: 'PAYID-L3ABCXYZ123456789',
-      placedAt: new Date('2024-11-15T08:30:00Z'),
+      placedAt: daysAgo(26, 8, 30),
       ...buildOrderAddressSnapshot(addr1),
     },
   });
@@ -2195,7 +2204,7 @@ async function main() {
   // Order 2: Bob — CONFIRMED via COD
   const order2 = await prisma.order.create({
     data: {
-      orderCode: 'LK-2024-000002',
+      orderCode: 'LK-DEMO-000002',
       userId: customer2.id,
       addressId: addr2.id,
       status: OrderStatus.CONFIRMED,
@@ -2206,7 +2215,7 @@ async function main() {
       shippingAmount: 5.99,
       totalAmount: 43.97,
       note: 'Please leave package at front door.',
-      placedAt: new Date('2024-12-01T14:00:00Z'),
+      placedAt: daysAgo(19, 14, 0),
       ...buildOrderAddressSnapshot(addr2),
     },
   });
@@ -2226,13 +2235,13 @@ async function main() {
     },
   });
 
-  // Order 3: Carol — SHIPPING via PayPal, multiple items
+  // Order 3: Carol — DELIVERED via PayPal, multiple items
   const order3 = await prisma.order.create({
     data: {
-      orderCode: 'LK-2025-000003',
+      orderCode: 'LK-DEMO-000003',
       userId: customer3.id,
       addressId: addr3.id,
-      status: OrderStatus.SHIPPING,
+      status: OrderStatus.DELIVERED,
       paymentMethod: PaymentMethod.PAYPAL,
       paymentStatus: PaymentStatus.PAID,
       subtotalAmount: 299.98,
@@ -2241,7 +2250,7 @@ async function main() {
       totalAmount: 289.98,
       paypalOrderId: 'PAYID-M4DEFGHI987654321',
       trackingCode: 'UPS1Z999AA10123456784',
-      placedAt: new Date('2025-01-10T09:15:00Z'),
+      placedAt: daysAgo(12, 9, 15),
       ...buildOrderAddressSnapshot(addr3),
     },
   });
@@ -2279,7 +2288,7 @@ async function main() {
   // Order 4: Alice — CANCELLED
   const order4 = await prisma.order.create({
     data: {
-      orderCode: 'LK-2025-000004',
+      orderCode: 'LK-DEMO-000004',
       userId: customer1.id,
       addressId: addr1.id,
       status: OrderStatus.CANCELLED,
@@ -2290,7 +2299,7 @@ async function main() {
       shippingAmount: 9.99,
       totalAmount: 178.99,
       paypalOrderId: 'PAYID-CANCELLED-000004',
-      placedAt: new Date('2025-02-05T11:00:00Z'),
+      placedAt: daysAgo(8, 11, 0),
       ...buildOrderAddressSnapshot(addr1),
     },
   });
@@ -2314,7 +2323,7 @@ async function main() {
   // Order 5: Bob — PENDING
   const order5 = await prisma.order.create({
     data: {
-      orderCode: 'LK-2025-000005',
+      orderCode: 'LK-DEMO-000005',
       userId: customer2.id,
       addressId: addr2.id,
       status: OrderStatus.PENDING,
@@ -2324,7 +2333,7 @@ async function main() {
       discountAmount: 0,
       shippingAmount: 9.99,
       totalAmount: 119.98,
-      placedAt: new Date('2025-03-20T17:45:00Z'),
+      placedAt: daysAgo(2, 17, 45),
       ...buildOrderAddressSnapshot(addr2),
     },
   });
@@ -2351,12 +2360,24 @@ async function main() {
   const varHolyPanda = await prisma.productVariant.findUniqueOrThrow({
     where: { sku: 'HP-35PK' },
   });
+  const varKailhNavy = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'KBN-36PK' },
+  });
+  const varDuckyFull = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'D13-FULL-BLK-RED' },
+  });
+  const varDeskMat = await prisma.productVariant.findUniqueOrThrow({
+    where: { sku: 'LKDM-MNT-XL' },
+  });
   const q1DefaultSwitchOptionId = await findDefaultSwitchOptionId(varQ1.id);
+  const duckyFullDefaultSwitchOptionId = await findDefaultSwitchOptionId(
+    varDuckyFull.id,
+  );
 
   // Order 6: Carol — DELIVERED (With newly seeded products)
   const order6 = await prisma.order.create({
     data: {
-      orderCode: 'LK-2025-000006',
+      orderCode: 'LK-DEMO-000006',
       userId: customer3.id,
       addressId: addr3.id,
       status: OrderStatus.DELIVERED,
@@ -2366,7 +2387,7 @@ async function main() {
       discountAmount: 0,
       shippingAmount: 0,
       totalAmount: 239.99,
-      placedAt: new Date('2025-04-10T10:00:00Z'),
+      placedAt: daysAgo(4, 10, 0),
       ...buildOrderAddressSnapshot(addr3),
     },
   });
@@ -2402,7 +2423,185 @@ async function main() {
     },
   });
 
-  console.log(`   ✅  Created 6 orders across all statuses\n`);
+  const order7 = await prisma.order.create({
+    data: {
+      orderCode: 'LK-DEMO-000007',
+      userId: customer2.id,
+      addressId: addr2.id,
+      status: OrderStatus.DELIVERED,
+      paymentMethod: PaymentMethod.PAYPAL,
+      paymentStatus: PaymentStatus.PAID,
+      subtotalAmount: 144.98,
+      discountAmount: 0,
+      shippingAmount: 9.99,
+      totalAmount: 154.97,
+      paypalOrderId: 'PAYID-DEMO-000007',
+      placedAt: daysAgo(1, 15, 20),
+      ...buildOrderAddressSnapshot(addr2),
+    },
+  });
+
+  await prisma.orderItem.createMany({
+    data: [
+      {
+        orderId: order7.id,
+        productId: prodK8Pro.id,
+        variantId: varK8ProGray.id,
+        switchOptionId: k8ProDefaultSwitchOptionId,
+        productName: prodK8Pro.name,
+        variantName: varK8ProGray.name,
+        sku: varK8ProGray.sku,
+        thumbnailUrl: prodK8Pro.thumbnailUrl,
+        unitPrice: 109.99,
+        quantity: 1,
+        subtotalAmount: 109.99,
+      },
+      {
+        orderId: order7.id,
+        productId: prodDeskMat.id,
+        variantId: varDeskMat.id,
+        productName: prodDeskMat.name,
+        variantName: varDeskMat.name,
+        sku: varDeskMat.sku,
+        thumbnailUrl: prodDeskMat.thumbnailUrl,
+        unitPrice: 34.99,
+        quantity: 1,
+        subtotalAmount: 34.99,
+      },
+    ],
+  });
+
+  const order8 = await prisma.order.create({
+    data: {
+      orderCode: 'LK-DEMO-000008',
+      userId: customer1.id,
+      addressId: addr1.id,
+      status: OrderStatus.DELIVERED,
+      paymentMethod: PaymentMethod.PAYPAL,
+      paymentStatus: PaymentStatus.PAID,
+      subtotalAmount: 239.0,
+      discountAmount: 10.0,
+      shippingAmount: 0,
+      totalAmount: 229.0,
+      paypalOrderId: 'PAYID-DEMO-000008',
+      placedAt: daysAgo(16, 13, 10),
+      ...buildOrderAddressSnapshot(addr1),
+    },
+  });
+
+  await prisma.orderItem.createMany({
+    data: [
+      {
+        orderId: order8.id,
+        productId: prodTofu65.id,
+        variantId: varTofu65Silver.id,
+        switchOptionId: tofu65DefaultSwitchOptionId,
+        productName: prodTofu65.name,
+        variantName: varTofu65Silver.name,
+        sku: varTofu65Silver.sku,
+        thumbnailUrl: prodTofu65.thumbnailUrl,
+        unitPrice: 169.0,
+        quantity: 1,
+        subtotalAmount: 169.0,
+      },
+      {
+        orderId: order8.id,
+        productId: prodHolyPanda.id,
+        variantId: varHolyPanda.id,
+        productName: prodHolyPanda.name,
+        variantName: varHolyPanda.name,
+        sku: varHolyPanda.sku,
+        thumbnailUrl: prodHolyPanda.thumbnailUrl,
+        unitPrice: 35.0,
+        quantity: 2,
+        subtotalAmount: 70.0,
+      },
+    ],
+  });
+
+  const order9 = await prisma.order.create({
+    data: {
+      orderCode: 'LK-DEMO-000009',
+      userId: customer2.id,
+      addressId: addr2.id,
+      status: OrderStatus.DELIVERED,
+      paymentMethod: PaymentMethod.COD,
+      paymentStatus: PaymentStatus.PAID,
+      subtotalAmount: 158.98,
+      discountAmount: 0,
+      shippingAmount: 0,
+      totalAmount: 158.98,
+      placedAt: daysAgo(22, 16, 40),
+      ...buildOrderAddressSnapshot(addr2),
+    },
+  });
+
+  await prisma.orderItem.createMany({
+    data: [
+      {
+        orderId: order9.id,
+        productId: prodDuckyFull.id,
+        variantId: varDuckyFull.id,
+        switchOptionId: duckyFullDefaultSwitchOptionId,
+        productName: prodDuckyFull.name,
+        variantName: varDuckyFull.name,
+        sku: varDuckyFull.sku,
+        thumbnailUrl: prodDuckyFull.thumbnailUrl,
+        unitPrice: 139.99,
+        quantity: 1,
+        subtotalAmount: 139.99,
+      },
+      {
+        orderId: order9.id,
+        productId: prodGateronYellow.id,
+        variantId: varGateronYellow110.id,
+        productName: prodGateronYellow.name,
+        variantName: varGateronYellow110.name,
+        sku: varGateronYellow110.sku,
+        thumbnailUrl: prodGateronYellow.thumbnailUrl,
+        unitPrice: 18.99,
+        quantity: 1,
+        subtotalAmount: 18.99,
+      },
+    ],
+  });
+
+  const order10 = await prisma.order.create({
+    data: {
+      orderCode: 'LK-DEMO-000010',
+      userId: customer3.id,
+      addressId: addr3.id,
+      status: OrderStatus.DELIVERED,
+      paymentMethod: PaymentMethod.PAYPAL,
+      paymentStatus: PaymentStatus.PAID,
+      subtotalAmount: 96.0,
+      discountAmount: 0,
+      shippingAmount: 5.99,
+      totalAmount: 101.99,
+      paypalOrderId: 'PAYID-DEMO-000010',
+      placedAt: daysAgo(45, 10, 25),
+      ...buildOrderAddressSnapshot(addr3),
+    },
+  });
+
+  await prisma.orderItem.createMany({
+    data: [
+      {
+        orderId: order10.id,
+        productId: prodKailhNavy.id,
+        variantId: varKailhNavy.id,
+        productName: prodKailhNavy.name,
+        variantName: varKailhNavy.name,
+        sku: varKailhNavy.sku,
+        thumbnailUrl: prodKailhNavy.thumbnailUrl,
+        unitPrice: 32.0,
+        quantity: 3,
+        subtotalAmount: 96.0,
+      },
+    ],
+  });
+
+  console.log(`   ✅  Created 10 orders with 7 delivered orders\n`);
 
   // ── 9. Reviews ────────────────────────────────────────────────────────────
   console.log('⭐  Seeding reviews...');

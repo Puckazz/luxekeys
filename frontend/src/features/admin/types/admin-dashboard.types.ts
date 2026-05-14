@@ -6,10 +6,13 @@ export type AdminDashboardPeriod =
   (typeof ADMIN_DASHBOARD_PERIOD_OPTIONS)[number];
 
 export interface AdminDashboardKpiMetric {
-  key: 'orders' | 'revenue' | 'customers' | 'store-visits';
+  key: 'orders' | 'revenue' | 'customers' | 'average-order-value';
   label: string;
   value: string;
   changeLabel: string;
+  rawValue: number;
+  previousRawValue: number;
+  changePercent: number;
 }
 
 export interface AdminDashboardRevenuePoint {
@@ -18,10 +21,11 @@ export interface AdminDashboardRevenuePoint {
   orders: number;
 }
 
-export interface AdminDashboardVisitsSegment {
+export interface AdminDashboardAverageOrderValueMetric {
   label: string;
-  value: number;
-  trendLabel: string;
+  value: string;
+  previousValue: string;
+  changeLabel: string;
 }
 
 export interface AdminDashboardTopProduct {
@@ -55,8 +59,7 @@ export interface AdminDashboardSummary {
   period: AdminDashboardPeriod;
   kpis: AdminDashboardKpiMetric[];
   revenueTrend: AdminDashboardRevenuePoint[];
-  visitsTotal: number;
-  visitsSegments: AdminDashboardVisitsSegment[];
+  averageOrderValue: AdminDashboardAverageOrderValueMetric;
   topProducts: AdminDashboardTopProduct[];
   statusBreakdown: AdminDashboardStatusBreakdownItem[];
   customerMix: AdminDashboardCustomerMixItem[];

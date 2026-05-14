@@ -42,7 +42,7 @@ type AdminOrderEditDialogProps = {
 const orderStatusOptions: OrderStatus[] = [
   'pending',
   'confirmed',
-  'shipped',
+  'shipping',
   'delivered',
   'cancelled',
 ];
@@ -96,7 +96,9 @@ export function AdminOrderEditDialog({
         <DialogHeader>
           <DialogTitle>Edit Order</DialogTitle>
           <DialogDescription>
-            {order ? `Update operational fields for ${order.orderCode}.` : 'Load order details before editing.'}
+            {order
+              ? `Update operational fields for ${order.orderCode}.`
+              : 'Load order details before editing.'}
           </DialogDescription>
         </DialogHeader>
 

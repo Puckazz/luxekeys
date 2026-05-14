@@ -16,10 +16,13 @@ import type {
 const ADMIN_ORDER_ITEM_FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&w=400&q=80';
 
-const apiStatusToOrderStatus: Record<AdminOrderApiStatus, AdminOrder['status']> = {
+const apiStatusToOrderStatus: Record<
+  AdminOrderApiStatus,
+  AdminOrder['status']
+> = {
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
-  SHIPPING: 'shipped',
+  SHIPPING: 'shipping',
   DELIVERED: 'delivered',
   CANCELLED: 'cancelled',
 };
@@ -80,7 +83,7 @@ export const orderStatusFilterToApiStatus = (
     return undefined;
   }
 
-  if (status === 'shipped') {
+  if (status === 'shipping') {
     return 'SHIPPING';
   }
 
@@ -94,7 +97,7 @@ export const mapApiSummaryToAdminSummary = (
     all: summary.all,
     pending: summary.PENDING,
     confirmed: summary.CONFIRMED,
-    shipped: summary.SHIPPING,
+    shipping: summary.SHIPPING,
     delivered: summary.DELIVERED,
     cancelled: summary.CANCELLED,
   };

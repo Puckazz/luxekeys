@@ -11,6 +11,7 @@ describe('ReviewsController', () => {
   beforeEach(async () => {
     service = {
       findAllByProduct: jest.fn(),
+      getEligibility: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       remove: jest.fn(),
@@ -53,6 +54,22 @@ describe('ReviewsController', () => {
     );
     expect(service.create).toHaveBeenCalled();
     expect(result).toBe(review);
+  });
+
+  it('getEligibility should delegate to service.getEligibility', async () => {
+    const productId = uuid();
+    const user = { id: uuid() };
+    const eligibility = {
+      canReview: true,
+      hasDeliveredPurchase: true,
+      reviewableItemCount: 1,
+    };
+    service.getEligibility.mockResolvedValue(eligibility as never);
+
+    const result = await controller.getEligibility(productId, user as never);
+
+    expect(service.getEligibility).toHaveBeenCalledWith(productId, user.id);
+    expect(result).toBe(eligibility);
   });
 
   it('update should delegate to service.update', async () => {

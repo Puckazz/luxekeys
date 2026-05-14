@@ -21,7 +21,9 @@ export type ProductDetailHeroProps = {
   selectedVariantId: string;
   quantity: number;
   currentVariant: ProductDetail['variants'][number] | null;
-  currentSwitchOption: ProductDetail['variants'][number]['switchOptions'][number] | null;
+  currentSwitchOption:
+    | ProductDetail['variants'][number]['switchOptions'][number]
+    | null;
   currentStock: number;
   currentPrice: number;
   currentOriginalPrice?: number;
@@ -59,5 +61,8 @@ export type ProductReviewsSectionProps = {
   reviews: ProductReviewItem[];
   canLoadMore: boolean;
   isLoading?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyActionLabel?: string;
   onLoadMore: () => void;
 };

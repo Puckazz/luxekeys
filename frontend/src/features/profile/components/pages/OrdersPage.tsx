@@ -9,11 +9,16 @@ import {
   useOrderDetailQuery,
   useOrdersQuery,
 } from '@/features/profile/hooks';
-import type { OrderLineItem, OrdersFilterValue } from '@/features/profile/types';
+import type {
+  OrderLineItem,
+  OrdersFilterValue,
+} from '@/features/profile/types';
 import {
   formatAccountDate,
   orderStatusBadgeVariantByStatus,
   orderStatusLabels,
+  reviewStatusBadgeVariantByStatus,
+  reviewStatusLabels,
 } from '@/features/profile/utils/profile.utils';
 import { formatCurrency } from '@/features/shop/utils/checkout.utils';
 import { Badge } from '@/shared/components/ui/badge';
@@ -67,7 +72,7 @@ const orderStatusFilterOptions: Array<{
   { label: 'All statuses', value: 'all' },
   { label: 'Pending', value: 'pending' },
   { label: 'Confirmed', value: 'confirmed' },
-  { label: 'Shipped', value: 'shipped' },
+  { label: 'Shipping', value: 'shipping' },
   { label: 'Delivered', value: 'delivered' },
   { label: 'Cancelled', value: 'cancelled' },
 ];
@@ -75,7 +80,7 @@ const orderStatusFilterOptions: Array<{
 export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<OrdersFilterValue>('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  
+
   // Review Dialog State
   const [reviewItem, setReviewItem] = useState<{
     id: string;
@@ -315,16 +320,24 @@ export default function OrdersPage() {
                         <p className="text-foreground text-sm font-semibold">
                           {formatCurrency(item.quantity * item.unitPrice)}
                         </p>
-                        
-                        {selectedOrder.status === 'delivered' && (
-                          item.isReviewed ? (
+
+                        {selectedOrder.status === 'delivered' &&
+                          (item.isReviewed ? (
                             <div className="flex items-center gap-2">
                               <Badge
-                                variant="secondary"
-                                className="h-6 gap-1 border border-amber-400/40 bg-amber-400/10 px-2 text-[10px] font-medium text-amber-200"
+                                variant={
+                                  item.review
+                                    ? reviewStatusBadgeVariantByStatus[
+                                        item.review.status
+                                      ]
+                                    : 'secondary'
+                                }
+                                className="h-6 gap-1 px-2 text-[10px] font-medium"
                               >
-                                <Star className="fill-amber-400 text-amber-400 size-2.5" />
-                                Reviewed
+                                <Star className="size-2.5 fill-amber-400 text-amber-400" />
+                                {item.review
+                                  ? reviewStatusLabels[item.review.status]
+                                  : 'Reviewed'}
                               </Badge>
                               <Button
                                 variant="ghost"
@@ -358,8 +371,7 @@ export default function OrdersPage() {
                             >
                               Write Review
                             </Button>
-                          )
-                        )}
+                          ))}
                       </div>
                     </div>
                   ))}
@@ -378,7 +390,7 @@ export default function OrdersPage() {
           </div>
         </DialogContent>
       </Dialog>
-      
+
       {/* Review Dialog */}
       {reviewItem && (
         <OrderReviewDialog

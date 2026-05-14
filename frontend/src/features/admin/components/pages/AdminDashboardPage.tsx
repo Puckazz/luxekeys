@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { LayoutGrid } from 'lucide-react';
 
 import {
+  AdminAverageOrderValueCard,
   AdminCustomersMixCard,
   AdminDashboardHeader,
   AdminDashboardKpis,
   AdminRevenueTrendCard,
   AdminDashboardSkeleton,
-  AdminStoreVisitsCard,
   AdminTopProductsCard,
 } from '@/features/admin/components/dashboard';
 import { useAdminDashboardQuery } from '@/features/admin/hooks';
@@ -45,10 +45,7 @@ export function AdminDashboardPage() {
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <AdminRevenueTrendCard points={summary.revenueTrend} />
-            <AdminStoreVisitsCard
-              visitsTotal={summary.visitsTotal}
-              segments={summary.visitsSegments}
-            />
+            <AdminAverageOrderValueCard metric={summary.averageOrderValue} />
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">

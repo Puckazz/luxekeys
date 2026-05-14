@@ -61,6 +61,19 @@ export class ReviewsController {
     return this.reviewsService.create(productId, user.id, dto);
   }
 
+  @Get('eligibility')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check whether current user can review a product' })
+  @ApiParam({ name: 'productId', type: String, format: 'uuid' })
+  @ApiOkResponse({ description: 'Review eligibility for current user' })
+  getEligibility(
+    @Param('productId', ParseUUIDPipe) productId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.reviewsService.getEligibility(productId, user.id);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

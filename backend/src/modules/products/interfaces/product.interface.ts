@@ -1,4 +1,4 @@
-import { Prisma } from '../../../generated/prisma/index.js';
+import { Prisma, ReviewStatus } from '../../../generated/prisma/index.js';
 
 export const PRODUCT_DETAIL_INCLUDE = {
   brand: true,
@@ -16,7 +16,14 @@ export const PRODUCT_DETAIL_INCLUDE = {
       },
     },
   },
-  _count: { select: { reviews: true, wishlistItems: true } },
+  _count: {
+    select: {
+      reviews: {
+        where: { deletedAt: null, status: ReviewStatus.PUBLISHED },
+      },
+      wishlistItems: true,
+    },
+  },
 } satisfies Prisma.ProductInclude;
 
 export const PRODUCT_LIST_INCLUDE = {
@@ -34,7 +41,13 @@ export const PRODUCT_LIST_INCLUDE = {
       },
     },
   },
-  _count: { select: { reviews: true } },
+  _count: {
+    select: {
+      reviews: {
+        where: { deletedAt: null, status: ReviewStatus.PUBLISHED },
+      },
+    },
+  },
 } satisfies Prisma.ProductInclude;
 
 export const PRODUCT_REVIEW_INCLUDE = {

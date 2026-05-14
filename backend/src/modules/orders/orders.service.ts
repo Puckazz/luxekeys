@@ -291,6 +291,7 @@ export class OrdersService {
           ? {
               id: item.review.id,
               rating: item.review.rating,
+              status: item.review.status,
               title: item.review.title,
               content: item.review.content,
             }

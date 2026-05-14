@@ -66,6 +66,7 @@ export const useReviewMutations = () => {
         review: {
           id: reviewResult.id,
           rating: reviewResult.rating,
+          status: 'pending',
           title: payload.title ?? null,
           content: payload.content ?? null,
         },
@@ -97,6 +98,7 @@ export const useReviewMutations = () => {
         review: {
           id: reviewId,
           rating: reviewResult.rating,
+          status: 'pending',
           title: payload.title ?? null,
           content: payload.content ?? null,
         },
@@ -107,8 +109,7 @@ export const useReviewMutations = () => {
   return {
     createReview: createReviewMutation.mutate,
     updateReview: updateReviewMutation.mutate,
-    isSaving:
-      createReviewMutation.isPending || updateReviewMutation.isPending,
+    isSaving: createReviewMutation.isPending || updateReviewMutation.isPending,
     error: createReviewMutation.error ?? updateReviewMutation.error,
   };
 };

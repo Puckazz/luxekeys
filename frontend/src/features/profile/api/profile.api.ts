@@ -36,7 +36,9 @@ export const profileApi = {
       body: JSON.stringify({
         fullName: payload.fullName,
         ...(payload.phone !== undefined && { phone: payload.phone }),
-        ...(payload.avatarUrl !== undefined && { avatarUrl: payload.avatarUrl }),
+        ...(payload.avatarUrl !== undefined && {
+          avatarUrl: payload.avatarUrl,
+        }),
       }),
     });
     return mapProfileDtoToModel(data);
@@ -104,7 +106,7 @@ export const profileApi = {
     > = {
       pending: 'PENDING',
       confirmed: 'CONFIRMED',
-      shipped: 'SHIPPING',
+      shipping: 'SHIPPING',
       delivered: 'DELIVERED',
       cancelled: 'CANCELLED',
     };

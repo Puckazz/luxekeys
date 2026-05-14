@@ -52,6 +52,12 @@ type AdminReviewResponse = {
   updatedAt: Date;
 };
 
+type ReviewEligibilityResponse = {
+  canReview: boolean;
+  hasDeliveredPurchase: boolean;
+  reviewableItemCount: number;
+};
+
 @Injectable()
 export class ReviewsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -125,6 +131,35 @@ export class ReviewsService {
     });
   }
 
+  async getEligibility(
+    productId: string,
+    userId: string,
+  ): Promise<ReviewEligibilityResponse> {
+    await this.assertProductExists(productId);
+
+    const deliveredItems = await this.prisma.orderItem.findMany({
+      where: {
+        productId,
+        order: { userId, status: OrderStatus.DELIVERED },
+      },
+      select: {
+        id: true,
+        review: {
+          select: { id: true },
+        },
+      },
+    });
+    const reviewableItemCount = deliveredItems.filter((item) => {
+      return !item.review;
+    }).length;
+
+    return {
+      canReview: reviewableItemCount > 0,
+      hasDeliveredPurchase: deliveredItems.length > 0,
+      reviewableItemCount,
+    };
+  }
+
   async update(
     productId: string,
     id: string,
@@ -140,6 +175,10 @@ export class ReviewsService {
         ...(dto.rating !== undefined && { rating: dto.rating }),
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.content !== undefined && { content: dto.content }),
+        status: ReviewStatus.PENDING,
+        moderationNote: null,
+        moderatedAt: null,
+        moderatedById: null,
       },
       include: REVIEW_DETAIL_INCLUDE,
     });

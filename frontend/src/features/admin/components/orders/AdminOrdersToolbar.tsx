@@ -39,7 +39,7 @@ const statusQuickFilters: AdminOrderListQueryState['status'][] = [
   'all',
   'pending',
   'confirmed',
-  'shipped',
+  'shipping',
   'delivered',
   'cancelled',
 ];

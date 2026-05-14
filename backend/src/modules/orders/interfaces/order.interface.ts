@@ -3,6 +3,7 @@
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
+  ReviewStatus,
 } from '../../../generated/prisma/index.js';
 
 export interface OrderItemResponse {
@@ -22,6 +23,7 @@ export interface OrderItemResponse {
   review: {
     id: string;
     rating: number;
+    status: ReviewStatus;
     title: string | null;
     content: string | null;
   } | null;

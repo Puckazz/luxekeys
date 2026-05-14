@@ -149,6 +149,7 @@ export interface AdminBrandListApiResponse {
 }
 
 export type {
+  AdminDashboardAverageOrderValueMetric,
   AdminDashboardCustomerMixItem,
   AdminDashboardKpiMetric,
   AdminDashboardPeriod,
@@ -156,7 +157,6 @@ export type {
   AdminDashboardStatusBreakdownItem,
   AdminDashboardSummary,
   AdminDashboardTopProduct,
-  AdminDashboardVisitsSegment,
 } from '@/features/admin/types/admin-dashboard.types';
 
 export type {

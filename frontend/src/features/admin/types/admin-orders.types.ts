@@ -15,7 +15,7 @@ export type AdminOrderSortOption = (typeof ADMIN_ORDER_SORT_OPTIONS)[number];
 export const ADMIN_ORDER_STATUS_FILTER_OPTIONS = [
   'pending',
   'confirmed',
-  'shipped',
+  'shipping',
   'delivered',
   'cancelled',
 ] as const;

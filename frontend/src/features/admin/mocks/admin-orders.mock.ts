@@ -4,7 +4,7 @@ import type { OrderStatus } from '@/features/profile/types';
 const ORDER_STATUSES: OrderStatus[] = [
   'pending',
   'confirmed',
-  'shipped',
+  'shipping',
   'delivered',
   'cancelled',
 ];

@@ -32,7 +32,7 @@ type AdminOrdersBulkStatusDialogProps = {
 const statusOptions: OrderStatus[] = [
   'pending',
   'confirmed',
-  'shipped',
+  'shipping',
   'delivered',
   'cancelled',
 ];

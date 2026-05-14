@@ -21,7 +21,11 @@ import type {
   CustomerProductSummaryApiItem,
   CustomerReviewApiItem,
 } from '@/features/shop/types/product-api.types';
-import { apiRequest, apiRequestWithMeta, authFetch } from '@/shared/api/http-client';
+import {
+  apiRequest,
+  apiRequestWithMeta,
+  authFetch,
+} from '@/shared/api/http-client';
 
 export const PRODUCT_LIST_PAGE_SIZE = 6;
 
@@ -72,6 +76,12 @@ export interface UpdateReviewPayload {
   rating?: number;
   title?: string;
   content?: string;
+}
+
+export interface ReviewEligibility {
+  canReview: boolean;
+  hasDeliveredPurchase: boolean;
+  reviewableItemCount: number;
 }
 
 export const productsApi = {
@@ -205,5 +215,13 @@ export const productsApi = {
     );
 
     return mapApiReviewToReviewItem(data);
+  },
+
+  getReviewEligibility: async (
+    productId: string
+  ): Promise<ReviewEligibility> => {
+    return authFetch<ReviewEligibility>(
+      `/products/${productId}/reviews/eligibility`
+    );
   },
 };

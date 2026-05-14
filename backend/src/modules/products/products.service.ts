@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '../../generated/prisma/index.js';
+import { Prisma, ReviewStatus } from '../../generated/prisma/index.js';
 import { PaginatedResponse } from '../../common/interfaces/index.js';
 import { toSlug } from '../../common/utils/slugify.util.js';
 import { buildOrderBy } from '../../common/utils/query.util.js';
@@ -85,6 +85,7 @@ export class ProductsService {
       by: ['productId'],
       where: {
         deletedAt: null,
+        status: ReviewStatus.PUBLISHED,
         productId: { in: productIds },
       },
       _avg: { rating: true },

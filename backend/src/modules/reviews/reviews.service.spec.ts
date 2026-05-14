@@ -15,7 +15,7 @@ import {
   createMockUser,
   uuid,
 } from '../../common/testing/index.js';
-import { UserRole } from '../../generated/prisma/index.js';
+import { ReviewStatus, UserRole } from '../../generated/prisma/index.js';
 
 describe('ReviewsService', () => {
   let service: ReviewsService;
@@ -103,6 +103,25 @@ describe('ReviewsService', () => {
     });
   });
 
+  describe('getEligibility', () => {
+    it('should return review eligibility for delivered purchases', async () => {
+      const product = createMockProduct();
+      prisma.product.findFirst.mockResolvedValue(product as never);
+      prisma.orderItem.findMany.mockResolvedValue([
+        { id: uuid(), review: null },
+        { id: uuid(), review: { id: uuid() } },
+      ] as never);
+
+      const result = await service.getEligibility(product.id, uuid());
+
+      expect(result).toEqual({
+        canReview: true,
+        hasDeliveredPurchase: true,
+        reviewableItemCount: 1,
+      });
+    });
+  });
+
   // ─── update ─────────────────────────────────────────────────────────────────
 
   describe('update', () => {
@@ -121,6 +140,16 @@ describe('ReviewsService', () => {
         { rating: 3 } as never,
       );
       expect(result.rating).toBe(3);
+      expect(prisma.review.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: ReviewStatus.PENDING,
+            moderationNote: null,
+            moderatedAt: null,
+            moderatedById: null,
+          }),
+        }),
+      );
     });
 
     it('should throw NotFoundException when review not found', async () => {

@@ -3,11 +3,13 @@
   OrderLineItem,
   OrderSummary,
   ProfileUser,
+  ReviewStatus,
   SavedAddress,
 } from '@/features/profile/types';
 import type {
   OrderDetailDto,
   OrderLineItemDto,
+  ReviewStatusDto,
   ProfileUserDto,
   SavedAddressDto,
 } from '@/features/profile/types/profile-api.types';
@@ -57,7 +59,7 @@ const createFallbackAddress = (): SavedAddress => {
 const mapOrderLineItemDtoToModel = (dto: OrderLineItemDto): OrderLineItem => {
   const variantLabel = dto.switchOptionName
     ? `${dto.variantName ?? 'Standard'} / ${dto.switchOptionName}`
-    : dto.variantName ?? 'Standard';
+    : (dto.variantName ?? 'Standard');
 
   return {
     id: dto.id,
@@ -69,8 +71,27 @@ const mapOrderLineItemDtoToModel = (dto: OrderLineItemDto): OrderLineItem => {
     quantity: dto.quantity,
     unitPrice: dto.unitPrice,
     isReviewed: dto.isReviewed,
-    review: dto.review,
+    review: dto.review
+      ? {
+          ...dto.review,
+          status: mapReviewStatusDtoToModel(dto.review.status),
+        }
+      : null,
   };
+};
+
+const mapReviewStatusDtoToModel = (status: ReviewStatusDto): ReviewStatus => {
+  switch (status) {
+    case 'PUBLISHED':
+      return 'published';
+    case 'HIDDEN':
+      return 'hidden';
+    case 'REJECTED':
+      return 'rejected';
+    case 'PENDING':
+    default:
+      return 'pending';
+  }
 };
 
 const getPaymentMethodLabel = (method: string): string => {
@@ -90,7 +111,7 @@ const mapOrderStatusDtoToModel = (
     case 'CONFIRMED':
       return 'confirmed';
     case 'SHIPPING':
-      return 'shipped';
+      return 'shipping';
     case 'DELIVERED':
       return 'delivered';
     case 'CANCELLED':

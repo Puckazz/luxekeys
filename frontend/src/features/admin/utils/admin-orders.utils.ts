@@ -13,7 +13,7 @@ type BadgeVariant = VariantProps<typeof badgeVariants>['variant'];
 export const adminOrderStatusLabelByValue: Record<OrderStatus, string> = {
   pending: 'Pending',
   confirmed: 'Confirmed',
-  shipped: 'Shipped',
+  shipping: 'Shipping',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
 };
@@ -21,7 +21,7 @@ export const adminOrderStatusLabelByValue: Record<OrderStatus, string> = {
 export const adminOrderStatusBadgeByValue: Record<OrderStatus, BadgeVariant> = {
   pending: 'warning',
   confirmed: 'default',
-  shipped: 'tag',
+  shipping: 'tag',
   delivered: 'success',
   cancelled: 'destructive',
 };
@@ -52,7 +52,7 @@ export const adminOrderFilterLabelByValue: Record<
   all: 'All',
   pending: 'Pending',
   confirmed: 'Confirmed',
-  shipped: 'Shipped',
+  shipping: 'Shipping',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
 };

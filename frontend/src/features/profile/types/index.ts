@@ -1,11 +1,13 @@
-﻿import type { UserRole } from '@/lib/rbac';
+import type { UserRole } from '@/lib/rbac';
 
 export type OrderStatus =
   | 'pending'
   | 'confirmed'
-  | 'shipped'
+  | 'shipping'
   | 'delivered'
   | 'cancelled';
+
+export type ReviewStatus = 'pending' | 'published' | 'hidden' | 'rejected';
 
 export type ProfileUser = {
   id: string;
@@ -43,6 +45,7 @@ export type OrderLineItem = {
   review: {
     id: string;
     rating: number;
+    status: ReviewStatus;
     title: string | null;
     content: string | null;
   } | null;

@@ -7,6 +7,8 @@ export type OrderStatusDto =
   | 'DELIVERED'
   | 'CANCELLED';
 
+export type ReviewStatusDto = 'PENDING' | 'PUBLISHED' | 'HIDDEN' | 'REJECTED';
+
 export type ProfileUserDto = {
   id: string;
   fullName: string;
@@ -42,6 +44,7 @@ export type OrderLineItemDto = {
   review: {
     id: string;
     rating: number;
+    status: ReviewStatusDto;
     title: string | null;
     content: string | null;
   } | null;

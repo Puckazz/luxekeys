@@ -2,7 +2,7 @@ import {
   CircleDollarSign,
   PackageCheck,
   UserRound,
-  UsersRound,
+  ReceiptText,
 } from 'lucide-react';
 
 import type { AdminDashboardKpiMetric } from '@/features/admin/types';
@@ -16,7 +16,7 @@ const iconByKey = {
   orders: PackageCheck,
   revenue: CircleDollarSign,
   customers: UserRound,
-  'store-visits': UsersRound,
+  'average-order-value': ReceiptText,
 } as const;
 
 export function AdminDashboardKpis({ metrics }: AdminDashboardKpisProps) {

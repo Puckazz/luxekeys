@@ -10,6 +10,9 @@ export default function ProductReviewsSection({
   reviews,
   canLoadMore,
   isLoading = false,
+  emptyTitle = 'No reviews yet',
+  emptyDescription = 'Only published reviews from verified purchases appear here.',
+  emptyActionLabel,
   onLoadMore,
 }: ProductReviewsSectionProps) {
   return (
@@ -33,20 +36,21 @@ export default function ProductReviewsSection({
               <Star className="text-muted-foreground size-8" />
             </div>
             <h3 className="text-foreground mt-4 text-lg font-semibold">
-              No reviews yet
+              {emptyTitle}
             </h3>
             <p className="text-muted-foreground mt-2 max-w-70 text-sm">
-              Purchased this item? Share your thoughts with the community in
-              your order history.
+              {emptyDescription}
             </p>
-            <Button
-              asChild
-              type="button"
-              variant="outline"
-              className="mt-6 rounded-full"
-            >
-              <Link href="/profile/orders">Go to My Orders</Link>
-            </Button>
+            {emptyActionLabel ? (
+              <Button
+                asChild
+                type="button"
+                variant="outline"
+                className="mt-6 rounded-full"
+              >
+                <Link href="/account/orders">{emptyActionLabel}</Link>
+              </Button>
+            ) : null}
           </div>
         ) : null}
 

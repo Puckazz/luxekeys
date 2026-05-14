@@ -1,4 +1,4 @@
-import type { OrderStatus } from '@/features/profile/types';
+import type { OrderStatus, ReviewStatus } from '@/features/profile/types';
 
 export const formatAccountDate = (value: string) => {
   return new Intl.DateTimeFormat('en-US', {
@@ -11,7 +11,7 @@ export const formatAccountDate = (value: string) => {
 export const orderStatusLabels: Record<OrderStatus, string> = {
   pending: 'Pending',
   confirmed: 'Confirmed',
-  shipped: 'Shipped',
+  shipping: 'Shipping',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
 };
@@ -22,7 +22,24 @@ export const orderStatusBadgeVariantByStatus: Record<
 > = {
   pending: 'warning',
   confirmed: 'secondary',
-  shipped: 'default',
+  shipping: 'default',
   delivered: 'success',
   cancelled: 'destructive',
+};
+
+export const reviewStatusLabels: Record<ReviewStatus, string> = {
+  pending: 'Pending review',
+  published: 'Published',
+  hidden: 'Hidden',
+  rejected: 'Rejected',
+};
+
+export const reviewStatusBadgeVariantByStatus: Record<
+  ReviewStatus,
+  'secondary' | 'warning' | 'success' | 'destructive' | 'default'
+> = {
+  pending: 'warning',
+  published: 'success',
+  hidden: 'secondary',
+  rejected: 'destructive',
 };
