@@ -128,7 +128,7 @@ export const adminProductsApi = {
 
   softDeleteProduct: async (productId: string): Promise<AdminProduct> => {
     const product = await authFetch<AdminProductApiItem>(
-      `/products/admin/${productId}`,
+      `/products/${productId}`,
       {
         method: 'DELETE',
       }

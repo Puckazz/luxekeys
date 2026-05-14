@@ -75,7 +75,7 @@ export class BrandsService {
     );
   }
 
-  private async findAdminOne(id: string): Promise<BrandDetail> {
+  private async findExistingOne(id: string): Promise<BrandDetail> {
     const brand = await this.prisma.brand.findFirst({
       where: { id },
       include: BRAND_DETAIL_INCLUDE,
@@ -223,17 +223,7 @@ export class BrandsService {
     });
   }
 
-  async remove(id: string): Promise<BrandDetail> {
-    await this.findOne(id);
-
-    return this.prisma.brand.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-      include: BRAND_DETAIL_INCLUDE,
-    });
-  }
-
-  async findAdminBrands(query: GetAdminBrandsQueryDto): Promise<{
+  async findManagementBrands(query: GetAdminBrandsQueryDto): Promise<{
     data: {
       items: BrandSummary[];
       summary: Record<'all' | 'active' | 'draft' | 'archived', number>;
@@ -296,16 +286,8 @@ export class BrandsService {
     };
   }
 
-  async createAdminBrand(dto: CreateBrandDto): Promise<BrandDetail> {
-    return this.create(dto);
-  }
-
-  async updateAdminBrand(id: string, dto: UpdateBrandDto): Promise<BrandDetail> {
-    return this.update(id, dto);
-  }
-
-  async archiveAdminBrand(id: string): Promise<BrandDetail> {
-    const brand = await this.findAdminOne(id);
+  async remove(id: string): Promise<BrandDetail> {
+    const brand = await this.findExistingOne(id);
 
     if (brand.deletedAt) {
       return brand;
@@ -318,8 +300,8 @@ export class BrandsService {
     });
   }
 
-  async restoreAdminBrand(id: string): Promise<BrandDetail> {
-    await this.findAdminOne(id);
+  async restore(id: string): Promise<BrandDetail> {
+    await this.findExistingOne(id);
 
     return this.prisma.brand.update({
       where: { id },

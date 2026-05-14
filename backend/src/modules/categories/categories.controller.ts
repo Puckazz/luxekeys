@@ -26,8 +26,8 @@ import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
 import { CategoriesService } from './categories.service.js';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import {
-  GetAdminCategoriesQueryDto,
   GetCategoriesQueryDto,
+  GetAdminCategoriesQueryDto,
 } from './dto/get-categories-query.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 
@@ -54,23 +54,14 @@ export class CategoriesController {
     return this.categoriesService.findAll(query);
   }
 
-  @Get('admin')
+  @Get('management')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'List categories for admin management' })
-  @ApiOkResponse({ description: 'Paginated admin category list' })
-  findAdminCategories(@Query() query: GetAdminCategoriesQueryDto) {
-    return this.categoriesService.findAdminCategories(query);
-  }
-
-  @Post('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a category for admin management' })
-  createAdminCategory(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.createAdminCategory(createCategoryDto);
+  @ApiOperation({ summary: 'List categories for management' })
+  @ApiOkResponse({ description: 'Paginated management category list' })
+  findManagementCategories(@Query() query: GetAdminCategoriesQueryDto) {
+    return this.categoriesService.findManagementCategories(query);
   }
 
   @Get('tree')
@@ -115,46 +106,23 @@ export class CategoriesController {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 
-  @Patch('admin/:id')
+  @Patch(':id/restore')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update a category for admin management' })
+  @ApiOperation({ summary: 'Restore an archived category' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  updateAdminCategory(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateCategoryDto: UpdateCategoryDto,
-  ) {
-    return this.categoriesService.updateAdminCategory(id, updateCategoryDto);
-  }
-
-  @Patch('admin/:id/restore')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Restore an archived category (Admin)' })
-  @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  restoreAdminCategory(@Param('id', ParseUUIDPipe) id: string) {
-    return this.categoriesService.restoreAdminCategory(id);
+  restore(@Param('id', ParseUUIDPipe) id: string) {
+    return this.categoriesService.restore(id);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Soft-delete a category (Admin)' })
+  @ApiOperation({ summary: 'Archive a category' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.categoriesService.remove(id);
-  }
-
-  @Delete('admin/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Archive a category for admin management' })
-  @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  archiveAdminCategory(@Param('id', ParseUUIDPipe) id: string) {
-    return this.categoriesService.archiveAdminCategory(id);
   }
 }

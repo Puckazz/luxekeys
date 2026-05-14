@@ -23,6 +23,7 @@ import { Roles } from '../../common/decorators/index.js';
 import { UserRole } from '../../generated/prisma/index.js';
 import type { AuthUser } from '../auth/interfaces/auth-user.interface.js';
 import {
+  BulkUpdateOrderStatusDto,
   CreateOrderDto,
   GetOrdersQueryDto,
   UpdateOrderStatusDto,
@@ -113,15 +114,34 @@ export class AdminOrdersController {
     return this.ordersService.findAllAdmin(query);
   }
 
-  @Patch(':id/status')
-  @ApiOperation({ summary: 'Update order status or payment status (admin)' })
+  @Get(':id')
+  @ApiOperation({ summary: 'Get order detail by ID (admin)' })
+  @ApiParam({ name: 'id', type: String, format: 'uuid' })
+  @ApiOkResponse({ description: 'Admin order detail', type: Object })
+  @ApiNotFoundResponse({ description: 'Order not found' })
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.ordersService.findOneAdmin(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary:
+      'Update order operational fields such as status, payment status, or tracking code (admin)',
+  })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   @ApiOkResponse({ description: 'Updated order', type: Object })
   @ApiNotFoundResponse({ description: 'Order not found' })
-  updateStatus(
+  update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateOrderStatusDto,
   ) {
-    return this.ordersService.updateStatus(id, dto);
+    return this.ordersService.updateOrder(id, dto);
+  }
+
+  @Patch('bulk-status')
+  @ApiOperation({ summary: 'Update order status in bulk (admin)' })
+  @ApiOkResponse({ description: 'Bulk update result', type: Object })
+  bulkUpdateStatus(@Body() dto: BulkUpdateOrderStatusDto) {
+    return this.ordersService.bulkUpdateStatus(dto);
   }
 }

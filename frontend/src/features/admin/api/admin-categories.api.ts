@@ -34,7 +34,7 @@ export const adminCategoriesApi = {
     const response = await authFetchWithMeta<
       AdminCategoryListApiData,
       AdminPaginationApiMeta
-    >(`/categories/admin?${query}`);
+    >(`/categories/management?${query}`);
 
     return {
       items: response.data.items.map(mapApiCategoryToAdminCategory),
@@ -50,7 +50,7 @@ export const adminCategoriesApi = {
   createCategory: async (
     input: UpsertAdminCategoryInput
   ): Promise<AdminCategory> => {
-    const category = await authFetch<AdminCategoryApiItem>('/categories/admin', {
+    const category = await authFetch<AdminCategoryApiItem>('/categories', {
       method: 'POST',
       body: JSON.stringify(mapUpsertCategoryInputToPayload(input)),
     });
@@ -66,7 +66,7 @@ export const adminCategoriesApi = {
     }
 
     const category = await authFetch<AdminCategoryApiItem>(
-      `/categories/admin/${input.id}`,
+      `/categories/${input.id}`,
       {
         method: 'PATCH',
         body: JSON.stringify(mapUpsertCategoryInputToPayload(input)),
@@ -78,7 +78,7 @@ export const adminCategoriesApi = {
 
   softDeleteCategory: async (categoryId: string): Promise<AdminCategory> => {
     const category = await authFetch<AdminCategoryApiItem>(
-      `/categories/admin/${categoryId}`,
+      `/categories/${categoryId}`,
       {
         method: 'DELETE',
       }
@@ -89,7 +89,7 @@ export const adminCategoriesApi = {
 
   restoreCategory: async (categoryId: string): Promise<AdminCategory> => {
     const category = await authFetch<AdminCategoryApiItem>(
-      `/categories/admin/${categoryId}/restore`,
+      `/categories/${categoryId}/restore`,
       {
         method: 'PATCH',
       }

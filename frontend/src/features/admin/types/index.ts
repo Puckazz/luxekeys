@@ -182,12 +182,14 @@ export type {
   AdminOrderListApiResponse,
   AdminOrderListQueryState,
   AdminOrderPaginationMeta,
+  AdminOrderPaymentStatus,
   AdminOrderShippingAddressSummary,
   AdminOrderSortOption,
   AdminOrderStatusFilter,
   AdminOrderStatusSummary,
   BulkUpdateAdminOrderStatusInput,
   BulkUpdateAdminOrderStatusResponse,
+  UpdateAdminOrderInput,
   UpdateAdminOrderStatusInput,
 } from '@/features/admin/types/admin-orders.types';
 

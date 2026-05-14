@@ -50,7 +50,7 @@ export function AdminOrderDetailsDialog({
         ) : order ? (
           <div className="space-y-4">
             <section className="grid gap-3 rounded-md border p-3 sm:grid-cols-2">
-              <InfoRow label="Order ID" value={order.id} />
+              <InfoRow label="Order Code" value={order.orderCode} />
               <InfoRow
                 label="Date"
                 value={formatOrderDateTime(order.createdAt)}

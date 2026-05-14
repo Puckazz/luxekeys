@@ -26,8 +26,8 @@ import { JwtAuthGuard, RolesGuard } from '../../common/guards/index.js';
 import { BrandsService } from './brands.service.js';
 import { CreateBrandDto } from './dto/create-brand.dto.js';
 import {
-  GetAdminBrandsQueryDto,
   GetBrandsQueryDto,
+  GetAdminBrandsQueryDto,
 } from './dto/get-brands-query.dto.js';
 import { UpdateBrandDto } from './dto/update-brand.dto.js';
 
@@ -52,23 +52,14 @@ export class BrandsController {
     return this.brandsService.findAll(query);
   }
 
-  @Get('admin')
+  @Get('management')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'List brands for admin management' })
-  @ApiOkResponse({ description: 'Paginated admin brand list' })
-  findAdminBrands(@Query() query: GetAdminBrandsQueryDto) {
-    return this.brandsService.findAdminBrands(query);
-  }
-
-  @Post('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a brand for admin management' })
-  createAdminBrand(@Body() createBrandDto: CreateBrandDto) {
-    return this.brandsService.createAdminBrand(createBrandDto);
+  @ApiOperation({ summary: 'List brands for management' })
+  @ApiOkResponse({ description: 'Paginated management brand list' })
+  findManagementBrands(@Query() query: GetAdminBrandsQueryDto) {
+    return this.brandsService.findManagementBrands(query);
   }
 
   @Get(':id')
@@ -106,46 +97,23 @@ export class BrandsController {
     return this.brandsService.update(id, updateBrandDto);
   }
 
-  @Patch('admin/:id')
+  @Patch(':id/restore')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update a brand for admin management' })
+  @ApiOperation({ summary: 'Restore an archived brand' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  updateAdminBrand(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateBrandDto: UpdateBrandDto,
-  ) {
-    return this.brandsService.updateAdminBrand(id, updateBrandDto);
-  }
-
-  @Patch('admin/:id/restore')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Restore an archived brand (Admin)' })
-  @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  restoreAdminBrand(@Param('id', ParseUUIDPipe) id: string) {
-    return this.brandsService.restoreAdminBrand(id);
+  restore(@Param('id', ParseUUIDPipe) id: string) {
+    return this.brandsService.restore(id);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Soft-delete a brand (Admin)' })
+  @ApiOperation({ summary: 'Archive a brand' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.brandsService.remove(id);
-  }
-
-  @Delete('admin/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Archive a brand for admin management' })
-  @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  archiveAdminBrand(@Param('id', ParseUUIDPipe) id: string) {
-    return this.brandsService.archiveAdminBrand(id);
   }
 }

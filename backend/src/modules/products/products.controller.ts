@@ -126,16 +126,6 @@ export class ProductsController {
     return this.adminProductsService.restoreAdminProduct(id);
   }
 
-  @Delete('admin/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Archive a product (Admin)' })
-  @ApiParam({ name: 'id', type: String, format: 'uuid' })
-  archiveAdminProduct(@Param('id', ParseUUIDPipe) id: string) {
-    return this.adminProductsService.archiveAdminProduct(id);
-  }
-
   @Get('slug/:slug')
   @ApiOperation({ summary: 'Get a product by slug' })
   @ApiParam({ name: 'slug', type: String })

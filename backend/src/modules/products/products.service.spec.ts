@@ -92,6 +92,41 @@ describe('ProductsService', () => {
       expect(prisma.$transaction).toHaveBeenCalled();
     });
 
+    it('should only return products with public-visible brand and category relations', async () => {
+      prisma.$transaction.mockResolvedValue([
+        0,
+        [],
+        { _max: { basePrice: null } },
+      ] as never);
+      prisma.review.groupBy.mockResolvedValue([] as never);
+
+      await service.findAll({
+        brandId: [uuid()],
+        categorySlug: ['keyboards'],
+      } as never);
+
+      expect(prisma.product.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: 'ACTIVE',
+            brand: {
+              is: expect.objectContaining({
+                deletedAt: null,
+                isActive: true,
+              }),
+            },
+            category: {
+              is: expect.objectContaining({
+                deletedAt: null,
+                isActive: true,
+                slug: { in: ['keyboards'] },
+              }),
+            },
+          }),
+        }),
+      );
+    });
+
     it('should apply search by name', async () => {
       prisma.$transaction.mockResolvedValue([
         0,
@@ -133,6 +168,20 @@ describe('ProductsService', () => {
       prisma.product.findFirst.mockResolvedValue(null);
       await expect(service.findOne(uuid())).rejects.toThrow(NotFoundException);
     });
+
+    it('should hide products linked to draft or archived category or brand from public detail', async () => {
+      prisma.product.findFirst.mockResolvedValue(null);
+
+      await expect(service.findOne(uuid())).rejects.toThrow(NotFoundException);
+      expect(prisma.product.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: 'ACTIVE',
+            AND: expect.any(Array),
+          }),
+        }),
+      );
+    });
   });
 
   // ─── findBySlug ─────────────────────────────────────────────────────────────
@@ -166,6 +215,23 @@ describe('ProductsService', () => {
       const result = await service.findFeatured();
       expect(result.data).toHaveLength(1);
       expect(result.data[0]).toHaveProperty('averageRating', 0);
+    });
+
+    it('should only query featured products that are customer-visible', async () => {
+      prisma.product.findMany.mockResolvedValue([] as never);
+      prisma.review.groupBy.mockResolvedValue([] as never);
+
+      await service.findFeatured();
+
+      expect(prisma.product.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            isFeatured: true,
+            status: 'ACTIVE',
+            AND: expect.any(Array),
+          }),
+        }),
+      );
     });
   });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 
 import { AdminTableIconActionButton } from '@/features/admin/components/common';
 import type { AdminOrder } from '@/features/admin/types/admin-orders.types';
@@ -27,6 +27,7 @@ type AdminOrdersTableProps = {
   onToggleAll: (checked: boolean) => void;
   onToggleOrder: (orderId: string, checked: boolean) => void;
   onViewDetail: (orderId: string) => void;
+  onEditOrder: (orderId: string) => void;
 };
 
 export function AdminOrdersTable({
@@ -35,6 +36,7 @@ export function AdminOrdersTable({
   onToggleAll,
   onToggleOrder,
   onViewDetail,
+  onEditOrder,
 }: AdminOrdersTableProps) {
   const selectedCount = orders.filter((order) =>
     selectedOrderIds.has(order.id)
@@ -55,7 +57,7 @@ export function AdminOrdersTable({
               aria-label="Select all orders"
             />
           </TableHead>
-          <TableHead>Order ID</TableHead>
+          <TableHead>Order Code</TableHead>
           <TableHead>Customer</TableHead>
           <TableHead>Date</TableHead>
           <TableHead className="text-right">Items</TableHead>
@@ -77,11 +79,11 @@ export function AdminOrdersTable({
                   onCheckedChange={(checked) =>
                     onToggleOrder(order.id, checked === true)
                   }
-                  aria-label={`Select order ${order.id}`}
+                  aria-label={`Select order ${order.orderCode}`}
                 />
               </TableCell>
 
-              <TableCell className="font-medium">{order.id}</TableCell>
+              <TableCell className="font-medium">{order.orderCode}</TableCell>
 
               <TableCell>
                 <div className="min-w-56">
@@ -116,11 +118,18 @@ export function AdminOrdersTable({
               </TableCell>
 
               <TableCell className="pr-5 text-right">
-                <AdminTableIconActionButton
-                  icon={Eye}
-                  label="View order detail"
-                  onClick={() => onViewDetail(order.id)}
-                />
+                <div className="flex items-center justify-end gap-2">
+                  <AdminTableIconActionButton
+                    icon={Pencil}
+                    label="Edit order"
+                    onClick={() => onEditOrder(order.id)}
+                  />
+                  <AdminTableIconActionButton
+                    icon={Eye}
+                    label="View order detail"
+                    onClick={() => onViewDetail(order.id)}
+                  />
+                </div>
               </TableCell>
             </TableRow>
           );

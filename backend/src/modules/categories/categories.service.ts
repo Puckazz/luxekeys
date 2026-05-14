@@ -77,7 +77,7 @@ export class CategoriesService {
     );
   }
 
-  private async findAdminOne(id: string): Promise<CategoryDetail> {
+  private async findExistingOne(id: string): Promise<CategoryDetail> {
     const category = await this.prisma.category.findFirst({
       where: { id },
       include: CATEGORY_DETAIL_INCLUDE,
@@ -237,17 +237,7 @@ export class CategoriesService {
     });
   }
 
-  async remove(id: string): Promise<CategoryDetail> {
-    await this.findOne(id);
-
-    return this.prisma.category.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-      include: CATEGORY_DETAIL_INCLUDE,
-    });
-  }
-
-  async findAdminCategories(query: GetAdminCategoriesQueryDto): Promise<{
+  async findManagementCategories(query: GetAdminCategoriesQueryDto): Promise<{
     data: {
       items: CategorySummary[];
       summary: Record<'all' | 'active' | 'draft' | 'archived', number>;
@@ -311,19 +301,8 @@ export class CategoriesService {
     };
   }
 
-  async createAdminCategory(dto: CreateCategoryDto): Promise<CategoryDetail> {
-    return this.create(dto);
-  }
-
-  async updateAdminCategory(
-    id: string,
-    dto: UpdateCategoryDto,
-  ): Promise<CategoryDetail> {
-    return this.update(id, dto);
-  }
-
-  async archiveAdminCategory(id: string): Promise<CategoryDetail> {
-    const category = await this.findAdminOne(id);
+  async remove(id: string): Promise<CategoryDetail> {
+    const category = await this.findExistingOne(id);
 
     if (category.deletedAt) {
       return category;
@@ -336,8 +315,8 @@ export class CategoriesService {
     });
   }
 
-  async restoreAdminCategory(id: string): Promise<CategoryDetail> {
-    await this.findAdminOne(id);
+  async restore(id: string): Promise<CategoryDetail> {
+    await this.findExistingOne(id);
 
     return this.prisma.category.update({
       where: { id },

@@ -458,7 +458,7 @@ export function AdminProductFormDialog({
           className="flex min-h-0 flex-1 flex-col overflow-hidden"
           onSubmit={handleSubmit(submitHandler)}
         >
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4 [-ms-overflow-style:none] sm:px-6 sm:py-6">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-6 sm:py-6 [&::-webkit-scrollbar]:hidden">
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-1">
                 <label className="text-xs font-semibold">Product Name</label>

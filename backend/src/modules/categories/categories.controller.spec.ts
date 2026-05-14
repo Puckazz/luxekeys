@@ -11,11 +11,13 @@ describe('CategoriesController', () => {
     service = {
       create: jest.fn(),
       findAll: jest.fn(),
+      findManagementCategories: jest.fn(),
       findOne: jest.fn(),
       findTree: jest.fn(),
       findProductsByCategory: jest.fn(),
       update: jest.fn(),
       remove: jest.fn(),
+      restore: jest.fn(),
     } as unknown as jest.Mocked<CategoriesService>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -40,6 +42,21 @@ describe('CategoriesController', () => {
     const result = await controller.findAll({} as never);
     expect(service.findAll).toHaveBeenCalledWith({});
     expect(result).toBe(paginated);
+  });
+
+  it('findManagementCategories should delegate to service.findManagementCategories', async () => {
+    const resultSet = {
+      data: {
+        items: [],
+        summary: { all: 0, active: 0, draft: 0, archived: 0 },
+      },
+      pagination: { page: 1, limit: 8, total: 0, totalPages: 1 },
+    };
+    service.findManagementCategories.mockResolvedValue(resultSet as never);
+
+    const result = await controller.findManagementCategories({} as never);
+    expect(service.findManagementCategories).toHaveBeenCalledWith({});
+    expect(result).toBe(resultSet);
   });
 
   it('findOne should delegate to service.findOne', async () => {
@@ -85,6 +102,20 @@ describe('CategoriesController', () => {
 
     const result = await controller.remove(id);
     expect(service.remove).toHaveBeenCalledWith(id);
+    expect(result).toBe(category);
+  });
+
+  it('restore should delegate to service.restore', async () => {
+    const id = uuid();
+    const category = createMockCategory({
+      id,
+      deletedAt: null,
+      isActive: false,
+    });
+    service.restore.mockResolvedValue(category as never);
+
+    const result = await controller.restore(id);
+    expect(service.restore).toHaveBeenCalledWith(id);
     expect(result).toBe(category);
   });
 });

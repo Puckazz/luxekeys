@@ -26,6 +26,54 @@ import {
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private buildPublicProductWhere(): Prisma.ProductWhereInput {
+    return {
+      deletedAt: null,
+      status: 'ACTIVE',
+      AND: [
+        {
+          OR: [
+            { brandId: null },
+            {
+              brand: {
+                is: {
+                  deletedAt: null,
+                  isActive: true,
+                },
+              },
+            },
+          ],
+        },
+        {
+          OR: [
+            { categoryId: null },
+            {
+              category: {
+                is: {
+                  deletedAt: null,
+                  isActive: true,
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  private async findAdminVisibleOne(id: string): Promise<ProductDetail> {
+    const product = await this.prisma.product.findFirst({
+      where: { id, deletedAt: null },
+      include: PRODUCT_DETAIL_INCLUDE,
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID "${id}" not found`);
+    }
+
+    return product;
+  }
+
   private async getAverageRatings(
     productIds: string[],
   ): Promise<Map<string, number>> {
@@ -125,15 +173,34 @@ export class ProductsService {
     const limit = query.limit ?? 6;
     const skip = (page - 1) * limit;
 
-    const baseWhere: Prisma.ProductWhereInput = { deletedAt: null };
+    const baseWhere: Prisma.ProductWhereInput = this.buildPublicProductWhere();
 
     if (query.type?.length) baseWhere.type = { in: query.type };
-    if (query.status) baseWhere.status = query.status;
-    if (query.brandId?.length) baseWhere.brandId = { in: query.brandId };
-    if (query.categoryId) baseWhere.categoryId = query.categoryId;
+    if (query.brandId?.length) {
+      baseWhere.brand = {
+        is: {
+          id: { in: query.brandId },
+          deletedAt: null,
+          isActive: true,
+        },
+      };
+    }
+    if (query.categoryId) {
+      baseWhere.category = {
+        is: {
+          id: query.categoryId,
+          deletedAt: null,
+          isActive: true,
+        },
+      };
+    }
     if (query.categorySlug?.length) {
       baseWhere.category = {
-        is: { slug: { in: query.categorySlug }, deletedAt: null },
+        is: {
+          slug: { in: query.categorySlug },
+          deletedAt: null,
+          isActive: true,
+        },
       };
     }
     if (query.isFeatured !== undefined) baseWhere.isFeatured = query.isFeatured;
@@ -228,7 +295,10 @@ export class ProductsService {
 
   async findFeatured(): Promise<{ data: ProductSummaryWithAverageRating[] }> {
     const data = await this.prisma.product.findMany({
-      where: { isFeatured: true, status: 'ACTIVE', deletedAt: null },
+      where: {
+        ...this.buildPublicProductWhere(),
+        isFeatured: true,
+      },
       orderBy: { createdAt: 'desc' },
       take: 20,
       include: PRODUCT_LIST_INCLUDE,
@@ -242,7 +312,10 @@ export class ProductsService {
 
   async findOne(id: string): Promise<ProductDetailWithAverageRating> {
     const product = await this.prisma.product.findFirst({
-      where: { id, deletedAt: null },
+      where: {
+        ...this.buildPublicProductWhere(),
+        id,
+      },
       include: PRODUCT_DETAIL_INCLUDE,
     });
 
@@ -257,7 +330,10 @@ export class ProductsService {
 
   async findBySlug(slug: string): Promise<ProductDetailWithAverageRating> {
     const product = await this.prisma.product.findFirst({
-      where: { slug, deletedAt: null },
+      where: {
+        ...this.buildPublicProductWhere(),
+        slug,
+      },
       include: PRODUCT_DETAIL_INCLUDE,
     });
 
@@ -307,7 +383,7 @@ export class ProductsService {
   }
 
   async update(id: string, dto: UpdateProductDto): Promise<ProductDetail> {
-    await this.findOne(id);
+    await this.findAdminVisibleOne(id);
 
     const nextSlug = dto.slug !== undefined ? toSlug(dto.slug) : undefined;
 
@@ -361,7 +437,7 @@ export class ProductsService {
   }
 
   async remove(id: string): Promise<ProductDetail> {
-    await this.findOne(id);
+    await this.findAdminVisibleOne(id);
 
     return this.prisma.product.update({
       where: { id },

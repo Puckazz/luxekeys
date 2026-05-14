@@ -11,6 +11,7 @@ import {
   MockPrismaService,
   createMockOrder,
   createMockAddress,
+  createMockUser,
   createMockVariant,
   createMockProduct,
   uuid,
@@ -51,6 +52,16 @@ describe('OrdersService', () => {
     }).compile();
     service = module.get<OrdersService>(OrdersService);
   });
+
+  const buildAdminOrder = (overrides: Record<string, unknown> = {}) => {
+    return {
+      ...createMockOrder(),
+      address: null,
+      items: [],
+      user: createMockUser(),
+      ...overrides,
+    };
+  };
 
   // ─── findOne ────────────────────────────────────────────────────────────────
 
@@ -120,6 +131,44 @@ describe('OrdersService', () => {
       const result = await service.findMyOrders(userId, {} as never);
       expect(result.data).toHaveLength(1);
       expect(result.pagination.total).toBe(1);
+    });
+  });
+
+  describe('findAllAdmin', () => {
+    it('should return admin items with summary', async () => {
+      const order = buildAdminOrder();
+      prisma.$transaction.mockResolvedValue([[order], [order]] as never);
+
+      const result = await service.findAllAdmin({ search: 'LK' } as never);
+
+      expect(result.data.items).toHaveLength(1);
+      expect(result.data.summary.all).toBe(1);
+      expect(result.pagination.total).toBe(1);
+    });
+  });
+
+  describe('findOneAdmin', () => {
+    it('should return mapped admin order detail', async () => {
+      const order = buildAdminOrder({
+        items: [
+          {
+            id: uuid(),
+            productName: 'Q1 Max',
+            thumbnailUrl: 'https://example.com/q1.jpg',
+            switchOption: null,
+            variantName: 'Black',
+            sku: 'Q1-BLK',
+            quantity: 2,
+            unitPrice: '100.00',
+          },
+        ],
+      });
+      prisma.order.findFirst.mockResolvedValue(order as never);
+
+      const result = await service.findOneAdmin(order.id);
+
+      expect(result.customer.email).toBe(order.user.email);
+      expect(result.items[0]?.name).toBe('Q1 Max');
     });
   });
 
@@ -352,27 +401,85 @@ describe('OrdersService', () => {
     });
   });
 
-  // ─── updateStatus ────────────────────────────────────────────────────────────
+  // ─── updateOrder ─────────────────────────────────────────────────────────────
 
-  describe('updateStatus', () => {
+  describe('updateOrder', () => {
     it('should update order status', async () => {
-      const order = { ...createMockOrder(), address: null, items: [] };
+      const order = buildAdminOrder();
       const updated = { ...order, status: OrderStatus.CONFIRMED };
 
       prisma.order.findFirst.mockResolvedValue(order as never);
       prisma.order.update.mockResolvedValue(updated as never);
 
-      const result = await service.updateStatus(order.id, {
+      const result = await service.updateOrder(order.id, {
         status: OrderStatus.CONFIRMED,
       } as never);
       expect(result.status).toBe(OrderStatus.CONFIRMED);
     });
 
+    it('should clear trackingCode when empty string is provided', async () => {
+      const order = buildAdminOrder({ trackingCode: 'TRACK-OLD' });
+      const updated = { ...order, trackingCode: null };
+
+      prisma.order.findFirst.mockResolvedValue(order as never);
+      prisma.order.update.mockResolvedValue(updated as never);
+
+      const result = await service.updateOrder(order.id, {
+        trackingCode: '',
+      } as never);
+
+      expect(prisma.order.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            trackingCode: null,
+          }),
+        }),
+      );
+      expect(result.trackingCode).toBeNull();
+    });
+
+    it('should throw BadRequestException when no field is provided', async () => {
+      await expect(service.updateOrder(uuid(), {} as never)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
     it('should throw NotFoundException when order not found', async () => {
       prisma.order.findFirst.mockResolvedValue(null);
-      await expect(service.updateStatus(uuid(), {} as never)).rejects.toThrow(
-        NotFoundException,
+      await expect(
+        service.updateOrder(uuid(), {
+          status: OrderStatus.CONFIRMED,
+        } as never),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('bulkUpdateStatus', () => {
+    it('should update many orders', async () => {
+      const orderIds = [uuid(), uuid()];
+      prisma.order.findMany.mockResolvedValue(
+        orderIds.map((id) => ({ id })) as never,
       );
+      prisma.order.updateMany.mockResolvedValue({ count: 2 } as never);
+
+      const result = await service.bulkUpdateStatus({
+        orderIds,
+        status: OrderStatus.CONFIRMED,
+      });
+
+      expect(result.updatedCount).toBe(2);
+    });
+
+    it('should throw when one order is missing', async () => {
+      const orderIds = [uuid(), uuid()];
+      prisma.order.findMany.mockResolvedValue([{ id: orderIds[0] }] as never);
+
+      await expect(
+        service.bulkUpdateStatus({
+          orderIds,
+          status: OrderStatus.CONFIRMED,
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

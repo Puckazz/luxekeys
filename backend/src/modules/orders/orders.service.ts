@@ -1,23 +1,29 @@
-﻿import {
+import {
   BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import {
-  Prisma,
   OrderStatus,
+  PaymentMethod,
+  Prisma,
   ProductStatus,
   UserRole,
 } from '../../generated/prisma/index.js';
-import { PrismaService } from '../database/prisma.service.js';
 import { PaginatedResponse } from '../../common/interfaces/pagination.interface.js';
+import { PrismaService } from '../database/prisma.service.js';
 import {
+  BulkUpdateOrderStatusDto,
   CreateOrderDto,
   GetOrdersQueryDto,
   UpdateOrderStatusDto,
 } from './dto/index.js';
 import {
+  AdminOrderDetailResponse,
+  AdminOrderListItemResponse,
+  AdminOrderSummaryResponse,
+  BulkUpdateOrderStatusResponse,
   OrderResponse,
   OrderWithItems,
   ORDER_WITH_ITEMS_INCLUDE,
@@ -26,6 +32,15 @@ import {
 @Injectable()
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private readonly adminOrderSummarySeed: AdminOrderSummaryResponse = {
+    all: 0,
+    PENDING: 0,
+    CONFIRMED: 0,
+    SHIPPING: 0,
+    DELIVERED: 0,
+    CANCELLED: 0,
+  };
 
   private getCartItemUnitPrice(item: {
     variant: { price: unknown };
@@ -60,6 +75,173 @@ export class OrdersService {
     if (requesterRole !== UserRole.ADMIN && orderUserId !== requesterId) {
       throw new ForbiddenException('You do not have access to this order');
     }
+  }
+
+  private getPaymentMethodLabel(method: PaymentMethod): string {
+    return method === PaymentMethod.COD ? 'Cash on Delivery' : 'PayPal';
+  }
+
+  private getAdminShippingAddressSummary(order: OrderWithItems) {
+    return {
+      line1: order.shippingStreetAddress ?? order.address?.streetAddress ?? '',
+      district: order.shippingProvince ?? order.address?.province ?? '',
+      city: order.shippingCity ?? order.address?.city ?? '',
+    };
+  }
+
+  private getAdminCustomer(order: OrderWithItems) {
+    return {
+      name: order.shippingFullName ?? order.user.fullName,
+      email: order.user.email,
+    };
+  }
+
+  private mapToAdminListItem(
+    order: OrderWithItems,
+  ): AdminOrderListItemResponse {
+    return {
+      id: order.id,
+      orderCode: order.orderCode,
+      createdAt: order.createdAt,
+      status: order.status,
+      total: Number(order.totalAmount),
+      itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
+      paymentMethodLabel: this.getPaymentMethodLabel(order.paymentMethod),
+      customer: this.getAdminCustomer(order),
+      shippingAddress: this.getAdminShippingAddressSummary(order),
+    };
+  }
+
+  private mapToAdminDetail(order: OrderWithItems): AdminOrderDetailResponse {
+    return {
+      ...this.mapToAdminListItem(order),
+      paymentStatus: order.paymentStatus,
+      trackingCode: order.trackingCode,
+      items: order.items.map((item) => ({
+        id: item.id,
+        name: item.productName,
+        image: item.thumbnailUrl ?? '',
+        variantLabel:
+          item.switchOption?.name ??
+          item.variantName ??
+          item.sku ??
+          'Default variant',
+        quantity: item.quantity,
+        unitPrice: Number(item.unitPrice),
+      })),
+    };
+  }
+
+  private buildAdminSummary(
+    orders: OrderWithItems[],
+  ): AdminOrderSummaryResponse {
+    return orders.reduce<AdminOrderSummaryResponse>(
+      (summary, order) => {
+        summary.all += 1;
+        summary[order.status] += 1;
+        return summary;
+      },
+      { ...this.adminOrderSummarySeed },
+    );
+  }
+
+  private buildOrderDateWhere(query: GetOrdersQueryDto) {
+    if (!query.fromDate && !query.toDate) {
+      return undefined;
+    }
+
+    return {
+      placedAt: {
+        ...(query.fromDate && { gte: new Date(query.fromDate) }),
+        ...(query.toDate && { lte: new Date(query.toDate) }),
+      },
+    };
+  }
+
+  private buildAdminOrderSearchWhere(search?: string): Prisma.OrderWhereInput {
+    if (!search?.trim()) {
+      return {};
+    }
+
+    const normalizedSearch = search.trim();
+
+    return {
+      OR: [
+        { orderCode: { contains: normalizedSearch, mode: 'insensitive' } },
+        {
+          user: {
+            fullName: { contains: normalizedSearch, mode: 'insensitive' },
+          },
+        },
+        {
+          user: {
+            email: { contains: normalizedSearch, mode: 'insensitive' },
+          },
+        },
+        {
+          shippingFullName: {
+            contains: normalizedSearch,
+            mode: 'insensitive',
+          },
+        },
+      ],
+    };
+  }
+
+  private sortAdminOrders(
+    orders: OrderWithItems[],
+    query: GetOrdersQueryDto,
+  ): OrderWithItems[] {
+    const next = [...orders];
+    const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
+
+    if (query.sortBy === 'totalAmount') {
+      return next.sort(
+        (left, right) =>
+          (Number(left.totalAmount) - Number(right.totalAmount)) * sortOrder,
+      );
+    }
+
+    if (query.sortBy === 'customerName') {
+      return next.sort(
+        (left, right) =>
+          this.getAdminCustomer(left).name.localeCompare(
+            this.getAdminCustomer(right).name,
+          ) * sortOrder,
+      );
+    }
+
+    if (query.sortBy === 'status') {
+      return next.sort(
+        (left, right) => left.status.localeCompare(right.status) * sortOrder,
+      );
+    }
+
+    return next.sort(
+      (left, right) =>
+        (left.createdAt.getTime() - right.createdAt.getTime()) * sortOrder,
+    );
+  }
+
+  private paginateItems<T>(
+    items: T[],
+    page: number,
+    limit: number,
+  ): PaginatedResponse<T> {
+    const total = items.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const currentPage = Math.min(Math.max(1, page), totalPages);
+    const start = (currentPage - 1) * limit;
+
+    return {
+      data: items.slice(start, start + limit),
+      pagination: {
+        page: currentPage,
+        limit,
+        total,
+        totalPages,
+      },
+    };
   }
 
   private mapToResponse(order: OrderWithItems): OrderResponse {
@@ -142,6 +324,19 @@ export class OrdersService {
     return this.mapToResponse(order);
   }
 
+  async findOneAdmin(id: string): Promise<AdminOrderDetailResponse> {
+    const order = await this.prisma.order.findFirst({
+      where: { id },
+      include: ORDER_WITH_ITEMS_INCLUDE,
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID "${id}" not found`);
+    }
+
+    return this.mapToAdminDetail(order);
+  }
+
   async findByCode(
     orderCode: string,
     requesterId: string,
@@ -174,14 +369,7 @@ export class OrdersService {
       ...(query.status && { status: query.status }),
       ...(query.paymentStatus && { paymentStatus: query.paymentStatus }),
       ...(query.paymentMethod && { paymentMethod: query.paymentMethod }),
-      ...(query.fromDate || query.toDate
-        ? {
-            placedAt: {
-              ...(query.fromDate && { gte: new Date(query.fromDate) }),
-              ...(query.toDate && { lte: new Date(query.toDate) }),
-            },
-          }
-        : {}),
+      ...this.buildOrderDateWhere(query),
     };
 
     const [total, orders] = await this.prisma.$transaction([
@@ -206,47 +394,50 @@ export class OrdersService {
     };
   }
 
-  async findAllAdmin(
-    query: GetOrdersQueryDto,
-  ): Promise<PaginatedResponse<OrderResponse>> {
+  async findAllAdmin(query: GetOrdersQueryDto): Promise<{
+    data: {
+      items: AdminOrderListItemResponse[];
+      summary: AdminOrderSummaryResponse;
+    };
+    pagination: PaginatedResponse<AdminOrderListItemResponse>['pagination'];
+  }> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
-
-    const where: Prisma.OrderWhereInput = {
-      ...(query.status && { status: query.status }),
+    const sharedWhere: Prisma.OrderWhereInput = {
+      ...this.buildAdminOrderSearchWhere(query.search),
       ...(query.paymentStatus && { paymentStatus: query.paymentStatus }),
       ...(query.paymentMethod && { paymentMethod: query.paymentMethod }),
       ...(query.userId && { userId: query.userId }),
-      ...(query.fromDate || query.toDate
-        ? {
-            placedAt: {
-              ...(query.fromDate && { gte: new Date(query.fromDate) }),
-              ...(query.toDate && { lte: new Date(query.toDate) }),
-            },
-          }
-        : {}),
+      ...this.buildOrderDateWhere(query),
+    };
+    const filteredWhere: Prisma.OrderWhereInput = {
+      ...sharedWhere,
+      ...(query.status && { status: query.status }),
     };
 
-    const [total, orders] = await this.prisma.$transaction([
-      this.prisma.order.count({ where }),
+    const [summaryOrders, filteredOrders] = await this.prisma.$transaction([
       this.prisma.order.findMany({
-        where,
+        where: sharedWhere,
         include: ORDER_WITH_ITEMS_INCLUDE,
-        orderBy: { placedAt: 'desc' },
-        skip,
-        take: limit,
+      }),
+      this.prisma.order.findMany({
+        where: filteredWhere,
+        include: ORDER_WITH_ITEMS_INCLUDE,
       }),
     ]);
 
+    const paginated = this.paginateItems(
+      this.sortAdminOrders(filteredOrders, query),
+      page,
+      limit,
+    );
+
     return {
-      data: orders.map((order) => this.mapToResponse(order)),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+      data: {
+        items: paginated.data.map((order) => this.mapToAdminListItem(order)),
+        summary: this.buildAdminSummary(summaryOrders),
       },
+      pagination: paginated.pagination,
     };
   }
 
@@ -484,10 +675,19 @@ export class OrdersService {
     return this.mapToResponse(updated);
   }
 
-  async updateStatus(
+  async updateOrder(
     id: string,
     dto: UpdateOrderStatusDto,
-  ): Promise<OrderResponse> {
+  ): Promise<AdminOrderDetailResponse> {
+    if (
+      dto.status === undefined &&
+      dto.paymentStatus === undefined &&
+      dto.paymentMethod === undefined &&
+      dto.trackingCode === undefined
+    ) {
+      throw new BadRequestException('At least one field must be provided');
+    }
+
     const order = await this.prisma.order.findFirst({
       where: { id },
     });
@@ -502,10 +702,53 @@ export class OrdersService {
         ...(dto.status && { status: dto.status }),
         ...(dto.paymentStatus && { paymentStatus: dto.paymentStatus }),
         ...(dto.paymentMethod && { paymentMethod: dto.paymentMethod }),
+        ...(dto.trackingCode !== undefined && {
+          trackingCode: dto.trackingCode?.trim()
+            ? dto.trackingCode.trim()
+            : null,
+        }),
       },
       include: ORDER_WITH_ITEMS_INCLUDE,
     });
 
-    return this.mapToResponse(updated);
+    return this.mapToAdminDetail(updated);
+  }
+
+  async bulkUpdateStatus(
+    dto: BulkUpdateOrderStatusDto,
+  ): Promise<BulkUpdateOrderStatusResponse> {
+    const foundOrders = await this.prisma.order.findMany({
+      where: {
+        id: {
+          in: dto.orderIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (foundOrders.length !== dto.orderIds.length) {
+      throw new NotFoundException('One or more orders were not found');
+    }
+
+    const updatedCount = await this.prisma.$transaction(async (tx) => {
+      const result = await tx.order.updateMany({
+        where: {
+          id: {
+            in: dto.orderIds,
+          },
+        },
+        data: {
+          status: dto.status,
+        },
+      });
+
+      return result.count;
+    });
+
+    return {
+      updatedCount,
+    };
   }
 }

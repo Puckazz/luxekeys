@@ -28,7 +28,6 @@ describe('ProductsController', () => {
       createAdminProduct: jest.fn(),
       updateAdminProduct: jest.fn(),
       restoreAdminProduct: jest.fn(),
-      archiveAdminProduct: jest.fn(),
     } as unknown as jest.Mocked<AdminProductsService>;
     adminInventoryService = {
       findAdminInventory: jest.fn(),

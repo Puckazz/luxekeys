@@ -2,4 +2,5 @@ export { AdminOrdersToolbar } from '@/features/admin/components/orders/AdminOrde
 export { AdminOrdersTable } from '@/features/admin/components/orders/AdminOrdersTable';
 export { AdminOrdersTableSkeleton } from '@/features/admin/components/orders/AdminOrdersTableSkeleton';
 export { AdminOrderDetailsDialog } from '@/features/admin/components/orders/AdminOrderDetailsDialog';
+export { AdminOrderEditDialog } from '@/features/admin/components/orders/AdminOrderEditDialog';
 export { AdminOrdersBulkStatusDialog } from '@/features/admin/components/orders/AdminOrdersBulkStatusDialog';

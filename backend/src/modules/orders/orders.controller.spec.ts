@@ -18,9 +18,11 @@ describe('OrdersController', () => {
       findMyOrders: jest.fn(),
       findAllAdmin: jest.fn(),
       findOne: jest.fn(),
+      findOneAdmin: jest.fn(),
       findByCode: jest.fn(),
       cancelOrder: jest.fn(),
-      updateStatus: jest.fn(),
+      updateOrder: jest.fn(),
+      bulkUpdateStatus: jest.fn(),
     } as unknown as jest.Mocked<OrdersService>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -109,7 +111,7 @@ describe('OrdersController', () => {
   describe('AdminOrdersController', () => {
     it('findAll should delegate to service.findAllAdmin', async () => {
       const paginated = {
-        data: [],
+        data: { items: [], summary: {} },
         pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
       };
       service.findAllAdmin.mockResolvedValue(paginated as never);
@@ -119,17 +121,36 @@ describe('OrdersController', () => {
       expect(result).toBe(paginated);
     });
 
-    it('updateStatus should delegate to service.updateStatus', async () => {
+    it('findOne should delegate to service.findOneAdmin', async () => {
       const order = createMockOrder();
-      service.updateStatus.mockResolvedValue(order as never);
+      service.findOneAdmin.mockResolvedValue(order as never);
 
-      const result = await adminController.updateStatus(order.id, {
+      const result = await adminController.findOne(order.id);
+      expect(service.findOneAdmin).toHaveBeenCalledWith(order.id);
+      expect(result).toBe(order);
+    });
+
+    it('update should delegate to service.updateOrder', async () => {
+      const order = createMockOrder();
+      service.updateOrder.mockResolvedValue(order as never);
+
+      const result = await adminController.update(order.id, {
         status: 'CONFIRMED',
       } as never);
-      expect(service.updateStatus).toHaveBeenCalledWith(order.id, {
+      expect(service.updateOrder).toHaveBeenCalledWith(order.id, {
         status: 'CONFIRMED',
       });
       expect(result).toBe(order);
+    });
+
+    it('bulkUpdateStatus should delegate to service.bulkUpdateStatus', async () => {
+      const payload = { orderIds: [uuid()], status: 'CONFIRMED' };
+      const response = { updatedCount: 1 };
+      service.bulkUpdateStatus.mockResolvedValue(response as never);
+
+      const result = await adminController.bulkUpdateStatus(payload as never);
+      expect(service.bulkUpdateStatus).toHaveBeenCalledWith(payload);
+      expect(result).toBe(response);
     });
   });
 });

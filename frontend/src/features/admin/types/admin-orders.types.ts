@@ -54,6 +54,7 @@ export interface AdminOrderLineItem {
 
 export interface AdminOrder {
   id: string;
+  orderCode: string;
   createdAt: string;
   status: OrderStatus;
   total: number;
@@ -64,6 +65,8 @@ export interface AdminOrder {
 }
 
 export interface AdminOrderDetail extends AdminOrder {
+  paymentStatus: AdminOrderPaymentStatus;
+  trackingCode: string | null;
   items: AdminOrderLineItem[];
 }
 
@@ -82,6 +85,15 @@ export interface UpdateAdminOrderStatusInput {
   status: OrderStatus;
 }
 
+export type AdminOrderPaymentStatus = 'pending' | 'paid' | 'failed';
+
+export interface UpdateAdminOrderInput {
+  orderId: string;
+  status?: OrderStatus;
+  paymentStatus?: AdminOrderPaymentStatus;
+  trackingCode?: string | null;
+}
+
 export interface BulkUpdateAdminOrderStatusInput {
   orderIds: string[];
   status: OrderStatus;
@@ -90,3 +102,70 @@ export interface BulkUpdateAdminOrderStatusInput {
 export interface BulkUpdateAdminOrderStatusResponse {
   updatedCount: number;
 }
+
+export type AdminOrderApiStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'SHIPPING'
+  | 'DELIVERED'
+  | 'CANCELLED';
+
+export type AdminOrderApiPaymentStatus = 'PENDING' | 'PAID' | 'FAILED';
+
+export type AdminOrderApiSortField =
+  | 'createdAt'
+  | 'totalAmount'
+  | 'customerName'
+  | 'status';
+
+export type AdminOrderApiSummary = Record<'all' | AdminOrderApiStatus, number>;
+
+export interface AdminOrderApiCustomer {
+  name: string;
+  email: string;
+}
+
+export interface AdminOrderApiShippingAddressSummary {
+  line1: string;
+  district: string;
+  city: string;
+}
+
+export interface AdminOrderApiListItem {
+  id: string;
+  orderCode: string;
+  createdAt: string;
+  status: AdminOrderApiStatus;
+  total: number;
+  itemCount: number;
+  paymentMethodLabel: string;
+  customer: AdminOrderApiCustomer;
+  shippingAddress: AdminOrderApiShippingAddressSummary;
+}
+
+export interface AdminOrderApiDetailItem {
+  id: string;
+  name: string;
+  image: string;
+  variantLabel: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface AdminOrderApiDetail extends AdminOrderApiListItem {
+  paymentStatus: AdminOrderApiPaymentStatus;
+  trackingCode: string | null;
+  items: AdminOrderApiDetailItem[];
+}
+
+export interface AdminOrderListApiData {
+  items: AdminOrderApiListItem[];
+  summary: AdminOrderApiSummary;
+}
+
+export type AdminPaginationApiMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};

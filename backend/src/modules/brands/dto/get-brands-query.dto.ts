@@ -16,7 +16,8 @@ export const ADMIN_BRAND_STATUS_FILTERS = [
   'draft',
   'archived',
 ] as const;
-export type AdminBrandStatusFilter = (typeof ADMIN_BRAND_STATUS_FILTERS)[number];
+export type AdminBrandStatusFilter =
+  (typeof ADMIN_BRAND_STATUS_FILTERS)[number];
 
 export const ADMIN_BRAND_SORT_OPTIONS = [
   'newest',

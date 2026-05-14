@@ -82,8 +82,8 @@ describe('BrandsService', () => {
     });
   });
 
-  describe('findAdminBrands', () => {
-    it('should return admin summary and default non-archived items', async () => {
+  describe('findManagementBrands', () => {
+    it('should return management summary and default non-archived items', async () => {
       const brands = [
         createMockBrand({ isActive: true }),
         createMockBrand({ isActive: false }),
@@ -91,7 +91,7 @@ describe('BrandsService', () => {
       ];
       prisma.brand.findMany.mockResolvedValue(brands as never);
 
-      const result = await service.findAdminBrands({} as never);
+      const result = await service.findManagementBrands({} as never);
 
       expect(result.data.summary).toEqual({
         all: 2,
@@ -187,15 +187,16 @@ describe('BrandsService', () => {
   // ─── remove ─────────────────────────────────────────────────────────────────
 
   describe('remove', () => {
-    it('should soft-delete by setting deletedAt', async () => {
+    it('should archive by setting deletedAt and deactivating the brand', async () => {
       const id = uuid();
       const brand = createMockBrand({ id });
-      const deleted = { ...brand, deletedAt: new Date() };
+      const deleted = { ...brand, deletedAt: new Date(), isActive: false };
       prisma.brand.findFirst.mockResolvedValue(brand as never);
       prisma.brand.update.mockResolvedValue(deleted as never);
 
       const result = await service.remove(id);
       expect(result.deletedAt).not.toBeNull();
+      expect(result.isActive).toBe(false);
     });
 
     it('should throw NotFoundException when brand does not exist', async () => {
@@ -204,7 +205,7 @@ describe('BrandsService', () => {
     });
   });
 
-  describe('restoreAdminBrand', () => {
+  describe('restore', () => {
     it('should restore an archived brand into draft status', async () => {
       const id = uuid();
       const archived = createMockBrand({ id, deletedAt: new Date() });
@@ -216,7 +217,7 @@ describe('BrandsService', () => {
       prisma.brand.findFirst.mockResolvedValue(archived as never);
       prisma.brand.update.mockResolvedValue(restored as never);
 
-      const result = await service.restoreAdminBrand(id);
+      const result = await service.restore(id);
 
       expect(result.deletedAt).toBeNull();
       expect(result.isActive).toBe(false);

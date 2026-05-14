@@ -1,4 +1,5 @@
 import type {
+  AdminOrderPaymentStatus,
   AdminOrderSortOption,
   AdminOrderStatusFilter,
 } from '@/features/admin/types/admin-orders.types';
@@ -23,6 +24,15 @@ export const adminOrderStatusBadgeByValue: Record<OrderStatus, BadgeVariant> = {
   shipped: 'tag',
   delivered: 'success',
   cancelled: 'destructive',
+};
+
+export const adminOrderPaymentStatusLabelByValue: Record<
+  AdminOrderPaymentStatus,
+  string
+> = {
+  pending: 'Pending',
+  paid: 'Paid',
+  failed: 'Failed',
 };
 
 export const adminOrderSortLabelByValue: Record<AdminOrderSortOption, string> =

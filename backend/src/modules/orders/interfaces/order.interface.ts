@@ -56,6 +56,57 @@ export interface OrderResponse {
   items: OrderItemResponse[];
 }
 
+export interface AdminOrderCustomerResponse {
+  name: string;
+  email: string;
+}
+
+export interface AdminOrderShippingAddressSummaryResponse {
+  line1: string;
+  district: string;
+  city: string;
+}
+
+export interface AdminOrderListItemResponse {
+  id: string;
+  orderCode: string;
+  createdAt: Date;
+  status: OrderStatus;
+  total: number;
+  itemCount: number;
+  paymentMethodLabel: string;
+  customer: AdminOrderCustomerResponse;
+  shippingAddress: AdminOrderShippingAddressSummaryResponse;
+}
+
+export interface AdminOrderDetailItemResponse {
+  id: string;
+  name: string;
+  image: string;
+  variantLabel: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface AdminOrderDetailResponse extends AdminOrderListItemResponse {
+  paymentStatus: PaymentStatus;
+  trackingCode: string | null;
+  items: AdminOrderDetailItemResponse[];
+}
+
+export interface AdminOrderSummaryResponse {
+  all: number;
+  PENDING: number;
+  CONFIRMED: number;
+  SHIPPING: number;
+  DELIVERED: number;
+  CANCELLED: number;
+}
+
+export interface BulkUpdateOrderStatusResponse {
+  updatedCount: number;
+}
+
 export const ORDER_WITH_ITEMS_INCLUDE = {
   items: {
     include: {
@@ -64,6 +115,12 @@ export const ORDER_WITH_ITEMS_INCLUDE = {
     },
   },
   address: true,
+  user: {
+    select: {
+      fullName: true,
+      email: true,
+    },
+  },
 } satisfies Prisma.OrderInclude;
 
 export type OrderWithItems = Prisma.OrderGetPayload<{

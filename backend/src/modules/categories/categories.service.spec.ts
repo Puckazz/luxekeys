@@ -114,8 +114,8 @@ describe('CategoriesService', () => {
     });
   });
 
-  describe('findAdminCategories', () => {
-    it('should return admin summary and default non-archived items', async () => {
+  describe('findManagementCategories', () => {
+    it('should return management summary and default non-archived items', async () => {
       const categories = [
         createMockCategory({ isActive: true }),
         createMockCategory({ isActive: false }),
@@ -123,7 +123,7 @@ describe('CategoriesService', () => {
       ];
       prisma.category.findMany.mockResolvedValue(categories as never);
 
-      const result = await service.findAdminCategories({} as never);
+      const result = await service.findManagementCategories({} as never);
 
       expect(result.data.summary).toEqual({
         all: 2,
@@ -141,7 +141,7 @@ describe('CategoriesService', () => {
       });
       prisma.category.findMany.mockResolvedValue([archived] as never);
 
-      const result = await service.findAdminCategories({
+      const result = await service.findManagementCategories({
         status: 'archived',
       } as never);
 
@@ -249,18 +249,22 @@ describe('CategoriesService', () => {
   // ─── remove ─────────────────────────────────────────────────────────────────
 
   describe('remove', () => {
-    it('should soft-delete by setting deletedAt', async () => {
+    it('should archive by setting deletedAt and deactivating the category', async () => {
       const id = uuid();
       const category = createMockCategory({ id });
-      const deleted = { ...category, deletedAt: new Date() };
+      const deleted = { ...category, deletedAt: new Date(), isActive: false };
       prisma.category.findFirst.mockResolvedValue(category as never);
       prisma.category.update.mockResolvedValue(deleted as never);
 
       const result = await service.remove(id);
       expect(result.deletedAt).not.toBeNull();
+      expect(result.isActive).toBe(false);
       expect(prisma.category.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ deletedAt: expect.any(Date) }),
+          data: expect.objectContaining({
+            deletedAt: expect.any(Date),
+            isActive: false,
+          }),
         }),
       );
     });
@@ -272,7 +276,7 @@ describe('CategoriesService', () => {
     });
   });
 
-  describe('restoreAdminCategory', () => {
+  describe('restore', () => {
     it('should restore an archived category into draft status', async () => {
       const id = uuid();
       const archived = createMockCategory({ id, deletedAt: new Date() });
@@ -284,7 +288,7 @@ describe('CategoriesService', () => {
       prisma.category.findFirst.mockResolvedValue(archived as never);
       prisma.category.update.mockResolvedValue(restored as never);
 
-      const result = await service.restoreAdminCategory(id);
+      const result = await service.restore(id);
 
       expect(result.deletedAt).toBeNull();
       expect(result.isActive).toBe(false);

@@ -31,7 +31,7 @@ export const adminBrandsApi = {
     const response = await authFetchWithMeta<
       AdminBrandListApiData,
       AdminPaginationApiMeta
-    >(`/brands/admin?${query}`);
+    >(`/brands/management?${query}`);
 
     return {
       items: response.data.items.map(mapApiBrandToAdminBrand),
@@ -45,7 +45,7 @@ export const adminBrandsApi = {
   },
 
   createBrand: async (input: UpsertAdminBrandInput): Promise<AdminBrand> => {
-    const brand = await authFetch<AdminBrandApiItem>('/brands/admin', {
+    const brand = await authFetch<AdminBrandApiItem>('/brands', {
       method: 'POST',
       body: JSON.stringify(mapUpsertBrandInputToPayload(input)),
     });
@@ -58,7 +58,7 @@ export const adminBrandsApi = {
       throw new Error('Brand id is required for update.');
     }
 
-    const brand = await authFetch<AdminBrandApiItem>(`/brands/admin/${input.id}`, {
+    const brand = await authFetch<AdminBrandApiItem>(`/brands/${input.id}`, {
       method: 'PATCH',
       body: JSON.stringify(mapUpsertBrandInputToPayload(input)),
     });
@@ -67,7 +67,7 @@ export const adminBrandsApi = {
   },
 
   softDeleteBrand: async (brandId: string): Promise<AdminBrand> => {
-    const brand = await authFetch<AdminBrandApiItem>(`/brands/admin/${brandId}`, {
+    const brand = await authFetch<AdminBrandApiItem>(`/brands/${brandId}`, {
       method: 'DELETE',
     });
 
@@ -76,7 +76,7 @@ export const adminBrandsApi = {
 
   restoreBrand: async (brandId: string): Promise<AdminBrand> => {
     const brand = await authFetch<AdminBrandApiItem>(
-      `/brands/admin/${brandId}/restore`,
+      `/brands/${brandId}/restore`,
       {
         method: 'PATCH',
       }

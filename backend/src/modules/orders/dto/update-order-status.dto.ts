@@ -1,5 +1,12 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import {
   OrderStatus,
   PaymentMethod,
@@ -33,4 +40,36 @@ export class UpdateOrderStatusDto {
   @IsOptional()
   @IsEnum(PaymentMethod)
   paymentMethod?: PaymentMethod;
+
+  @ApiPropertyOptional({
+    description: 'Tracking code override (admin only)',
+    example: 'VNPOST-123456789',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  trackingCode?: string | null;
+}
+
+export class BulkUpdateOrderStatusDto {
+  @ApiProperty({
+    type: [String],
+    description: 'Order IDs to update',
+    example: [
+      '11111111-1111-1111-1111-111111111111',
+      '22222222-2222-2222-2222-222222222222',
+    ],
+  })
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsUUID('4', { each: true })
+  orderIds!: string[];
+
+  @ApiProperty({
+    description: 'New order status',
+    enum: OrderStatus,
+    example: OrderStatus.CONFIRMED,
+  })
+  @IsEnum(OrderStatus)
+  status!: OrderStatus;
 }

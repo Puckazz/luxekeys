@@ -1,5 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import {
   OrderStatus,
   PaymentMethod,
@@ -7,7 +14,23 @@ import {
 } from '../../../generated/prisma/index.js';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto.js';
 
+export const ADMIN_ORDER_SORT_FIELDS = [
+  'createdAt',
+  'totalAmount',
+  'customerName',
+  'status',
+] as const;
+
+export type AdminOrderSortField = (typeof ADMIN_ORDER_SORT_FIELDS)[number];
+
 export class GetOrdersQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({
+    description: 'Search by order code, customer name, email, or shipping name',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
   @ApiPropertyOptional({
     description: 'Filter by order status',
     enum: OrderStatus,
@@ -56,4 +79,9 @@ export class GetOrdersQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsDateString()
   toDate?: string;
+
+  @ApiPropertyOptional({ enum: ADMIN_ORDER_SORT_FIELDS })
+  @IsOptional()
+  @IsIn(ADMIN_ORDER_SORT_FIELDS)
+  sortBy?: AdminOrderSortField;
 }

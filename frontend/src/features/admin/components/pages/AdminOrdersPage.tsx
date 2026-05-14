@@ -7,6 +7,7 @@ import {
   useAdminOrdersQuery,
   useAdminOrdersQueryState,
   useBulkUpdateAdminOrderStatusMutation,
+  useUpdateAdminOrderMutation,
 } from '@/features/admin/hooks';
 import {
   AdminListPagination,
@@ -14,6 +15,7 @@ import {
 } from '@/features/admin/components/common';
 import {
   AdminOrderDetailsDialog,
+  AdminOrderEditDialog,
   AdminOrdersBulkStatusDialog,
   AdminOrdersTable,
   AdminOrdersTableSkeleton,
@@ -28,12 +30,14 @@ export function AdminOrdersPage() {
 
   const ordersQuery = useAdminOrdersQuery(queryState);
   const bulkUpdateMutation = useBulkUpdateAdminOrderStatusMutation();
+  const updateOrderMutation = useUpdateAdminOrderMutation();
 
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
     new Set()
   );
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const [viewingOrderId, setViewingOrderId] = useState<string | null>(null);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
 
   const orders = useMemo<AdminOrder[]>(() => {
     return ordersQuery.data?.items ?? [];
@@ -139,6 +143,7 @@ export function AdminOrdersPage() {
           onToggleAll={handleToggleAll}
           onToggleOrder={handleToggleOrder}
           onViewDetail={setViewingOrderId}
+          onEditOrder={setEditingOrderId}
         />
       </AdminListStateCard>
 
@@ -156,6 +161,23 @@ export function AdminOrdersPage() {
         isSubmitting={bulkUpdateMutation.isPending}
         onOpenChange={setIsBulkDialogOpen}
         onSubmit={handleBulkSubmit}
+      />
+      <AdminOrderEditDialog
+        orderId={editingOrderId}
+        open={Boolean(editingOrderId)}
+        isSubmitting={updateOrderMutation.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingOrderId(null);
+          }
+        }}
+        onSubmit={(input) => {
+          updateOrderMutation.mutate(input, {
+            onSuccess: () => {
+              setEditingOrderId(null);
+            },
+          });
+        }}
       />
 
       <AdminOrderDetailsDialog

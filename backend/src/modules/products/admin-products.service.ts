@@ -365,21 +365,6 @@ export class AdminProductsService {
     return product;
   }
 
-  async archiveAdminProduct(id: string): Promise<AdminProductRecord> {
-    const existing = await this.findAdminProductRecord(id);
-
-    if (existing.deletedAt) {
-      return existing;
-    }
-
-    await this.prisma.product.update({
-      where: { id },
-      data: { deletedAt: new Date(), status: ProductStatus.INACTIVE },
-    });
-
-    return this.findAdminProductRecord(id);
-  }
-
   async restoreAdminProduct(id: string): Promise<AdminProductRecord> {
     await this.findAdminProductRecord(id);
 
