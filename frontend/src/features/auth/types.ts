@@ -19,6 +19,24 @@ export interface RegisterRequest {
   confirmpassword: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  password: string;
+}
+
+export interface ResetPasswordResponse {
+  passwordReset: boolean;
+}
+
 export interface AuthResponse {
   success: boolean;
   user: AuthUser;

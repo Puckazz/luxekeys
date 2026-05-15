@@ -2,8 +2,12 @@ import {
   ApiError,
   AuthResponse,
   AuthUser,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   LoginRequest,
   RegisterRequest,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
 } from '@/features/auth/types';
 import { USER_ROLES, type UserRole } from '@/lib/rbac';
 import {
@@ -108,6 +112,24 @@ export const authApi = {
         email: 'Email is already registered',
       });
     }
+  },
+
+  forgotPassword: (
+    data: ForgotPasswordRequest
+  ): Promise<ForgotPasswordResponse> => {
+    return apiRequest<ForgotPasswordResponse>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  resetPassword: (
+    data: ResetPasswordRequest
+  ): Promise<ResetPasswordResponse> => {
+    return apiRequest<ResetPasswordResponse>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 
   refresh: (): Promise<AuthResponse> => {
