@@ -45,7 +45,7 @@ export interface AdminInventoryItem {
   thumbnail: string;
   variantSku: string;
   variantColor: string;
-  variantSwitchType: string;
+  variantOptionName: string;
   variantStock: number;
   totalStock: number;
   stockStatus: AdminInventoryStockStatus;
@@ -94,7 +94,7 @@ export type AdminInventoryApiItem = {
   thumbnailUrl: string | null;
   variantSku: string;
   variantColor: string;
-  variantSwitchType: string;
+  variantOptionName: string;
   variantStock: number;
   totalStock: number;
   stockStatus: AdminInventoryApiStatusFilter;

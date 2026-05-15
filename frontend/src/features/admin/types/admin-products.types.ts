@@ -51,6 +51,7 @@ export interface AdminProductVariantFormValue {
   layout: ProductLayout | '';
   switchType: string;
   sku: string;
+  skuMode: 'auto' | 'manual';
   originalPrice: number | '';
   price: number;
   stock: number;

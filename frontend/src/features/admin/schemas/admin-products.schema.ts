@@ -15,6 +15,7 @@ const productStatusSchema = z.enum(
 );
 
 const variantStatusSchema = z.enum(ADMIN_VARIANT_STATUSES);
+const skuModeSchema = z.enum(['auto', 'manual']);
 const productLayoutSchema = z.enum(PRODUCT_LAYOUT_OPTIONS);
 const adminProductSpecSchema = z.object({
   id: z.string().optional(),
@@ -53,7 +54,8 @@ export const adminProductVariantSchema = z
     color: z.string().trim().min(1, 'Color is required.'),
     layout: z.union([z.literal(''), productLayoutSchema]),
     switchType: z.string(),
-    sku: z.string().trim().min(3, 'SKU must be at least 3 characters.'),
+    sku: z.union([z.literal(''), z.string().trim().min(3, 'SKU must be at least 3 characters.')]),
+    skuMode: skuModeSchema,
     originalPrice: z.union([
       z.literal(''),
       z.number().min(0, 'Original price must be 0 or greater.'),

@@ -5,7 +5,6 @@ export const ADMIN_REVIEW_SORT_OPTIONS = [
   'oldest',
   'rating-desc',
   'rating-asc',
-  'helpful-desc',
 ] as const;
 
 export type AdminReviewSortOption = (typeof ADMIN_REVIEW_SORT_OPTIONS)[number];
@@ -39,7 +38,6 @@ export interface AdminReview {
   title: string;
   content: string;
   rating: number;
-  helpfulCount: number;
   status: AdminReviewStatus;
   createdAt: string;
   updatedAt: string;
@@ -73,7 +71,6 @@ export interface AdminReviewApiItem {
   title?: string | null;
   content?: string | null;
   rating: number;
-  helpfulCount: number;
   status: AdminReviewApiStatus;
   moderationNote?: string | null;
   moderatedAt?: string | null;
