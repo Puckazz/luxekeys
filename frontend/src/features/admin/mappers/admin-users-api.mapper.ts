@@ -13,11 +13,13 @@ import type {
 import type { UserRole } from '@/lib/rbac';
 
 const apiRoleByUserRole: Record<UserRole, AdminUserApiRole> = {
+  owner: 'OWNER',
   admin: 'ADMIN',
   customer: 'CUSTOMER',
 };
 
 const userRoleByApiRole: Record<AdminUserApiRole, UserRole> = {
+  OWNER: 'owner',
   ADMIN: 'admin',
   CUSTOMER: 'customer',
 };

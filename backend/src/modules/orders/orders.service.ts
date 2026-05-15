@@ -72,7 +72,11 @@ export class OrdersService {
     requesterId: string,
     requesterRole: UserRole,
   ): void {
-    if (requesterRole !== UserRole.ADMIN && orderUserId !== requesterId) {
+    if (
+      requesterRole !== UserRole.ADMIN &&
+      requesterRole !== UserRole.OWNER &&
+      orderUserId !== requesterId
+    ) {
       throw new ForbiddenException('You do not have access to this order');
     }
   }

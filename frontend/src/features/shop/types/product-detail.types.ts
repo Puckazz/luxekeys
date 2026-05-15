@@ -35,6 +35,8 @@ export type ProductDetailHeroProps = {
   onQuantityDecrease: () => void;
   onQuantityIncrease: () => void;
   onAddToCart: () => void;
+  isWishlisted: boolean;
+  onWishlistToggle: () => void;
 };
 
 export type ProductStockBadgeProps = {

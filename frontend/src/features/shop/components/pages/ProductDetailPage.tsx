@@ -12,10 +12,12 @@ import {
   ProductVideoTourSection,
 } from '@/features/shop/components/product-detail';
 import { useCartActions } from '@/features/shop/hooks/useCartActions';
+import { useWishlistActions } from '@/features/shop/hooks/useWishlistActions';
 import { useProductReviewEligibilityQuery } from '@/features/shop/hooks/useProductReviewEligibilityQuery';
 import { useProductReviewsQuery } from '@/features/shop/hooks/useProductReviewsQuery';
-import { ProductSwitchType } from '@/features/shop/types';
+import { ProductSwitchType, type FeaturedProduct } from '@/features/shop/types';
 import type { ProductDetailPageProps } from '@/features/shop/types/product-detail.types';
+import { formatCurrency } from '@/lib/formatters';
 import { Separator } from '@/shared/components/ui/separator';
 import { useAuthStore } from '@/stores/auth/auth.store';
 
@@ -40,6 +42,7 @@ const buildVariantLabel = ({
 
 export default function ProductDetailPage({ product }: ProductDetailPageProps) {
   const { addItem } = useCartActions();
+  const { isWished, toggleWishlist } = useWishlistActions();
   const authStatus = useAuthStore((state) => state.status);
   const searchParams = useSearchParams();
 
@@ -202,6 +205,44 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
         ? currentVariant.compareAtPrice
         : undefined;
 
+  const wishlistProduct = useMemo<FeaturedProduct>(() => {
+    const variantLabel = buildVariantLabel({
+      type: product.type,
+      currentVariantName: currentVariant?.name,
+      selectedColor,
+      selectedSwitchName,
+    });
+
+    return {
+      productId: product.id,
+      variantId: currentVariant?.id ?? product.defaultVariantId ?? product.id,
+      slug: product.slug,
+      name: product.name,
+      subtitle: variantLabel,
+      price: formatCurrency(currentPrice, { minimumFractionDigits: 2 }),
+      originalPrice: currentOriginalPrice
+        ? formatCurrency(currentOriginalPrice, { minimumFractionDigits: 2 })
+        : undefined,
+      discountPercentage: product.discountPercentage,
+      badge: product.stockLabel,
+      image: currentVariant?.image ?? product.image,
+    };
+  }, [
+    currentOriginalPrice,
+    currentPrice,
+    currentVariant,
+    product.defaultVariantId,
+    product.discountPercentage,
+    product.id,
+    product.image,
+    product.name,
+    product.slug,
+    product.stockLabel,
+    product.type,
+    selectedColor,
+    selectedSwitchName,
+  ]);
+
   // Auto-sync selectedSwitchName when switch type or variant changes
   useEffect(() => {
     if (!currentVariant?.switchOptions?.length) return;
@@ -346,6 +387,8 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
         onQuantityDecrease={decreaseQuantity}
         onQuantityIncrease={increaseQuantity}
         onAddToCart={handleAddToCart}
+        isWishlisted={isWished(wishlistProduct)}
+        onWishlistToggle={() => toggleWishlist(wishlistProduct)}
       />
 
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">

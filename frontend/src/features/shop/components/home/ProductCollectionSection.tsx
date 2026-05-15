@@ -6,10 +6,7 @@ import { ChevronLeft, ChevronRight, Heart, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { useCartActions } from '@/features/shop/hooks/useCartActions';
-import {
-  selectWishlistItems,
-  useWishlistStore,
-} from '@/stores/shop/wishlist.store';
+import { useWishlistActions } from '@/features/shop/hooks/useWishlistActions';
 import type { ProductCollectionSectionProps } from '@/features/shop/types/product-collection-section.types';
 import {
   Carousel,
@@ -46,8 +43,7 @@ export default function ProductCollectionSection({
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const { addItem } = useCartActions();
-  const wishlistItems = useWishlistStore(selectWishlistItems);
-  const toggleWishlistItem = useWishlistStore((state) => state.toggleItem);
+  const { isWished, toggleWishlist } = useWishlistActions();
   const shouldRenderStockBadge = (badge: string | null) => {
     return badge !== null && badge !== 'In Stock';
   };
@@ -157,9 +153,7 @@ export default function ProductCollectionSection({
       >
         <CarouselContent>
           {products.map((product) => {
-            const isWished = wishlistItems.some(
-              (wishlistItem) => wishlistItem.slug === product.slug
-            );
+            const isProductWished = isWished(product);
 
             return (
               <CarouselItem
@@ -232,12 +226,15 @@ export default function ProductCollectionSection({
 
                       <button
                         type="button"
-                        aria-label={`${isWished ? 'Remove' : 'Add'} ${product.name} ${isWished ? 'from' : 'to'} wishlist`}
-                        onClick={() => toggleWishlistItem(product)}
+                        aria-label={`${isProductWished ? 'Remove' : 'Add'} ${product.name} ${isProductWished ? 'from' : 'to'} wishlist`}
+                        onClick={() => toggleWishlist(product)}
                         className="bg-background hover:bg-background/90 pointer-events-auto inline-flex size-11 items-center justify-center rounded-md text-white shadow-sm transition-colors"
                       >
                         <Heart
-                          className={cn('size-5', isWished && 'fill-current')}
+                          className={cn(
+                            'size-5',
+                            isProductWished && 'fill-current'
+                          )}
                         />
                       </button>
                     </div>

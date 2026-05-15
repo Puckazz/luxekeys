@@ -201,8 +201,8 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
   return (
     <section className="w-full">
       <div className="flex min-h-screen items-start gap-0">
-        <Sidebar className="bg-card/35 sticky top-0 h-screen rounded-none border-y-0 border-l-0">
-          <SidebarHeader>
+        <Sidebar className="bg-card/35 sticky top-0 h-screen rounded-none border-y-0 border-l-0 border-border/70">
+          <SidebarHeader className='border-border/70'>
             <div className="flex items-center gap-2 px-1">
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex size-8 items-center justify-center rounded-lg">
                 <Boxes className="size-4" />
@@ -240,12 +240,12 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter>
+          <SidebarFooter className='border-border/70'>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="bg-sidebar-accent/35 border-sidebar-border/80 hover:bg-sidebar-accent/55 flex w-full items-center gap-2 rounded-md border p-3 text-left transition-colors"
+                  className="bg-card/45 border-border/70 hover:bg-card/70 flex w-full items-center gap-2 rounded-md border p-3 text-left transition-colors"
                 >
                   <div className="bg-sidebar-primary text-sidebar-primary-foreground flex size-9 items-center justify-center rounded-full text-xs font-semibold">
                     {displayInitials}
@@ -269,7 +269,7 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
               >
                 <DropdownMenuLabel>
                   <div className="flex items-center gap-2">
-                    <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold">
+                    <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-md text-xs font-semibold">
                       {displayInitials}
                     </div>
                     <div className="min-w-0">
@@ -285,7 +285,7 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className='hover:bg-card/70! h-10'>
                   <Link href="/admin/profile">
                     <User className="size-4" />
                     Admin Profile
@@ -298,6 +298,7 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
                   onClick={() => {
                     void handleLogout();
                   }}
+                  className='hover:bg-card/70! h-10'
                 >
                   <LogOut className="size-4" />
                   Log out

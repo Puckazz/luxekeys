@@ -38,7 +38,7 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new category (Admin)' })
   create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -56,7 +56,7 @@ export class CategoriesController {
 
   @Get('management')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List categories for management' })
   @ApiOkResponse({ description: 'Paginated management category list' })
@@ -95,7 +95,7 @@ export class CategoriesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a category (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -108,7 +108,7 @@ export class CategoriesController {
 
   @Patch(':id/restore')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Restore an archived category' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -118,7 +118,7 @@ export class CategoriesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Archive a category' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })

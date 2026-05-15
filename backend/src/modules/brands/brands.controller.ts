@@ -38,7 +38,7 @@ export class BrandsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new brand (Admin)' })
   create(@Body() createBrandDto: CreateBrandDto) {
@@ -54,7 +54,7 @@ export class BrandsController {
 
   @Get('management')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List brands for management' })
   @ApiOkResponse({ description: 'Paginated management brand list' })
@@ -86,7 +86,7 @@ export class BrandsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a brand (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -99,7 +99,7 @@ export class BrandsController {
 
   @Patch(':id/restore')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Restore an archived brand' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -109,7 +109,7 @@ export class BrandsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Archive a brand' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })

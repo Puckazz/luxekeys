@@ -16,7 +16,10 @@ import {
   adminUserSortLabelByValue,
   adminUserStatusLabelByValue,
 } from '@/features/admin/utils/admin-users.utils';
-import { canManageUsersCrud, USER_ROLES, type UserRole } from '@/lib/rbac';
+import {
+  canManageUsersCrud,
+  type UserRole,
+} from '@/lib/rbac';
 import { Button } from '@/shared/components/ui/button';
 import {
   Select,
@@ -60,6 +63,8 @@ export function AdminUsersToolbar({
   onSortChange,
   onCreateClick,
 }: AdminUsersToolbarProps) {
+  const filterRoles = ['admin', 'customer'];
+
   return (
     <div className="space-y-4">
       <AdminToolbarHeader
@@ -102,7 +107,7 @@ export function AdminUsersToolbar({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All roles</SelectItem>
-            {USER_ROLES.map((role) => (
+            {filterRoles.map((role) => (
               <SelectItem key={role} value={role}>
                 {adminUserRoleLabelByValue[role]}
               </SelectItem>

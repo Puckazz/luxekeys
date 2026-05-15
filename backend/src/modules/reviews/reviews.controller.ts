@@ -91,7 +91,7 @@ export class ReviewsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Soft-delete a review (admin moderation only)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -108,7 +108,7 @@ export class ReviewsController {
 @ApiTags('Admin — Reviews')
 @Controller('admin/reviews')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.OWNER, UserRole.ADMIN)
 @ApiBearerAuth()
 export class AdminReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}

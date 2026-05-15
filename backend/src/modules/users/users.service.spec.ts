@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import {
   createMockPrismaService,
   MockPrismaService,
+  createMockOwnerUser,
   createMockUser,
   uuid,
 } from '../../common/testing/index.js';
@@ -66,13 +67,16 @@ describe('UsersService', () => {
       prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue(user as never);
 
-      const result = await service.createAdminUser({
-        email: ' New@Example.com ',
-        fullName: 'New User',
-        password: 'password123',
-        role: UserRole.CUSTOMER,
-        status: UserStatus.INACTIVE,
-      });
+      const result = await service.createAdminUser(
+        createMockOwnerUser() as never,
+        {
+          email: ' New@Example.com ',
+          fullName: 'New User',
+          password: 'password123',
+          role: UserRole.CUSTOMER,
+          status: UserStatus.INACTIVE,
+        },
+      );
 
       expect(result.email).toBe('new@example.com');
       expect(prisma.user.create).toHaveBeenCalledWith(
@@ -91,7 +95,7 @@ describe('UsersService', () => {
       prisma.user.findFirst.mockResolvedValue(createMockUser() as never);
 
       await expect(
-        service.createAdminUser({
+        service.createAdminUser(createMockOwnerUser() as never, {
           email: 'test@example.com',
           fullName: 'Test User',
           password: 'password123',
@@ -99,6 +103,30 @@ describe('UsersService', () => {
           status: UserStatus.ACTIVE,
         }),
       ).rejects.toThrow(ConflictException);
+    });
+
+    it('should forbid admins from creating admin accounts', async () => {
+      await expect(
+        service.createAdminUser(createMockUser({ role: UserRole.ADMIN }) as never, {
+          email: 'team-admin@example.com',
+          fullName: 'Team Admin',
+          password: 'password123',
+          role: UserRole.ADMIN,
+          status: UserStatus.ACTIVE,
+        }),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should forbid owners from creating owner accounts from user management', async () => {
+      await expect(
+        service.createAdminUser(createMockOwnerUser() as never, {
+          email: 'another-owner@example.com',
+          fullName: 'Another Owner',
+          password: 'password123',
+          role: UserRole.OWNER,
+          status: UserStatus.ACTIVE,
+        }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -137,6 +165,20 @@ describe('UsersService', () => {
       } as never);
 
       expect(result.data.items).toEqual([archivedUser]);
+    });
+
+    it('should exclude owner accounts from management queries', async () => {
+      prisma.user.findMany.mockResolvedValue([] as never);
+
+      await service.findManagementUsers({ role: UserRole.OWNER } as never);
+
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            role: { not: UserRole.OWNER },
+          }),
+        }),
+      );
     });
   });
 
@@ -288,12 +330,7 @@ describe('UsersService', () => {
       prisma.user.update.mockResolvedValue(updated as never);
 
       const result = await service.updateUser(
-        {
-          id: 'actor-id',
-          email: 'actor@example.com',
-          fullName: 'Actor User',
-          role: UserRole.ADMIN,
-        } as never,
+        createMockOwnerUser({ id: 'actor-id' }) as never,
         user.id,
         {
           email: ' Admin@Example.com ',
@@ -318,12 +355,7 @@ describe('UsersService', () => {
       prisma.user.findUnique.mockResolvedValue(null);
       await expect(
         service.updateUser(
-          {
-            id: 'actor-id',
-            email: 'actor@example.com',
-            fullName: 'Actor User',
-            role: UserRole.ADMIN,
-          } as never,
+          createMockOwnerUser({ id: 'actor-id' }) as never,
           uuid(),
           { fullName: 'x' } as never,
         ),
@@ -336,12 +368,7 @@ describe('UsersService', () => {
 
       await expect(
         service.updateUser(
-          {
-            id: 'actor-id',
-            email: 'actor@example.com',
-            fullName: 'Actor User',
-            role: UserRole.ADMIN,
-          } as never,
+          createMockOwnerUser({ id: 'actor-id' }) as never,
           uuid(),
           { email: 'taken@example.com' } as never,
         ),
@@ -383,6 +410,38 @@ describe('UsersService', () => {
         ),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('should allow owners to edit admin accounts', async () => {
+      const targetAdmin = createMockUser({ role: UserRole.ADMIN });
+      const updatedAdmin = createMockUser({
+        ...targetAdmin,
+        fullName: 'Updated Admin',
+        role: UserRole.ADMIN,
+      });
+      prisma.user.findUnique.mockResolvedValue(targetAdmin as never);
+      prisma.user.update.mockResolvedValue(updatedAdmin as never);
+
+      const result = await service.updateUser(
+        createMockOwnerUser({ id: 'owner-id' }) as never,
+        targetAdmin.id,
+        { fullName: 'Updated Admin' } as never,
+      );
+
+      expect(result.fullName).toBe('Updated Admin');
+    });
+
+    it('should forbid updating owner accounts from user management', async () => {
+      const owner = createMockOwnerUser({ status: UserStatus.ACTIVE });
+      prisma.user.findUnique.mockResolvedValue(owner as never);
+
+      await expect(
+        service.updateUser(
+          createMockOwnerUser({ id: 'other-owner-id' }) as never,
+          owner.id,
+          { role: UserRole.ADMIN } as never,
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
   });
 
   // ─── softDelete ─────────────────────────────────────────────────────────────
@@ -398,12 +457,7 @@ describe('UsersService', () => {
       prisma.refreshToken.updateMany.mockResolvedValue({ count: 0 } as never);
 
       const result = await service.softDelete(
-        {
-          id: 'actor-id',
-          email: 'actor@example.com',
-          fullName: 'Actor User',
-          role: UserRole.ADMIN,
-        } as never,
+        createMockOwnerUser({ id: 'actor-id' }) as never,
         user.id,
       );
       expect(result.deletedAt).toBeInstanceOf(Date);
@@ -414,12 +468,7 @@ describe('UsersService', () => {
       prisma.user.findUnique.mockResolvedValue(null);
       await expect(
         service.softDelete(
-          {
-            id: 'actor-id',
-            email: 'actor@example.com',
-            fullName: 'Actor User',
-            role: UserRole.ADMIN,
-          } as never,
+          createMockOwnerUser({ id: 'actor-id' }) as never,
           uuid(),
         ),
       ).rejects.toThrow(NotFoundException);
@@ -441,6 +490,18 @@ describe('UsersService', () => {
         ),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('should forbid archiving owner accounts from user management', async () => {
+      const owner = createMockOwnerUser({ status: UserStatus.ACTIVE });
+      prisma.user.findUnique.mockResolvedValue(owner as never);
+
+      await expect(
+        service.softDelete(
+          createMockOwnerUser({ id: 'other-owner-id' }) as never,
+          owner.id,
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
   });
 
   // ─── restore ───────────────────────────────────────────────────────────────
@@ -456,12 +517,7 @@ describe('UsersService', () => {
       prisma.user.update.mockResolvedValue(restored as never);
 
       const result = await service.restore(
-        {
-          id: 'actor-id',
-          email: 'actor@example.com',
-          fullName: 'Actor User',
-          role: UserRole.ADMIN,
-        } as never,
+        createMockOwnerUser({ id: 'actor-id' }) as never,
         user.id,
       );
 
@@ -476,7 +532,7 @@ describe('UsersService', () => {
       );
     });
 
-    it('should forbid restoring admin accounts from user management', async () => {
+    it('should forbid admins from restoring admin accounts from user management', async () => {
       const user = createMockUser({
         role: UserRole.ADMIN,
         deletedAt: new Date(),
@@ -485,13 +541,26 @@ describe('UsersService', () => {
 
       await expect(
         service.restore(
-          {
+          createMockUser({
             id: 'actor-id',
-            email: 'actor@example.com',
-            fullName: 'Actor User',
             role: UserRole.ADMIN,
-          } as never,
+          }) as never,
           user.id,
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should forbid restoring owner accounts from user management', async () => {
+      const owner = createMockOwnerUser({
+        deletedAt: new Date(),
+        status: UserStatus.SUSPENDED,
+      });
+      prisma.user.findUnique.mockResolvedValue(owner as never);
+
+      await expect(
+        service.restore(
+          createMockOwnerUser({ id: 'other-owner-id' }) as never,
+          owner.id,
         ),
       ).rejects.toThrow(ForbiddenException);
     });

@@ -43,6 +43,31 @@ export const persistAuthSession = (response: AuthResponse): void => {
   notifyAuthSessionChange(response.user);
 };
 
+export const updateAuthSessionUser = (user: AuthUser): void => {
+  if (!isClient()) {
+    return;
+  }
+
+  const currentSession = getStoredAuthSession();
+
+  if (!currentSession) {
+    notifyAuthSessionChange(user);
+    return;
+  }
+
+  const nextSession: AuthSession = {
+    ...currentSession,
+    user,
+  };
+
+  window.localStorage.setItem(
+    AUTH_SESSION_STORAGE_KEY,
+    JSON.stringify(nextSession)
+  );
+
+  notifyAuthSessionChange(user);
+};
+
 export const clearAuthSession = (): void => {
   accessTokenMemory = null;
   accessTokenExpiresAtMemory = 0;

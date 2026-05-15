@@ -34,6 +34,7 @@ import { AdminSwitchOptionsEditor } from './AdminSwitchOptionsEditor';
 type AdminVariantEditorProps = {
   productType: AdminProductFormValues['productType'];
   productImages: AdminProductImage[];
+  isCreateMode: boolean;
   fields: FieldArrayWithId<AdminProductFormValues, 'variants', 'fieldId'>[];
   control: Control<AdminProductFormValues>;
   register: UseFormRegister<AdminProductFormValues>;
@@ -48,6 +49,7 @@ type AdminVariantEditorProps = {
 export function AdminVariantEditor({
   productType,
   productImages,
+  isCreateMode,
   fields,
   control,
   register,
@@ -361,7 +363,9 @@ export function AdminVariantEditor({
                 ) : (
                   <div className="border-border/70 bg-background/40 rounded-md border border-dashed p-3">
                     <p className="text-muted-foreground text-xs">
-                      Upload product gallery images before choosing variant thumbnails.
+                      {isCreateMode
+                        ? 'Variant thumbnails can be selected after the product is created.'
+                        : 'Upload product gallery images before choosing variant thumbnails.'}
                     </p>
                   </div>
                 )}

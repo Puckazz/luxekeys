@@ -43,6 +43,14 @@ export function createMockAdminUser(overrides: Record<string, unknown> = {}) {
   });
 }
 
+export function createMockOwnerUser(overrides: Record<string, unknown> = {}) {
+  return createMockUser({
+    role: UserRole.OWNER,
+    email: 'owner@example.com',
+    ...overrides,
+  });
+}
+
 // ─── Category ─────────────────────────────────────────────────────────────────
 
 export function createMockCategory(overrides: Record<string, unknown> = {}) {

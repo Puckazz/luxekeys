@@ -43,7 +43,7 @@ export class ProductImagesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Upload an image for a product (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -71,7 +71,7 @@ export class ProductImagesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update image order or primary flag (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -86,7 +86,7 @@ export class ProductImagesController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Delete an image and remove from Cloudinary (Admin)',

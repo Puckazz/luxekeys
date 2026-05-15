@@ -192,7 +192,7 @@ export class ReviewsService {
   ): Promise<ReviewDetail> {
     await this.findOneForProduct(productId, id);
 
-    if (role !== UserRole.ADMIN) {
+    if (role !== UserRole.ADMIN && role !== UserRole.OWNER) {
       throw new ForbiddenException('Only admins can moderate reviews');
     }
 

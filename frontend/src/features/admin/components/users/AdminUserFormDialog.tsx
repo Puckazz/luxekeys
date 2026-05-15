@@ -12,9 +12,10 @@ import type {
 } from '@/features/admin/types/admin-users.types';
 import {
   adminUserRoleLabelByValue,
+  getAssignableUserRoles,
   adminUserStatusLabelByValue,
 } from '@/features/admin/utils/admin-users.utils';
-import { USER_ROLES } from '@/lib/rbac';
+import type { UserRole } from '@/lib/rbac';
 import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
@@ -37,6 +38,7 @@ type AdminUserFormDialogProps = {
   mode: 'create' | 'edit';
   open: boolean;
   user: AdminUser | null;
+  actorRole: UserRole;
   isSubmitting: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (input: Omit<UpsertAdminUserInput, 'actorRole'>) => void;
@@ -68,10 +70,12 @@ export function AdminUserFormDialog({
   mode,
   open,
   user,
+  actorRole,
   isSubmitting,
   onOpenChange,
   onSubmit,
 }: AdminUserFormDialogProps) {
+  const allowedRoles = getAssignableUserRoles(actorRole);
   const form = useForm<AdminUserFormValues>({
     resolver: zodResolver(adminUserFormSchema),
     defaultValues: toFormValues(user),
@@ -187,7 +191,7 @@ export function AdminUserFormDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {USER_ROLES.map((role) => (
+                      {allowedRoles.map((role) => (
                         <SelectItem key={role} value={role}>
                           {adminUserRoleLabelByValue[role]}
                         </SelectItem>

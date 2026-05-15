@@ -2,9 +2,10 @@ import type {
   AdminUserListQueryState,
   AdminUserStatus,
 } from '@/features/admin/types/admin-users.types';
-import { canManageUsersCrud, type UserRole, USER_ROLES } from '@/lib/rbac';
+import { canManageUsersCrud, type UserRole } from '@/lib/rbac';
 
 export const adminUserRoleLabelByValue: Record<UserRole, string> = {
+  owner: 'Owner',
   admin: 'Admin',
   customer: 'Customer',
 };
@@ -28,7 +29,7 @@ export const adminUserSortLabelByValue: Record<
 
 export const getAssignableUserRoles = (actorRole: UserRole): UserRole[] => {
   if (canManageUsersCrud(actorRole)) {
-    return [...USER_ROLES];
+    return actorRole === 'owner' ? ['admin', 'customer'] : ['customer'];
   }
 
   return [];

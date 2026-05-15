@@ -5,6 +5,7 @@ export {
   now,
   createMockUser,
   createMockAdminUser,
+  createMockOwnerUser,
   createMockCategory,
   createMockBrand,
   createMockProduct,

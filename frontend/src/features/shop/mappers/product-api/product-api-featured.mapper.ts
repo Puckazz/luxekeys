@@ -24,6 +24,7 @@ export const mapApiProductToFeaturedProduct = (
   const listItem = mapApiProductToListItem(product);
 
   return {
+    productId: listItem.id,
     variantId: listItem.defaultVariantId ?? listItem.id,
     slug: listItem.slug,
     name: listItem.name,

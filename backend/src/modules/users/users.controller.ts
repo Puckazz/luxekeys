@@ -41,7 +41,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List all users (Admin only)' })
   @ApiOkResponse({
@@ -56,7 +56,7 @@ export class UsersController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create user (Admin only)' })
   @ApiOkResponse({
@@ -64,14 +64,15 @@ export class UsersController {
     type: Object,
   })
   createAdminUser(
+    @CurrentUser() actor: AuthUser,
     @Body() dto: CreateAdminUserDto,
   ): Promise<UserProfile> {
-    return this.usersService.createAdminUser(dto);
+    return this.usersService.createAdminUser(actor, dto);
   }
 
   @Get('management')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List users for management (Admin only)' })
   @ApiOkResponse({
@@ -126,7 +127,7 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -141,7 +142,7 @@ export class UsersController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update user (Admin only)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -160,7 +161,7 @@ export class UsersController {
 
   @Patch(':id/restore')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Restore archived user (Admin only)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -178,7 +179,7 @@ export class UsersController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Soft delete user (Admin only)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })

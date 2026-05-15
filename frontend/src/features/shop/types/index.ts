@@ -1,4 +1,5 @@
 export interface FeaturedProduct {
+  productId: string;
   variantId: string;
   slug: string;
   name: string;

@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { Prisma, UserStatus } from '../../generated/prisma/index.js';
+import { Prisma, UserRole, UserStatus } from '../../generated/prisma/index.js';
 import { PrismaService } from '../database/prisma.service.js';
 import { PaginatedResponse } from '../../common/interfaces/index.js';
 import {
@@ -82,7 +82,12 @@ export class UsersService {
     };
   }
 
-  async createAdminUser(dto: CreateAdminUserDto): Promise<UserProfile> {
+  async createAdminUser(
+    actor: AuthUser,
+    dto: CreateAdminUserDto,
+  ): Promise<UserProfile> {
+    this.assertActorCanAssignRole(actor, dto.role);
+
     const email = dto.email.toLowerCase().trim();
     const normalizedPhone = this.normalizeOptionalString(dto.phone);
 
@@ -118,7 +123,10 @@ export class UsersService {
     const search = query.search?.trim();
     const users = await this.prisma.user.findMany({
       where: {
-        ...(query.role ? { role: query.role } : {}),
+        role:
+          query.role && query.role !== UserRole.OWNER
+            ? query.role
+            : { not: UserRole.OWNER },
         ...(search
           ? {
               OR: [
@@ -283,16 +291,85 @@ export class UsersService {
     return user as UserProfile;
   }
 
-  private assertAdminCanManageUser(actor: AuthUser, user: UserProfile): void {
+  private assertActorCanAssignRole(actor: AuthUser, role: UserRole): void {
+    if (
+      actor.role === UserRole.OWNER &&
+      (role === UserRole.ADMIN || role === UserRole.CUSTOMER)
+    ) {
+      return;
+    }
+
+    if (actor.role === UserRole.ADMIN && role === UserRole.CUSTOMER) {
+      return;
+    }
+
+    throw new ForbiddenException(
+      'You do not have permission to assign this role',
+    );
+  }
+
+  private assertActorCanManageUser(actor: AuthUser, user: UserProfile): void {
     if (actor.id === user.id) {
       throw new ForbiddenException(
         'Use your profile page to update your own account',
       );
     }
 
-    if (user.role === 'ADMIN') {
+    if (user.role === UserRole.OWNER) {
       throw new ForbiddenException(
-        'Admin accounts cannot be managed from the users administration screen',
+        'Owner accounts are managed separately from the users screen',
+      );
+    }
+
+    if (actor.role === UserRole.OWNER) {
+      return;
+    }
+
+    if (user.role !== UserRole.CUSTOMER) {
+      throw new ForbiddenException(
+        'Only owners can manage admin and owner accounts',
+      );
+    }
+  }
+
+  private async getActiveOwnerCount(): Promise<number> {
+    return this.prisma.user.count({
+      where: {
+        role: UserRole.OWNER,
+        status: UserStatus.ACTIVE,
+        deletedAt: null,
+      },
+    });
+  }
+
+  private async assertNotLastActiveOwner(
+    user: UserProfile,
+    nextRole?: UserRole,
+    nextStatus?: UserStatus,
+    archive = false,
+  ): Promise<void> {
+    if (
+      user.role !== UserRole.OWNER ||
+      user.deletedAt ||
+      user.status !== UserStatus.ACTIVE
+    ) {
+      return;
+    }
+
+    const removesOwnerRole =
+      nextRole !== undefined && nextRole !== UserRole.OWNER;
+    const removesActiveStatus =
+      nextStatus !== undefined && nextStatus !== UserStatus.ACTIVE;
+
+    if (!archive && !removesOwnerRole && !removesActiveStatus) {
+      return;
+    }
+
+    const activeOwnerCount = await this.getActiveOwnerCount();
+
+    if (activeOwnerCount <= 1) {
+      throw new ForbiddenException(
+        'The last active owner cannot be archived, suspended, or demoted',
       );
     }
   }
@@ -303,7 +380,17 @@ export class UsersService {
     dto: UpdateUserDto,
   ): Promise<UserProfile> {
     const user = await this.findExistingUser(userId);
-    this.assertAdminCanManageUser(actor, user as UserProfile);
+    this.assertActorCanManageUser(actor, user as UserProfile);
+
+    if (dto.role !== undefined) {
+      this.assertActorCanAssignRole(actor, dto.role);
+    }
+
+    await this.assertNotLastActiveOwner(
+      user as UserProfile,
+      dto.role,
+      dto.status,
+    );
 
     const normalizedEmail =
       dto.email !== undefined ? dto.email.toLowerCase().trim() : undefined;
@@ -334,7 +421,8 @@ export class UsersService {
 
   async softDelete(actor: AuthUser, userId: string): Promise<UserProfile> {
     const user = await this.findExistingUser(userId);
-    this.assertAdminCanManageUser(actor, user as UserProfile);
+    this.assertActorCanManageUser(actor, user as UserProfile);
+    await this.assertNotLastActiveOwner(user as UserProfile, undefined, undefined, true);
 
     if (user.deletedAt) {
       return user as UserProfile;
@@ -356,13 +444,16 @@ export class UsersService {
 
   async restore(actor: AuthUser, userId: string): Promise<UserProfile> {
     const user = await this.findExistingUser(userId);
-    this.assertAdminCanManageUser(actor, user as UserProfile);
+    this.assertActorCanManageUser(actor, user as UserProfile);
 
     const restored = await this.prisma.user.update({
       where: { id: userId },
       data: {
         deletedAt: null,
-        status: UserStatus.INACTIVE,
+        status:
+          user.role === UserRole.OWNER
+            ? UserStatus.ACTIVE
+            : UserStatus.INACTIVE,
       },
       select: this.userSelect,
     });

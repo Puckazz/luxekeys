@@ -66,6 +66,8 @@ export default function ProductDetailHeroSection({
   onQuantityDecrease,
   onQuantityIncrease,
   onAddToCart,
+  isWishlisted,
+  onWishlistToggle,
 }: ProductDetailHeroProps) {
   const hasDiscount =
     typeof currentOriginalPrice === 'number' && currentOriginalPrice > currentPrice;
@@ -460,9 +462,12 @@ export default function ProductDetailHeroSection({
                 variant="outline"
                 size="icon-lg"
                 className="h-12 w-12 rounded-full"
-                aria-label="Add to wishlist"
+                aria-label={`${isWishlisted ? 'Remove' : 'Add'} ${product.name} ${isWishlisted ? 'from' : 'to'} wishlist`}
+                onClick={onWishlistToggle}
               >
-                <Heart className="size-5" />
+                <Heart
+                  className={cn('size-5', isWishlisted && 'fill-current')}
+                />
               </Button>
             </div>
 

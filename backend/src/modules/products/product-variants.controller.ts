@@ -40,7 +40,7 @@ export class ProductVariantsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a product variant (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -56,7 +56,7 @@ export class ProductVariantsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product variant (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -75,7 +75,7 @@ export class ProductVariantsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a product variant (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })

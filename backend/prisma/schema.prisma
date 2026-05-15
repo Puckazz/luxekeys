@@ -359,6 +359,7 @@ enum ReviewStatus {
 }
 
 enum UserRole {
+  OWNER
   CUSTOMER
   ADMIN
 }

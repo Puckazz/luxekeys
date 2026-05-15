@@ -9,6 +9,7 @@ import {
   subscribeAuthSession,
 } from '@/lib/auth-session';
 import { useCartStore } from '@/stores/shop/cart.store';
+import { useWishlistStore } from '@/stores/shop/wishlist.store';
 import { useCheckoutStore } from '@/stores/shop/checkout.store';
 import { useProfileStore } from '@/stores/profile/profile.store';
 import { useAddressesStore } from '@/stores/profile/addresses.store';
@@ -66,6 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   clearSession: () => {
     clearAuthSession();
     useCartStore.getState().reset();
+    useWishlistStore.getState().clear();
     useCheckoutStore.getState().clearCheckout();
     useProfileStore.getState().clearProfile();
     useAddressesStore.getState().clearAddresses();

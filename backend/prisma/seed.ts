@@ -191,6 +191,19 @@ async function main() {
   console.log('👤  Seeding users...');
 
   await prisma.user.upsert({
+    where: { email: 'owner@luxekeys.com' },
+    update: {},
+    create: {
+      email: 'owner@luxekeys.com',
+      phone: '+1-800-000-0000',
+      passwordHash: hashPassword('Owner@123456'),
+      fullName: 'LuxeKeys Owner',
+      avatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=Owner',
+      role: UserRole.OWNER,
+    },
+  });
+
+  await prisma.user.upsert({
     where: { email: 'admin@luxekeys.com' },
     update: {},
     create: {
@@ -242,7 +255,7 @@ async function main() {
     },
   });
 
-  console.log(`   ✅  Created ${4} users\n`);
+  console.log(`   ✅  Created ${5} users\n`);
 
   // ── 2. Addresses ──────────────────────────────────────────────────────────
   console.log('📍  Seeding addresses...');
@@ -2686,6 +2699,7 @@ async function main() {
   console.log('═══════════════════════════════════════════════════');
   console.log('  Test Accounts');
   console.log('═══════════════════════════════════════════════════');
+  console.log('  OWNER   owner@luxekeys.com       Owner@123456');
   console.log('  ADMIN   admin@luxekeys.com       Admin@123456');
   console.log('  USER 1  alice.johnson@example.com  Alice@123456');
   console.log('  USER 2  bob.smith@example.com      Bob@123456');

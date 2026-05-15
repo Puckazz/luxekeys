@@ -28,6 +28,7 @@ export const initialCartItems: CartLineItem[] = [
 
 export const youMightAlsoLikeProducts: FeaturedProduct[] = [
   {
+    productId: 'charging-pad-x1',
     variantId: 'variant-charging-pad-x1-default',
     slug: 'charging-pad-x1',
     name: 'Fast Wireless Charging Pad',
@@ -39,6 +40,7 @@ export const youMightAlsoLikeProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    productId: 'ergonomic-mouse-pro',
     variantId: 'variant-ergonomic-mouse-pro-default',
     slug: 'ergonomic-mouse-pro',
     name: 'Ergonomic Wireless Mouse',
@@ -50,6 +52,7 @@ export const youMightAlsoLikeProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    productId: 'usb-c-hub-7in1',
     variantId: 'variant-usb-c-hub-7in1-default',
     slug: 'usb-c-hub-7in1',
     name: '7-in-1 USB-C Hub',
@@ -60,6 +63,7 @@ export const youMightAlsoLikeProducts: FeaturedProduct[] = [
       'https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=1200&q=80',
   },
   {
+    productId: 'vegan-desk-mat',
     variantId: 'variant-vegan-desk-mat-default',
     slug: 'vegan-desk-mat',
     name: 'Premium Vegan Leather Desk Mat',

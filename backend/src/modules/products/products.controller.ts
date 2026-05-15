@@ -44,7 +44,7 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new product (Admin)' })
   create(@Body() createProductDto: CreateProductDto) {
@@ -67,7 +67,7 @@ export class ProductsController {
 
   @Get('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List products for admin catalog management' })
   @ApiOkResponse({ description: 'Paginated admin product list' })
@@ -77,7 +77,7 @@ export class ProductsController {
 
   @Post('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a product with variants (Admin)' })
   createAdminProduct(@Body() dto: UpsertAdminProductDto) {
@@ -86,7 +86,7 @@ export class ProductsController {
 
   @Get('admin/inventory')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List product variant inventory for admin' })
   @ApiOkResponse({ description: 'Paginated admin inventory list' })
@@ -96,7 +96,7 @@ export class ProductsController {
 
   @Patch('admin/inventory/stock')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Bulk update product variant stock (Admin)' })
   bulkUpdateAdminInventoryStock(@Body() dto: AdminInventoryBulkUpdateDto) {
@@ -105,7 +105,7 @@ export class ProductsController {
 
   @Patch('admin/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product with variants (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -118,7 +118,7 @@ export class ProductsController {
 
   @Patch('admin/:id/restore')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Restore a soft-deleted product (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -146,7 +146,7 @@ export class ProductsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })
@@ -159,7 +159,7 @@ export class ProductsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Soft-delete a product (Admin)' })
   @ApiParam({ name: 'id', type: String, format: 'uuid' })

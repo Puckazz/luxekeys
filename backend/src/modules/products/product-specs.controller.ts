@@ -38,7 +38,7 @@ export class ProductSpecsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a product spec (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -51,7 +51,7 @@ export class ProductSpecsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product spec (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })
@@ -66,7 +66,7 @@ export class ProductSpecsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.OWNER, UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a product spec (Admin)' })
   @ApiParam({ name: 'productId', type: String, format: 'uuid' })

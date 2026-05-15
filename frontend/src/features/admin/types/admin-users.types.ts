@@ -90,7 +90,7 @@ export interface RestoreAdminUserInput {
   userId: string;
 }
 
-export type AdminUserApiRole = 'ADMIN' | 'CUSTOMER';
+export type AdminUserApiRole = 'OWNER' | 'ADMIN' | 'CUSTOMER';
 
 export type AdminUserApiStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 

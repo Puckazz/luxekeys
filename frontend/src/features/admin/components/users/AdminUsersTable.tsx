@@ -9,7 +9,11 @@ import {
   adminUserRoleLabelByValue,
   adminUserStatusLabelByValue,
 } from '@/features/admin/utils/admin-users.utils';
-import { canManageUsersCrud, type UserRole } from '@/lib/rbac';
+import {
+  canManageAdminAccounts,
+  canManageUsersCrud,
+  type UserRole,
+} from '@/lib/rbac';
 import { Badge } from '@/shared/components/ui/badge';
 import {
   Select,
@@ -77,8 +81,13 @@ export function AdminUsersTable({
           const assignableRoles = getAssignableUserRoles(actorRole);
           const isSelf = user.id === actorUserId;
           const isAdminAccount = user.role === 'admin';
+          const isOwnerAccount = user.role === 'owner';
           const canManageRow =
-            canManageUsersCrud(actorRole) && !isSelf && !isAdminAccount;
+            canManageUsersCrud(actorRole) &&
+            !isSelf &&
+            (canManageAdminAccounts(actorRole)
+              ? true
+              : !isAdminAccount && !isOwnerAccount);
           const canEditRole = assignableRoles.length > 0 && canManageRow;
           const roleOptions = canEditRole ? assignableRoles : [user.role];
 
@@ -143,8 +152,10 @@ export function AdminUsersTable({
                       <ShieldAlert className="size-3.5" />
                       {isSelf
                         ? 'Use Admin Profile'
-                        : isAdminAccount
-                          ? 'Managed separately'
+                        : isOwnerAccount
+                          ? 'Owner protected'
+                          : isAdminAccount
+                            ? 'Owner only'
                           : 'Restricted'}
                     </span>
                   ) : null}

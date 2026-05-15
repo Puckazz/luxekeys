@@ -675,97 +675,116 @@ export function AdminProductFormDialog({
                 </p>
               </div>
 
-              <div className="space-y-1 md:col-span-2">
-                <div className="flex items-center justify-between gap-3">
-                  <label className="text-xs font-semibold">Product Images</label>
-                  <div className="flex items-center gap-2">
-                    {isUpdatingProductImages ? (
-                      <LoaderCircle className="text-muted-foreground size-4 animate-spin" />
-                    ) : null}
+              <div className="space-y-3 md:col-span-2">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold">
+                    Product Images
+                  </label>
+                  <label
+                    className={`border-border/70 bg-background/40 hover:border-primary/50 block rounded-md border border-dashed p-4 transition-colors ${
+                      isUpdatingProductImages
+                        ? 'cursor-not-allowed opacity-70'
+                        : 'cursor-pointer'
+                    }`}
+                  >
                     <Input
                       type="file"
                       multiple
                       accept="image/png,image/jpeg,image/webp,image/gif"
                       onChange={handleProductImageUpload}
                       disabled={isUpdatingProductImages}
-                      className="h-10 max-w-64 cursor-pointer text-xs file:mr-2"
+                      className="sr-only"
                     />
-                  </div>
+                    <div className="flex items-center gap-2">
+                      {isUpdatingProductImages ? (
+                        <LoaderCircle className="text-muted-foreground size-4 animate-spin" />
+                      ) : (
+                        <ImageUp className="text-muted-foreground size-4" />
+                      )}
+                      <p className="text-sm font-medium">
+                        {product?.id
+                          ? 'Click to add product images.'
+                          : 'Click to upload product images.'}
+                      </p>
+                    </div>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      {product?.id
+                        ? 'Uploaded images can be selected as the product thumbnail.'
+                        : 'The first uploaded image will become the product thumbnail automatically.'}
+                    </p>
+                  </label>
                 </div>
 
                 {product?.id ? (
                   productImages.length ? (
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {productImages.map((image) => (
-                          <div
-                            key={image.id}
-                            className="border-border bg-background flex overflow-hidden rounded-md border text-left transition-colors"
+                        <div
+                          key={image.id}
+                          className="border-border bg-background flex overflow-hidden rounded-md border text-left transition-colors"
+                        >
+                          <button
+                            type="button"
+                            className="hover:border-primary/50 flex min-w-0 flex-1 text-left disabled:opacity-70"
+                            onClick={() =>
+                              handleSetPrimaryProductImage(image.id)
+                            }
+                            disabled={isUpdatingProductImages}
                           >
-                            <button
-                              type="button"
-                              className="hover:border-primary/50 flex min-w-0 flex-1 text-left disabled:opacity-70"
-                              onClick={() =>
-                                handleSetPrimaryProductImage(image.id)
-                              }
-                              disabled={isUpdatingProductImages}
-                            >
-                              <div className="relative aspect-square w-24 shrink-0 overflow-hidden">
-                                <Image
-                                  src={image.imageUrl}
-                                  alt={image.altText ?? product.name}
-                                  fill
-                                  className="object-cover"
-                                  sizes="96px"
-                                />
-                              </div>
-                              <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
-                                <div className="min-w-0">
-                                  <p className="truncate text-xs font-semibold">
-                                    {image.isPrimary
-                                      ? 'Current thumbnail'
-                                      : 'Use as thumbnail'}
-                                  </p>
-                                  <p className="text-muted-foreground mt-1 truncate text-[11px]">
-                                    {image.imageUrl}
-                                  </p>
-                                </div>
-                                <span className="text-muted-foreground mt-2 inline-flex items-center gap-1 text-[11px]">
-                                  <Star
-                                    className={`size-3 ${
-                                      image.isPrimary
-                                        ? 'fill-current text-amber-500'
-                                        : ''
-                                    }`}
-                                  />
+                            <div className="relative aspect-square w-24 shrink-0 overflow-hidden">
+                              <Image
+                                src={image.imageUrl}
+                                alt={image.altText ?? product.name}
+                                fill
+                                className="object-cover"
+                                sizes="96px"
+                              />
+                            </div>
+                            <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
+                              <div className="min-w-0">
+                                <p className="truncate text-xs font-semibold">
                                   {image.isPrimary
-                                    ? 'Primary image'
-                                    : 'Click to set primary'}
-                                </span>
+                                    ? 'Current thumbnail'
+                                    : 'Use as thumbnail'}
+                                </p>
+                                <p className="text-muted-foreground mt-1 truncate text-[11px]">
+                                  {image.imageUrl}
+                                </p>
                               </div>
-                            </button>
-                            <button
-                              type="button"
-                              className="text-muted-foreground hover:text-destructive self-start rounded-md p-3 transition-colors disabled:opacity-50"
-                              aria-label="Delete product image"
-                              title="Delete product image"
-                              disabled={isUpdatingProductImages}
-                              onClick={(event) =>
-                                handleDeleteProductImage(event, image.id)
-                              }
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          </div>
+                              <span className="text-muted-foreground mt-2 inline-flex items-center gap-1 text-[11px]">
+                                <Star
+                                  className={`size-3 ${
+                                    image.isPrimary
+                                      ? 'fill-current text-amber-500'
+                                      : ''
+                                  }`}
+                                />
+                                {image.isPrimary
+                                  ? 'Primary image'
+                                  : 'Click to set primary'}
+                              </span>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-destructive self-start rounded-md p-3 transition-colors disabled:opacity-50"
+                            aria-label="Delete product image"
+                            title="Delete product image"
+                            disabled={isUpdatingProductImages}
+                            onClick={(event) =>
+                              handleDeleteProductImage(event, image.id)
+                            }
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="border-border/70 bg-background/40 rounded-md border border-dashed p-4">
-                      <div className="flex items-center gap-2">
-                        <ImageUp className="text-muted-foreground size-4" />
-                        <p className="text-sm font-medium">
-                          Upload the first product image to create the thumbnail.
-                        </p>
-                      </div>
+                    <div className="border-border/70 bg-background/40 rounded-md border p-4">
+                      <p className="text-sm font-medium">
+                        No product images uploaded yet.
+                      </p>
                       <p className="text-muted-foreground mt-1 text-xs">
                         The primary product image now syncs automatically to the product thumbnail.
                       </p>
@@ -806,12 +825,12 @@ export function AdminProductFormDialog({
                     ))}
                   </div>
                 ) : (
-                  <div className="border-border/70 bg-background/40 rounded-md border border-dashed p-4">
+                  <div className="border-border/70 bg-background/40 rounded-md border p-4">
                     <p className="text-sm font-medium">
-                      Upload images now and they will attach after the product is created.
+                      No images selected yet.
                     </p>
                     <p className="text-muted-foreground mt-1 text-xs">
-                      The first uploaded image will become the product thumbnail automatically.
+                      Upload images now and they will attach after the product is created.
                     </p>
                   </div>
                 )}
@@ -900,6 +919,7 @@ export function AdminProductFormDialog({
             <AdminVariantEditor
               productType={productType}
               productImages={productImages}
+              isCreateMode={!product?.id}
               fields={variantsFieldArray.fields}
               control={control}
               register={register}

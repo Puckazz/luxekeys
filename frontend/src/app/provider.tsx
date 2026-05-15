@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useProfileQuery } from '@/features/profile/hooks/useProfileQuery';
 import { useAddressesQuery } from '@/features/profile/hooks/useAddressesQuery';
 import { useCartSync } from '@/features/shop/hooks/useCartSync';
+import { useWishlistSync } from '@/features/shop/hooks/useWishlistSync';
 import { queryClient } from '@/lib/queryClient';
 import { useAuthStore } from '@/stores/auth/auth.store';
 
@@ -21,6 +22,11 @@ function AuthBootstrapBridge() {
 
 function CartSyncBridge() {
   useCartSync();
+  return null;
+}
+
+function WishlistSyncBridge() {
+  useWishlistSync();
   return null;
 }
 
@@ -40,6 +46,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthBootstrapBridge />
       <ProfileBootstrapBridge />
       <CartSyncBridge />
+      <WishlistSyncBridge />
       {children}
     </QueryClientProvider>
   );

@@ -25,7 +25,11 @@ import {
 } from '@/features/admin/hooks';
 import type { AdminUser } from '@/features/admin/types/admin-users.types';
 import type { UpsertAdminUserInput } from '@/features/admin/types/admin-users.types';
-import { canManageUsersCrud, type UserRole } from '@/lib/rbac';
+import {
+  canManageAdminAccounts,
+  canManageUsersCrud,
+  type UserRole,
+} from '@/lib/rbac';
 import { useAuthStore } from '@/stores/auth/auth.store';
 
 export function AdminUsersPage() {
@@ -66,7 +70,11 @@ export function AdminUsersPage() {
   };
 
   const handleEdit = (user: AdminUser) => {
-    if (!canManageCrud || user.id === actorUserId || user.role === 'admin') {
+    const canManageTarget =
+      canManageCrud &&
+      user.id !== actorUserId &&
+      (canManageAdminAccounts(actorRole) || user.role === 'customer');
+    if (!canManageTarget) {
       return;
     }
 
@@ -75,7 +83,11 @@ export function AdminUsersPage() {
   };
 
   const handleDelete = (user: AdminUser) => {
-    if (!canManageCrud || user.id === actorUserId || user.role === 'admin') {
+    const canManageTarget =
+      canManageCrud &&
+      user.id !== actorUserId &&
+      (canManageAdminAccounts(actorRole) || user.role === 'customer');
+    if (!canManageTarget) {
       return;
     }
 
@@ -83,7 +95,11 @@ export function AdminUsersPage() {
   };
 
   const handleRestore = (user: AdminUser) => {
-    if (!canManageCrud || user.id === actorUserId || user.role === 'admin') {
+    const canManageTarget =
+      canManageCrud &&
+      user.id !== actorUserId &&
+      (canManageAdminAccounts(actorRole) || user.role === 'customer');
+    if (!canManageTarget) {
       return;
     }
 
@@ -95,7 +111,11 @@ export function AdminUsersPage() {
 
   const handleRoleChange = (userId: string, nextRole: UserRole) => {
     const targetUser = users.find((user) => user.id === userId);
-    if (!targetUser || targetUser.id === actorUserId || targetUser.role === 'admin') {
+    if (
+      !targetUser ||
+      targetUser.id === actorUserId ||
+      (!canManageAdminAccounts(actorRole) && targetUser.role !== 'customer')
+    ) {
       return;
     }
 
@@ -201,6 +221,7 @@ export function AdminUsersPage() {
         mode={mode}
         open={isFormOpen}
         user={editingUser}
+        actorRole={actorRole}
         isSubmitting={isMutating}
         onOpenChange={(open) => {
           setIsFormOpen(open);

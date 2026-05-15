@@ -9,6 +9,7 @@ import {
   ShopProductCard,
 } from '@/features/shop/components/product-list';
 import { useCartActions } from '@/features/shop/hooks/useCartActions';
+import { useWishlistActions } from '@/features/shop/hooks/useWishlistActions';
 import { useWishlistPaginationState } from '@/features/shop/hooks/useWishlistPaginationState';
 import {
   selectWishlistItems,
@@ -21,8 +22,7 @@ export default function WishlistPage() {
   const pageSize = 8;
   const hydrated = useWishlistStore((state) => state.hydrated);
   const wishlistItems = useWishlistStore(selectWishlistItems);
-  const clearWishlist = useWishlistStore((state) => state.clear);
-  const removeWishlistItem = useWishlistStore((state) => state.removeItem);
+  const { clearWishlist, removeWishlist, isMutating } = useWishlistActions();
   const { addItem } = useCartActions();
   const { currentPage, setPage } = useWishlistPaginationState();
 
@@ -62,7 +62,11 @@ export default function WishlistPage() {
           </div>
 
           {wishlistItems.length > 0 ? (
-            <Button variant="outline" onClick={clearWishlist}>
+            <Button
+              variant="outline"
+              onClick={clearWishlist}
+              disabled={isMutating}
+            >
               Clear wishlist
             </Button>
           ) : null}
@@ -124,7 +128,7 @@ export default function WishlistPage() {
                   secondaryAction={{
                     ariaLabel: `Remove ${item.name} from wishlist`,
                     icon: <Trash2 className="size-5" />,
-                    onClick: () => removeWishlistItem(item.slug),
+                    onClick: () => removeWishlist(item),
                     className: 'w-12 h-12 rounded-full',
                   }}
                 />

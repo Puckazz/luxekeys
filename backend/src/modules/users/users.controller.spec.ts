@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller.js';
 import { UsersService } from './users.service.js';
 import { createMockUser } from '../../common/testing/index.js';
+import { UserRole } from '../../generated/prisma/index.js';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -56,6 +57,7 @@ describe('UsersController', () => {
 
   it('createAdminUser should delegate to service.createAdminUser', async () => {
     const userObj = createMockUser();
+    const actor = createMockUser({ role: UserRole.OWNER });
     const dto = {
       email: userObj.email,
       fullName: userObj.fullName,
@@ -65,9 +67,9 @@ describe('UsersController', () => {
     };
     service.createAdminUser.mockResolvedValue(userObj as never);
 
-    const result = await controller.createAdminUser(dto as never);
+    const result = await controller.createAdminUser(actor as never, dto as never);
 
-    expect(service.createAdminUser).toHaveBeenCalledWith(dto);
+    expect(service.createAdminUser).toHaveBeenCalledWith(actor, dto);
     expect(result).toBe(userObj);
   });
 

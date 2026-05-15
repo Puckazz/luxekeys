@@ -11,6 +11,7 @@ export interface UserProfile {
   lastLoginAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface UserListItem {

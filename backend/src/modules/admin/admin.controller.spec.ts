@@ -30,7 +30,7 @@ describe('AdminController', () => {
     const roles = Reflect.getMetadata(ROLES_KEY, AdminController);
 
     expect(guards).toEqual([JwtAuthGuard, RolesGuard]);
-    expect(roles).toEqual([UserRole.ADMIN]);
+    expect(roles).toEqual([UserRole.OWNER, UserRole.ADMIN]);
   });
 
   it('getOverview should delegate to service.getOverview', async () => {
