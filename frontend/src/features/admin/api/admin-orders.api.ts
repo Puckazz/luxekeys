@@ -88,7 +88,7 @@ export const adminOrdersApi = {
   ): Promise<AdminOrder> => {
     const order = await adminOrdersApi.updateOrder(input);
 
-    return mapApiOrderToAdminOrder(order);
+    return order;
   },
 
   bulkUpdateOrderStatus: async (

@@ -67,7 +67,10 @@ describe('UsersController', () => {
     };
     service.createAdminUser.mockResolvedValue(userObj as never);
 
-    const result = await controller.createAdminUser(actor as never, dto as never);
+    const result = await controller.createAdminUser(
+      actor as never,
+      dto as never,
+    );
 
     expect(service.createAdminUser).toHaveBeenCalledWith(actor, dto);
     expect(result).toBe(userObj);

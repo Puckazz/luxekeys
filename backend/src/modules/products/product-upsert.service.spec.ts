@@ -33,30 +33,28 @@ describe('ProductUpsertService', () => {
       );
       prisma.productVariant.findMany.mockResolvedValue([] as never);
       prisma.productVariant.findFirst.mockResolvedValue(null as never);
-      prisma.productVariant.create.mockResolvedValue({ id: 'variant-1' } as never);
+      prisma.productVariant.create.mockResolvedValue({
+        id: 'variant-1',
+      } as never);
       prisma.product.update.mockResolvedValue({ id: 'product-1' } as never);
 
-      await service.syncAdminProductVariants(
-        prisma as never,
-        'product-1',
-        {
-          name: 'Q1 Max',
-          type: ProductType.ACCESSORY,
-          brandId: 'brand-1',
-          variants: [
-            {
-              color: 'Black',
-              switchType: 'Desk Mat',
-              sku: '',
-              price: 39.99,
-              stock: 5,
-              isDefault: true,
-              isActive: true,
-              switchOptions: [],
-            },
-          ],
-        } as never,
-      );
+      await service.syncAdminProductVariants(prisma as never, 'product-1', {
+        name: 'Q1 Max',
+        type: ProductType.ACCESSORY,
+        brandId: 'brand-1',
+        variants: [
+          {
+            color: 'Black',
+            switchType: 'Desk Mat',
+            sku: '',
+            price: 39.99,
+            stock: 5,
+            isDefault: true,
+            isActive: true,
+            switchOptions: [],
+          },
+        ],
+      } as never);
 
       expect(prisma.productVariant.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -70,29 +68,27 @@ describe('ProductUpsertService', () => {
     it('should normalize manual SKU values before saving', async () => {
       prisma.productVariant.findMany.mockResolvedValue([] as never);
       prisma.productVariant.findFirst.mockResolvedValue(null as never);
-      prisma.productVariant.create.mockResolvedValue({ id: 'variant-1' } as never);
+      prisma.productVariant.create.mockResolvedValue({
+        id: 'variant-1',
+      } as never);
       prisma.product.update.mockResolvedValue({ id: 'product-1' } as never);
 
-      await service.syncAdminProductVariants(
-        prisma as never,
-        'product-1',
-        {
-          name: 'Desk Pad',
-          type: ProductType.ACCESSORY,
-          variants: [
-            {
-              color: 'Gray',
-              switchType: 'Large',
-              sku: ' custom sku / 01 ',
-              price: 29.99,
-              stock: 8,
-              isDefault: true,
-              isActive: true,
-              switchOptions: [],
-            },
-          ],
-        } as never,
-      );
+      await service.syncAdminProductVariants(prisma as never, 'product-1', {
+        name: 'Desk Pad',
+        type: ProductType.ACCESSORY,
+        variants: [
+          {
+            color: 'Gray',
+            switchType: 'Large',
+            sku: ' custom sku / 01 ',
+            price: 29.99,
+            stock: 8,
+            isDefault: true,
+            isActive: true,
+            switchOptions: [],
+          },
+        ],
+      } as never);
 
       expect(prisma.productVariant.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -105,29 +101,27 @@ describe('ProductUpsertService', () => {
 
     it('should throw when generated or normalized SKU conflicts', async () => {
       prisma.productVariant.findMany.mockResolvedValue([] as never);
-      prisma.productVariant.findFirst.mockResolvedValue({ id: 'taken' } as never);
+      prisma.productVariant.findFirst.mockResolvedValue({
+        id: 'taken',
+      } as never);
 
       await expect(
-        service.syncAdminProductVariants(
-          prisma as never,
-          'product-1',
-          {
-            name: 'Desk Pad',
-            type: ProductType.ACCESSORY,
-            variants: [
-              {
-                color: 'Gray',
-                switchType: 'Large',
-                sku: 'taken-sku',
-                price: 29.99,
-                stock: 8,
-                isDefault: true,
-                isActive: true,
-                switchOptions: [],
-              },
-            ],
-          } as never,
-        ),
+        service.syncAdminProductVariants(prisma as never, 'product-1', {
+          name: 'Desk Pad',
+          type: ProductType.ACCESSORY,
+          variants: [
+            {
+              color: 'Gray',
+              switchType: 'Large',
+              sku: 'taken-sku',
+              price: 29.99,
+              stock: 8,
+              isDefault: true,
+              isActive: true,
+              switchOptions: [],
+            },
+          ],
+        } as never),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -135,26 +129,22 @@ describe('ProductUpsertService', () => {
       prisma.productVariant.findMany.mockResolvedValue([] as never);
 
       await expect(
-        service.syncAdminProductVariants(
-          prisma as never,
-          'product-1',
-          {
-            name: '   ',
-            type: ProductType.ACCESSORY,
-            variants: [
-              {
-                color: 'Gray',
-                switchType: 'Large',
-                sku: '',
-                price: 29.99,
-                stock: 8,
-                isDefault: true,
-                isActive: true,
-                switchOptions: [],
-              },
-            ],
-          } as never,
-        ),
+        service.syncAdminProductVariants(prisma as never, 'product-1', {
+          name: '   ',
+          type: ProductType.ACCESSORY,
+          variants: [
+            {
+              color: 'Gray',
+              switchType: 'Large',
+              sku: '',
+              price: 29.99,
+              stock: 8,
+              isDefault: true,
+              isActive: true,
+              switchOptions: [],
+            },
+          ],
+        } as never),
       ).rejects.toThrow(BadRequestException);
     });
   });

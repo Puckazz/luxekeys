@@ -214,7 +214,7 @@ export class AdminProductVariantInputDto {
 
   @ApiPropertyOptional({ example: 'Q1P-BLK-BROWN' })
   @IsOptional()
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }): unknown => {
     if (typeof value !== 'string') {
       return value;
     }

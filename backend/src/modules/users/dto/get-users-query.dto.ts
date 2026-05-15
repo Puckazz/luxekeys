@@ -9,8 +9,7 @@ export const ADMIN_USER_STATUS_FILTERS = [
   UserStatus.SUSPENDED,
   'ARCHIVED',
 ] as const;
-export type AdminUserStatusFilter =
-  (typeof ADMIN_USER_STATUS_FILTERS)[number];
+export type AdminUserStatusFilter = (typeof ADMIN_USER_STATUS_FILTERS)[number];
 
 export const ADMIN_USER_SORT_OPTIONS = [
   'newest',

@@ -1,6 +1,7 @@
 import { TestEnvironment } from './test-setup.js';
+import * as request from 'supertest';
 
-describe('AppController (e2e)', () => {
+describe('Health (e2e)', () => {
   let env: TestEnvironment;
 
   beforeAll(async () => {
@@ -12,9 +13,14 @@ describe('AppController (e2e)', () => {
     await env.teardown();
   });
 
-  it('/api/health (GET)', () => {
-    // We assume there might be a health endpoint or just testing basic initialization
-    // Since we don't have a specific root controller by default, we just check if app booted.
-    expect(env.app).toBeDefined();
+  it('/healthz (GET)', async () => {
+    const response = await request
+      .default(env.app.getHttpServer())
+      .get('/healthz')
+      .expect(200);
+
+    expect(response.body.success).toBe(true);
+    expect(response.body.data.status).toBe('ok');
+    expect(response.body.data.checks.database.status).toBe('ok');
   });
 });

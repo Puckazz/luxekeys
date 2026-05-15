@@ -48,9 +48,7 @@ export const normalizeSkuSegment = (value?: string | null): string => {
 };
 
 const tokenizeSkuSource = (value?: string | null): string[] => {
-  return normalizeSkuSegment(value)
-    .split('-')
-    .filter(Boolean);
+  return normalizeSkuSegment(value).split('-').filter(Boolean);
 };
 
 const compactSkuWord = (token: string): string => {
@@ -171,7 +169,9 @@ export const generateProductVariantSku = ({
   const segments = [
     modelCode,
     compactSkuAttribute(color),
-    compactSkuAttribute(productType === ProductType.KEYBOARD ? layout : switchType),
+    compactSkuAttribute(
+      productType === ProductType.KEYBOARD ? layout : switchType,
+    ),
   ].filter(Boolean);
 
   return trimTrailingHyphen(

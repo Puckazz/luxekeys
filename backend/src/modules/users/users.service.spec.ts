@@ -107,13 +107,16 @@ describe('UsersService', () => {
 
     it('should forbid admins from creating admin accounts', async () => {
       await expect(
-        service.createAdminUser(createMockUser({ role: UserRole.ADMIN }) as never, {
-          email: 'team-admin@example.com',
-          fullName: 'Team Admin',
-          password: 'password123',
-          role: UserRole.ADMIN,
-          status: UserStatus.ACTIVE,
-        }),
+        service.createAdminUser(
+          createMockUser({ role: UserRole.ADMIN }) as never,
+          {
+            email: 'team-admin@example.com',
+            fullName: 'Team Admin',
+            password: 'password123',
+            role: UserRole.ADMIN,
+            status: UserStatus.ACTIVE,
+          },
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 

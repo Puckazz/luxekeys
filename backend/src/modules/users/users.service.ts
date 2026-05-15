@@ -422,7 +422,12 @@ export class UsersService {
   async softDelete(actor: AuthUser, userId: string): Promise<UserProfile> {
     const user = await this.findExistingUser(userId);
     this.assertActorCanManageUser(actor, user as UserProfile);
-    await this.assertNotLastActiveOwner(user as UserProfile, undefined, undefined, true);
+    await this.assertNotLastActiveOwner(
+      user as UserProfile,
+      undefined,
+      undefined,
+      true,
+    );
 
     if (user.deletedAt) {
       return user as UserProfile;
@@ -593,8 +598,7 @@ export class UsersService {
     }
 
     return next.sort(
-      (left, right) =>
-        right.createdAt.getTime() - left.createdAt.getTime(),
+      (left, right) => right.createdAt.getTime() - left.createdAt.getTime(),
     );
   }
 }

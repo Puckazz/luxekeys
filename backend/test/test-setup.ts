@@ -1,4 +1,8 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  INestApplication,
+  RequestMethod,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module.js';
 import {
@@ -45,7 +49,9 @@ export class TestEnvironment {
     this.app = moduleFixture.createNestApplication({ logger: false });
 
     // Apply global middlewares/pipes as in main.ts
-    this.app.setGlobalPrefix('api');
+    this.app.setGlobalPrefix('api', {
+      exclude: [{ path: 'healthz', method: RequestMethod.GET }],
+    });
     this.app.use(cookieParser());
     this.app.useGlobalPipes(
       new ValidationPipe({ whitelist: true, transform: true }),

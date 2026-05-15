@@ -1,4 +1,5 @@
 export { AdminDashboardPage } from '@/features/admin/components/pages/AdminDashboardPage';
+export { AdminHealthPage } from '@/features/admin/components/pages/AdminHealthPage';
 export { AdminProductsPage } from '@/features/admin/components/pages/AdminProductsPage';
 export { AdminCategoriesPage } from '@/features/admin/components/pages/AdminCategoriesPage';
 export { AdminBrandsPage } from '@/features/admin/components/pages/AdminBrandsPage';
