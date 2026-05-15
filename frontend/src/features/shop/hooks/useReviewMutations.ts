@@ -66,7 +66,7 @@ export const useReviewMutations = () => {
         review: {
           id: reviewResult.id,
           rating: reviewResult.rating,
-          status: 'pending',
+          status: 'published',
           title: payload.title ?? null,
           content: payload.content ?? null,
         },
@@ -98,7 +98,7 @@ export const useReviewMutations = () => {
         review: {
           id: reviewId,
           rating: reviewResult.rating,
-          status: 'pending',
+          status: 'published',
           title: payload.title ?? null,
           content: payload.content ?? null,
         },

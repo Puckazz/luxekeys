@@ -312,15 +312,15 @@ export default function ProductDetailPage({ product }: ProductDetailPageProps) {
       : reviewEligibility?.canReview
         ? 'Share your review'
         : reviewEligibility?.hasDeliveredPurchase
-          ? 'Your review is not published yet'
-          : 'No published reviews yet';
+          ? 'Review submitted'
+          : 'No reviews yet';
   const reviewsEmptyDescription =
     authStatus === 'anonymous'
-      ? 'Only published reviews from verified purchases appear here.'
+      ? 'Verified customer reviews appear here after purchase.'
       : reviewEligibility?.canReview
         ? 'You received this product. Write a review from Order History to help other customers decide.'
         : reviewEligibility?.hasDeliveredPurchase
-          ? 'Reviews appear here after an admin publishes them. You can check or update yours from Order History.'
+          ? 'You can check or update your review from Order History.'
           : 'Only customers who bought and received this product can leave a review.';
 
   return (

@@ -179,7 +179,6 @@ export interface ProductReviewItem {
   rating: number;
   comment: string;
   createdAtLabel: string;
-  helpfulCount: number;
 }
 
 export interface ProductDetailSwitchOption {

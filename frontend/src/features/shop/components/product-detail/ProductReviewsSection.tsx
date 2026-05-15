@@ -1,4 +1,4 @@
-﻿import { Star, ThumbsUp } from 'lucide-react';
+﻿import { Star } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/shared/components/ui/button';
@@ -11,7 +11,7 @@ export default function ProductReviewsSection({
   canLoadMore,
   isLoading = false,
   emptyTitle = 'No reviews yet',
-  emptyDescription = 'Only published reviews from verified purchases appear here.',
+  emptyDescription = 'Verified customer reviews will appear here after purchase.',
   emptyActionLabel,
   onLoadMore,
 }: ProductReviewsSectionProps) {
@@ -86,13 +86,6 @@ export default function ProductReviewsSection({
             <p className="text-muted-foreground mt-3.5 max-w-5xl text-sm leading-7">
               {review.comment}
             </p>
-
-            <div className="mt-3 flex items-center gap-2">
-              <ThumbsUp size={14} />
-              <p className="text-muted-foreground text-xs leading-6 font-medium tracking-wide">
-                Helpful ({review.helpfulCount})
-              </p>
-            </div>
 
             {index !== reviews.length - 1 ? (
               <Separator className="mt-6" />

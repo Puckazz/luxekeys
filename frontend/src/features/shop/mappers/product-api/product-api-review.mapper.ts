@@ -10,5 +10,4 @@ export const mapApiReviewToReviewItem = (review: CustomerReviewApiItem) => ({
     day: 'numeric',
     year: 'numeric',
   }),
-  helpfulCount: review.helpfulCount ?? 0,
 });
