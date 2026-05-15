@@ -43,7 +43,6 @@ type AdminReviewResponse = {
   title: string | null;
   content: string | null;
   rating: number;
-  helpfulCount: number;
   status: ReviewStatus;
   moderationNote: string | null;
   moderatedAt: Date | null;
@@ -126,6 +125,7 @@ export class ReviewsService {
         rating: dto.rating,
         title: dto.title ?? null,
         content: dto.content ?? null,
+        status: ReviewStatus.PUBLISHED,
       },
       include: REVIEW_DETAIL_INCLUDE,
     });
@@ -175,7 +175,7 @@ export class ReviewsService {
         ...(dto.rating !== undefined && { rating: dto.rating }),
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.content !== undefined && { content: dto.content }),
-        status: ReviewStatus.PENDING,
+        status: ReviewStatus.PUBLISHED,
         moderationNote: null,
         moderatedAt: null,
         moderatedById: null,
@@ -219,7 +219,7 @@ export class ReviewsService {
       ...(query.status && { status: query.status }),
     };
     const orderBy = buildOrderBy<Prisma.ReviewOrderByWithRelationInput>(
-      ['createdAt', 'updatedAt', 'rating', 'helpfulCount'],
+      ['createdAt', 'updatedAt', 'rating'],
       'createdAt',
       query.sortBy,
       query.sortOrder,
@@ -374,7 +374,6 @@ export class ReviewsService {
       title: review.title,
       content: review.content,
       rating: review.rating,
-      helpfulCount: review.helpfulCount,
       status: review.status,
       moderationNote: review.moderationNote,
       moderatedAt: review.moderatedAt,

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -286,12 +287,21 @@ describe('UsersService', () => {
       prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.update.mockResolvedValue(updated as never);
 
-      const result = await service.updateUser(user.id, {
-        email: ' Admin@Example.com ',
-        fullName: 'Admin User',
-        role: UserRole.ADMIN,
-        status: UserStatus.SUSPENDED,
-      } as never);
+      const result = await service.updateUser(
+        {
+          id: 'actor-id',
+          email: 'actor@example.com',
+          fullName: 'Actor User',
+          role: UserRole.ADMIN,
+        } as never,
+        user.id,
+        {
+          email: ' Admin@Example.com ',
+          fullName: 'Admin User',
+          role: UserRole.ADMIN,
+          status: UserStatus.SUSPENDED,
+        } as never,
+      );
       expect(result.role).toBe(UserRole.ADMIN);
       expect(result.status).toBe(UserStatus.SUSPENDED);
       expect(prisma.user.update).toHaveBeenCalledWith(
@@ -307,7 +317,16 @@ describe('UsersService', () => {
     it('should throw NotFoundException when user not found', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
       await expect(
-        service.updateUser(uuid(), { fullName: 'x' } as never),
+        service.updateUser(
+          {
+            id: 'actor-id',
+            email: 'actor@example.com',
+            fullName: 'Actor User',
+            role: UserRole.ADMIN,
+          } as never,
+          uuid(),
+          { fullName: 'x' } as never,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -316,8 +335,53 @@ describe('UsersService', () => {
       prisma.user.findFirst.mockResolvedValue(createMockUser() as never);
 
       await expect(
-        service.updateUser(uuid(), { email: 'taken@example.com' } as never),
+        service.updateUser(
+          {
+            id: 'actor-id',
+            email: 'actor@example.com',
+            fullName: 'Actor User',
+            role: UserRole.ADMIN,
+          } as never,
+          uuid(),
+          { email: 'taken@example.com' } as never,
+        ),
       ).rejects.toThrow(ConflictException);
+    });
+
+    it('should forbid admins from editing their own account via admin management', async () => {
+      const user = createMockUser({ id: 'actor-id', role: UserRole.ADMIN });
+      prisma.user.findUnique.mockResolvedValue(user as never);
+
+      await expect(
+        service.updateUser(
+          {
+            id: 'actor-id',
+            email: 'actor@example.com',
+            fullName: 'Actor User',
+            role: UserRole.ADMIN,
+          } as never,
+          user.id,
+          { fullName: 'New Name' } as never,
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should forbid admins from editing other admin accounts', async () => {
+      const targetAdmin = createMockUser({ role: UserRole.ADMIN });
+      prisma.user.findUnique.mockResolvedValue(targetAdmin as never);
+
+      await expect(
+        service.updateUser(
+          {
+            id: 'actor-id',
+            email: 'actor@example.com',
+            fullName: 'Actor User',
+            role: UserRole.ADMIN,
+          } as never,
+          targetAdmin.id,
+          { fullName: 'New Name' } as never,
+        ),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -333,16 +397,49 @@ describe('UsersService', () => {
       } as never);
       prisma.refreshToken.updateMany.mockResolvedValue({ count: 0 } as never);
 
-      const result = await service.softDelete(user.id);
+      const result = await service.softDelete(
+        {
+          id: 'actor-id',
+          email: 'actor@example.com',
+          fullName: 'Actor User',
+          role: UserRole.ADMIN,
+        } as never,
+        user.id,
+      );
       expect(result.deletedAt).toBeInstanceOf(Date);
       expect(prisma.refreshToken.updateMany).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when user not found', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      await expect(service.softDelete(uuid())).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.softDelete(
+          {
+            id: 'actor-id',
+            email: 'actor@example.com',
+            fullName: 'Actor User',
+            role: UserRole.ADMIN,
+          } as never,
+          uuid(),
+        ),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should forbid archiving admin accounts from user management', async () => {
+      const user = createMockUser({ role: UserRole.ADMIN });
+      prisma.user.findUnique.mockResolvedValue(user as never);
+
+      await expect(
+        service.softDelete(
+          {
+            id: 'actor-id',
+            email: 'actor@example.com',
+            fullName: 'Actor User',
+            role: UserRole.ADMIN,
+          } as never,
+          user.id,
+        ),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -358,7 +455,15 @@ describe('UsersService', () => {
       prisma.user.findUnique.mockResolvedValue(user as never);
       prisma.user.update.mockResolvedValue(restored as never);
 
-      const result = await service.restore(user.id);
+      const result = await service.restore(
+        {
+          id: 'actor-id',
+          email: 'actor@example.com',
+          fullName: 'Actor User',
+          role: UserRole.ADMIN,
+        } as never,
+        user.id,
+      );
 
       expect(result.status).toBe(UserStatus.INACTIVE);
       expect(prisma.user.update).toHaveBeenCalledWith(
@@ -369,6 +474,26 @@ describe('UsersService', () => {
           },
         }),
       );
+    });
+
+    it('should forbid restoring admin accounts from user management', async () => {
+      const user = createMockUser({
+        role: UserRole.ADMIN,
+        deletedAt: new Date(),
+      });
+      prisma.user.findUnique.mockResolvedValue(user as never);
+
+      await expect(
+        service.restore(
+          {
+            id: 'actor-id',
+            email: 'actor@example.com',
+            fullName: 'Actor User',
+            role: UserRole.ADMIN,
+          } as never,
+          user.id,
+        ),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 });

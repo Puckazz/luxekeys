@@ -49,6 +49,7 @@ export function AdminUsersPage() {
   const meta = usersQuery.data?.meta;
 
   const actorRole = useAuthStore((state) => state.user?.role) ?? 'customer';
+  const actorUserId = useAuthStore((state) => state.user?.id);
   const canManageCrud = canManageUsersCrud(actorRole);
   const mode = editingUser ? 'edit' : 'create';
 
@@ -65,7 +66,7 @@ export function AdminUsersPage() {
   };
 
   const handleEdit = (user: AdminUser) => {
-    if (!canManageCrud) {
+    if (!canManageCrud || user.id === actorUserId || user.role === 'admin') {
       return;
     }
 
@@ -74,7 +75,7 @@ export function AdminUsersPage() {
   };
 
   const handleDelete = (user: AdminUser) => {
-    if (!canManageCrud) {
+    if (!canManageCrud || user.id === actorUserId || user.role === 'admin') {
       return;
     }
 
@@ -82,7 +83,7 @@ export function AdminUsersPage() {
   };
 
   const handleRestore = (user: AdminUser) => {
-    if (!canManageCrud) {
+    if (!canManageCrud || user.id === actorUserId || user.role === 'admin') {
       return;
     }
 
@@ -93,6 +94,11 @@ export function AdminUsersPage() {
   };
 
   const handleRoleChange = (userId: string, nextRole: UserRole) => {
+    const targetUser = users.find((user) => user.id === userId);
+    if (!targetUser || targetUser.id === actorUserId || targetUser.role === 'admin') {
+      return;
+    }
+
     updateRoleMutation.mutate({
       actorRole,
       nextRole,
@@ -174,6 +180,7 @@ export function AdminUsersPage() {
         <AdminUsersTable
           users={users}
           actorRole={actorRole}
+          actorUserId={actorUserId}
           isUpdatingRole={updateRoleMutation.isPending}
           onRoleChange={handleRoleChange}
           onEdit={handleEdit}

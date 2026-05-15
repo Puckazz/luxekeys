@@ -35,7 +35,7 @@ export function AdminCustomersMixCard({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="grid gap-4 lg:grid-cols-[1fr_170px]">
+        <div className="grid items-center gap-4 min-[520px]:grid-cols-[minmax(0,1fr)_8rem]">
           <div className="space-y-2.5">
             {mixItems.map((item) => {
               const percent =
@@ -43,39 +43,22 @@ export function AdminCustomersMixCard({
 
               return (
                 <div key={item.key} className="text-sm">
-                  <p className="flex items-center justify-between">
-                    <span className="text-muted-foreground flex items-center gap-2">
+                  <p className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+                    <span className="text-muted-foreground flex min-w-0 items-center gap-2">
                       <span
-                        className="size-2 rounded-full"
+                        className="size-2 shrink-0 rounded-full"
                         style={{ backgroundColor: `var(${item.colorToken})` }}
                       />
-                      {item.label}
+                      <span className="truncate">{item.label}</span>
                     </span>
                     <span className="font-medium">{percent}%</span>
                   </p>
                 </div>
               );
             })}
-
-            <div className="bg-card/50 border-border/70 rounded-xl border p-3">
-              <p className="text-muted-foreground text-xs uppercase">
-                Order status
-              </p>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
-                {statusBreakdown.map((item) => (
-                  <p
-                    key={item.status}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <span className="text-muted-foreground">{item.label}</span>
-                    <span className="font-medium">{item.value}</span>
-                  </p>
-                ))}
-              </div>
-            </div>
           </div>
 
-          <div className="relative h-44 w-full">
+          <div className="relative mx-auto h-32 w-full max-w-32">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
@@ -84,8 +67,8 @@ export function AdminCustomersMixCard({
                   nameKey="label"
                   cx="50%"
                   cy="50%"
-                  innerRadius={48}
-                  outerRadius={76}
+                  innerRadius={34}
+                  outerRadius={56}
                   stroke="none"
                 >
                   {mixItems.map((item) => (
@@ -97,9 +80,28 @@ export function AdminCustomersMixCard({
             </ResponsiveContainer>
 
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-2xl font-semibold">{total}</p>
+              <p className="text-xl font-semibold">{total}</p>
               <p className="text-muted-foreground text-xs">Total</p>
             </div>
+          </div>
+        </div>
+
+        <div className="bg-card/50 border-border/70 rounded-xl border p-3">
+          <p className="text-muted-foreground text-xs uppercase">
+            Order status
+          </p>
+          <div className="mt-2 grid gap-2 text-sm min-[420px]:grid-cols-2">
+            {statusBreakdown.map((item) => (
+              <p
+                key={item.status}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"
+              >
+                <span className="text-muted-foreground truncate">
+                  {item.label}
+                </span>
+                <span className="font-medium">{item.value}</span>
+              </p>
+            ))}
           </div>
         </div>
       </CardContent>

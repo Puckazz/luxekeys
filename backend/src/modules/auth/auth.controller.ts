@@ -97,13 +97,13 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-  @ApiOperation({ summary: 'Create a password reset token' })
+  @ApiOperation({ summary: 'Send a password reset code by email' })
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
   }
 
   @Post('reset-password')
-  @ApiOperation({ summary: 'Reset password using reset token' })
+  @ApiOperation({ summary: 'Reset password using email verification code' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
   }

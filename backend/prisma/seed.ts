@@ -10,6 +10,7 @@ import {
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
+  ReviewStatus,
 } from '../src/generated/prisma/index.js';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -2613,6 +2614,7 @@ async function main() {
         productId: prodQ3Pro.id,
         orderItemId: order1ItemQ3Pro.id,
         rating: 5,
+        status: ReviewStatus.PUBLISHED,
         title: 'Best keyboard I have ever owned',
         content:
           'The Q3 Pro is an absolute dream to type on. The gasket mount gives it a satisfying bouncy feel, and the wireless is rock-solid. QMK support is a huge bonus. Worth every penny.',
@@ -2621,6 +2623,7 @@ async function main() {
         userId: customer2.id,
         productId: prodGateronYellow.id,
         rating: 5,
+        status: ReviewStatus.PUBLISHED,
         title: 'Butter-smooth linears',
         content:
           'These switches are incredibly smooth right out of the box. Lubing them makes them even better. Perfect for my TOFU65 build.',
@@ -2629,6 +2632,7 @@ async function main() {
         userId: customer3.id,
         productId: prodDuckyOne3.id,
         rating: 4,
+        status: ReviewStatus.PUBLISHED,
         title: 'Great compact keyboard',
         content:
           'Love the 65% form factor. Build quality is top-notch and the PBT keycaps feel excellent. Docked one star as software could be improved.',
@@ -2637,6 +2641,7 @@ async function main() {
         userId: customer1.id,
         productId: prodGMKNightCity.id,
         rating: 5,
+        status: ReviewStatus.PUBLISHED,
         title: 'Gorgeous keycaps',
         content:
           'The neon colorways look absolutely stunning under RGB lighting. Legends are crisp and the ABS keeps that shine perfectly. Worth the wait.',
@@ -2645,6 +2650,7 @@ async function main() {
         userId: customer2.id,
         productId: prodK8Pro.id,
         rating: 4,
+        status: ReviewStatus.PUBLISHED,
         title: 'Solid entry-level enthusiast board',
         content:
           'Great value for money. The wireless works well and QMK support is fantastic. Build quality is slightly below the Q series but still very good.',
@@ -2654,6 +2660,7 @@ async function main() {
         productId: prodHolyPanda.id,
         orderItemId: order6ItemHolyPanda.id,
         rating: 5,
+        status: ReviewStatus.PUBLISHED,
         title: 'The classic tactile experience',
         content:
           'Holy Pandas are legendary for a reason. The tactile bump is incredible and the sound profile is deeply satisfying. A must-have for tactile lovers.',
@@ -2663,6 +2670,7 @@ async function main() {
         productId: prodQ1.id,
         orderItemId: order6ItemQ1.id,
         rating: 5,
+        status: ReviewStatus.PUBLISHED,
         title: 'Amazing custom pre-built',
         content:
           'The Keychron Q1 feels and sounds premium right out of the box. The aluminum chassis is heavy and the gasket mount provides a very comfortable typing experience.',

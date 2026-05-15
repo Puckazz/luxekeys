@@ -40,12 +40,12 @@ export const useAdminReviewsQueryState = () => {
 
   const queryState: AdminReviewListQueryState = useMemo(() => {
     const search = searchParams.get(queryKeys.search) ?? '';
-    const rawStatus = searchParams.get(queryKeys.status) ?? 'published';
+    const rawStatus = searchParams.get(queryKeys.status) ?? 'all';
     const rawSort = searchParams.get(queryKeys.sort) ?? 'newest';
 
     return {
       search,
-      status: isValidStatus(rawStatus) ? rawStatus : 'published',
+      status: isValidStatus(rawStatus) ? rawStatus : 'all',
       sort: isValidSort(rawSort) ? rawSort : 'newest',
       page: parsePositiveIntParam(searchParams.get(queryKeys.page), 1),
       pageSize: DEFAULT_PAGE_SIZE,
@@ -57,7 +57,7 @@ export const useAdminReviewsQueryState = () => {
   };
 
   const setStatus = (status: AdminReviewListQueryState['status']) => {
-    setField(queryKeys.status, status, 'published');
+    setField(queryKeys.status, status, 'all');
   };
 
   const setSort = (sort: AdminReviewListQueryState['sort']) => {

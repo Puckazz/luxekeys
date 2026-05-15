@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Boxes,
   ChevronUp,
@@ -131,6 +131,7 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
   const sessionUser = useAuthStore((state) => state.user);
   const authStatus = useAuthStore((state) => state.status);
   const clearSession = useAuthStore((state) => state.clearSession);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const canAccessAdmin = canAccessAdminPanel(sessionUser?.role);
   const displayName = sessionUser?.name ?? 'Admin Keys';
   const displayEmail = sessionUser?.email ?? 'admin@luxekeys.io';
@@ -143,12 +144,18 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
       .toUpperCase() || 'AK';
 
   const handleLogout = async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+
     try {
       await authApi.logout();
     } catch {
     } finally {
       clearSession();
-      router.push('/login');
+      router.replace('/login');
     }
   };
 
@@ -163,14 +170,19 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
       return;
     }
 
-    if (!sessionUser) {
+    if (!sessionUser && !isLoggingOut) {
       const params = new URLSearchParams({ next: pathname });
       router.replace(`/login?${params.toString()}`);
       return;
     }
-  }, [authStatus, pathname, router, sessionUser]);
+  }, [authStatus, isLoggingOut, pathname, router, sessionUser]);
 
-  if (authStatus === 'idle' || authStatus === 'loading') {
+  if (
+    authStatus === 'idle' ||
+    authStatus === 'loading' ||
+    isLoggingOut ||
+    !sessionUser
+  ) {
     return <RouteTopLoader />;
   }
 
@@ -273,9 +285,11 @@ function AdminLayoutShellContent({ children }: AdminLayoutShellProps) {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem disabled>
-                  <User className="size-4" />
-                  Admin Profile
+                <DropdownMenuItem asChild>
+                  <Link href="/admin/profile">
+                    <User className="size-4" />
+                    Admin Profile
+                  </Link>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />

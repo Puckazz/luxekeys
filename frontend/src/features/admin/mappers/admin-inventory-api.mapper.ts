@@ -75,7 +75,7 @@ export const mapInventoryItem = (item: AdminInventoryApiItem): AdminInventoryIte
     thumbnail: item.thumbnailUrl ?? product.thumbnail,
     variantSku: item.variantSku,
     variantColor: item.variantColor,
-    variantSwitchType: item.variantSwitchType,
+    variantOptionName: item.variantOptionName,
     variantStock: item.variantStock,
     totalStock: item.totalStock,
     stockStatus: apiInventoryStatusToStatus[item.stockStatus],

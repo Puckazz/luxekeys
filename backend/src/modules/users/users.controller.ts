@@ -151,10 +151,11 @@ export class UsersController {
   })
   @ApiNotFoundResponse({ description: 'User not found' })
   updateUser(
+    @CurrentUser() actor: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserDto,
   ): Promise<UserProfile> {
-    return this.usersService.updateUser(id, dto);
+    return this.usersService.updateUser(actor, id, dto);
   }
 
   @Patch(':id/restore')
@@ -168,8 +169,11 @@ export class UsersController {
     type: Object,
   })
   @ApiNotFoundResponse({ description: 'User not found' })
-  restore(@Param('id', ParseUUIDPipe) id: string): Promise<UserProfile> {
-    return this.usersService.restore(id);
+  restore(
+    @CurrentUser() actor: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<UserProfile> {
+    return this.usersService.restore(actor, id);
   }
 
   @Delete(':id')
@@ -183,7 +187,10 @@ export class UsersController {
     type: Object,
   })
   @ApiNotFoundResponse({ description: 'User not found' })
-  softDelete(@Param('id', ParseUUIDPipe) id: string): Promise<UserProfile> {
-    return this.usersService.softDelete(id);
+  softDelete(
+    @CurrentUser() actor: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<UserProfile> {
+    return this.usersService.softDelete(actor, id);
   }
 }

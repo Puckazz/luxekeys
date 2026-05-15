@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Check, Plus, Trash2 } from 'lucide-react';
+import { Check, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import {
   Controller,
   FieldErrors,
@@ -41,6 +41,7 @@ type AdminVariantEditorProps = {
   errors: FieldErrors<AdminProductFormValues>;
   appendVariant: UseFieldArrayAppend<AdminProductFormValues, 'variants'>;
   removeVariant: UseFieldArrayRemove;
+  onRegenerateSku: (variantIndex: number) => void;
   buildEmptyVariant: () => AdminProductFormValues['variants'][number];
 };
 
@@ -54,6 +55,7 @@ export function AdminVariantEditor({
   errors,
   appendVariant,
   removeVariant,
+  onRegenerateSku,
   buildEmptyVariant,
 }: AdminVariantEditorProps) {
   const watchedVariants = useWatch({
@@ -134,6 +136,7 @@ export function AdminVariantEditor({
             key={field.fieldId}
             className="border-border/70 bg-background/30 rounded-xl border p-3"
           >
+            <input type="hidden" {...register(`variants.${index}.skuMode`)} />
             <div className="mb-3 flex items-center justify-between gap-2">
               <p className="text-xs font-semibold text-muted-foreground">
                 Variant {index + 1}
@@ -231,12 +234,42 @@ export function AdminVariantEditor({
               )}
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold">SKU</label>
-                <Input
-                  {...register(`variants.${index}.sku`)}
-                  placeholder="NOVA75-BLK-LIN"
-                  className="h-10"
-                />
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-xs font-semibold">SKU</label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => onRegenerateSku(index)}
+                  >
+                    <RotateCcw className="size-3" />
+                    Regenerate
+                  </Button>
+                </div>
+                {(() => {
+                  const skuField = register(`variants.${index}.sku`);
+
+                  return (
+                    <Input
+                      {...skuField}
+                      placeholder="LK-KEYCHRON-Q1MAX-BLK-75"
+                      className="h-10"
+                      onChange={(event) => {
+                        skuField.onChange(event);
+                        setValue(`variants.${index}.skuMode`, 'manual', {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                    />
+                  );
+                })()}
+                <p className="text-muted-foreground text-[11px]">
+                  {watchedVariants[index]?.skuMode === 'auto'
+                    ? 'SKU is updating automatically from the current variant details.'
+                    : 'SKU is locked to your manual value until you regenerate it.'}
+                </p>
                 <p className="text-destructive text-xs">
                   {errors.variants?.[index]?.sku?.message}
                 </p>

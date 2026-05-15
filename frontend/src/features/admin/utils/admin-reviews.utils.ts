@@ -46,7 +46,6 @@ export const adminReviewSortLabelByValue: Record<
   oldest: 'Oldest',
   'rating-desc': 'Rating (high-low)',
   'rating-asc': 'Rating (low-high)',
-  'helpful-desc': 'Most helpful',
 };
 
 export const formatReviewDateTime = (isoString: string) => {

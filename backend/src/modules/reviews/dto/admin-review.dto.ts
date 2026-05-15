@@ -15,7 +15,6 @@ export const ADMIN_REVIEW_SORT_FIELDS = [
   'createdAt',
   'updatedAt',
   'rating',
-  'helpfulCount',
 ] as const;
 
 export type AdminReviewSortField = (typeof ADMIN_REVIEW_SORT_FIELDS)[number];
@@ -45,7 +44,7 @@ export class UpdateAdminReviewStatusDto {
   status!: ReviewStatus;
 
   @ApiPropertyOptional({
-    example: 'Contains enough product detail to publish.',
+    example: 'Spam or abusive content.',
   })
   @IsOptional()
   @IsString()

@@ -56,7 +56,7 @@ export function AdminReviewsToolbar({
     <div className="space-y-4">
       <AdminToolbarHeader
         title="Manage Reviews"
-        description="Review customer feedback, publish high-quality reviews, and moderate risky content."
+        description="Monitor live customer feedback and moderate spam or risky content."
         actions={
           <Button
             type="button"

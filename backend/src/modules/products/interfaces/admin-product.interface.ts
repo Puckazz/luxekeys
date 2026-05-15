@@ -46,7 +46,7 @@ export type AdminInventoryItem = {
   thumbnailUrl: string | null;
   variantSku: string;
   variantColor: string;
-  variantSwitchType: string;
+  variantOptionName: string;
   variantStock: number;
   totalStock: number;
   stockStatus: AdminInventoryStockStatus;

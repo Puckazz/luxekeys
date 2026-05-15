@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -22,6 +23,7 @@ import {
   UserListItem,
   UserProfile,
 } from './interfaces/index.js';
+import type { AuthUser } from '../auth/interfaces/auth-user.interface.js';
 
 const BCRYPT_SALT_ROUNDS = 10;
 
@@ -281,8 +283,27 @@ export class UsersService {
     return user as UserProfile;
   }
 
-  async updateUser(userId: string, dto: UpdateUserDto): Promise<UserProfile> {
+  private assertAdminCanManageUser(actor: AuthUser, user: UserProfile): void {
+    if (actor.id === user.id) {
+      throw new ForbiddenException(
+        'Use your profile page to update your own account',
+      );
+    }
+
+    if (user.role === 'ADMIN') {
+      throw new ForbiddenException(
+        'Admin accounts cannot be managed from the users administration screen',
+      );
+    }
+  }
+
+  async updateUser(
+    actor: AuthUser,
+    userId: string,
+    dto: UpdateUserDto,
+  ): Promise<UserProfile> {
     const user = await this.findExistingUser(userId);
+    this.assertAdminCanManageUser(actor, user as UserProfile);
 
     const normalizedEmail =
       dto.email !== undefined ? dto.email.toLowerCase().trim() : undefined;
@@ -311,8 +332,9 @@ export class UsersService {
     return updated as UserProfile;
   }
 
-  async softDelete(userId: string): Promise<UserProfile> {
+  async softDelete(actor: AuthUser, userId: string): Promise<UserProfile> {
     const user = await this.findExistingUser(userId);
+    this.assertAdminCanManageUser(actor, user as UserProfile);
 
     if (user.deletedAt) {
       return user as UserProfile;
@@ -332,8 +354,9 @@ export class UsersService {
     return archived as UserProfile;
   }
 
-  async restore(userId: string): Promise<UserProfile> {
-    await this.findExistingUser(userId);
+  async restore(actor: AuthUser, userId: string): Promise<UserProfile> {
+    const user = await this.findExistingUser(userId);
+    this.assertAdminCanManageUser(actor, user as UserProfile);
 
     const restored = await this.prisma.user.update({
       where: { id: userId },

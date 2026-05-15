@@ -87,9 +87,9 @@ export class AdminInventoryService {
           thumbnailUrl: resolveVariantThumbnailUrl(variant),
           variantSku: variant.sku,
           variantColor: variant.color ?? '',
-          variantSwitchType:
+          variantOptionName:
             product.type === KEYBOARD_PRODUCT_TYPE
-              ? (defaultSwitch?.switchType ?? variant.name)
+              ? (defaultSwitch?.name ?? variant.name)
               : variant.name,
           variantStock: variant.stock,
           totalStock,

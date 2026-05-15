@@ -11,8 +11,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: UserRole;
-  type: 'access' | 'reset-password';
+  type: 'access';
   iat?: number;
   exp?: number;
-  passwordHash?: string;
 }

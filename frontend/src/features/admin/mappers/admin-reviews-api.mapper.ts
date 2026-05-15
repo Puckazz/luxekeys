@@ -57,10 +57,6 @@ export const reviewSortToApiParams = (
     return { sortBy: 'rating', sortOrder: 'asc' };
   }
 
-  if (sort === 'helpful-desc') {
-    return { sortBy: 'helpfulCount', sortOrder: 'desc' };
-  }
-
   return { sortBy: 'createdAt', sortOrder: 'desc' };
 };
 
@@ -77,7 +73,6 @@ export const mapApiReviewToAdminReview = (
     title: review.title ?? 'Untitled review',
     content: review.content ?? 'No written review.',
     rating: review.rating,
-    helpfulCount: review.helpfulCount,
     status: apiStatusToStatus[review.status],
     createdAt: review.createdAt,
     updatedAt: review.updatedAt,

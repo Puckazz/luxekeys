@@ -25,6 +25,16 @@ type AdminRevenueTrendCardProps = {
   points: AdminDashboardRevenuePoint[];
 };
 
+const formatRevenueAxisTick = (value: number) => {
+  if (Math.abs(value) >= 1000) {
+    return `$${Number(value / 1000).toLocaleString('en-US', {
+      maximumFractionDigits: 1,
+    })}k`;
+  }
+
+  return formatCurrency(value, { maximumFractionDigits: 0 });
+};
+
 export function AdminRevenueTrendCard({ points }: AdminRevenueTrendCardProps) {
   const totalRevenue = points.reduce(
     (total, point) => total + point.revenue,
@@ -76,9 +86,7 @@ export function AdminRevenueTrendCard({ points }: AdminRevenueTrendCardProps) {
                 axisLine={false}
                 width={44}
                 tick={{ fill: 'var(--color-muted-foreground)', fontSize: 12 }}
-                tickFormatter={(value) =>
-                  `$${Math.round(Number(value) / 1000)}k`
-                }
+                tickFormatter={(value) => formatRevenueAxisTick(Number(value))}
               />
               <Tooltip
                 contentStyle={{

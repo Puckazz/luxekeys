@@ -61,7 +61,6 @@ export function AdminReviewsTable({
           <TableHead className="w-[18%]">Reviewer</TableHead>
           <TableHead className="w-[26%]">Review</TableHead>
           <TableHead className="w-[12%]">Date</TableHead>
-          <TableHead className="w-[8%] text-right">Helpful</TableHead>
           <TableHead className="w-[10%]">Status</TableHead>
           <TableHead className="w-24 pr-5 text-right">Actions</TableHead>
         </TableRow>
@@ -128,10 +127,6 @@ export function AdminReviewsTable({
 
               <TableCell className="text-muted-foreground">
                 {formatReviewDateTime(review.createdAt)}
-              </TableCell>
-
-              <TableCell className="text-right font-semibold">
-                {review.helpfulCount}
               </TableCell>
 
               <TableCell>

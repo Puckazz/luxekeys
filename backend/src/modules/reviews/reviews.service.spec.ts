@@ -74,6 +74,13 @@ describe('ReviewsService', () => {
       } as never);
 
       expect(result.rating).toBe(5);
+      expect(prisma.review.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: ReviewStatus.PUBLISHED,
+          }),
+        }),
+      );
     });
 
     it('should throw NotFoundException when product not found', async () => {
@@ -143,7 +150,7 @@ describe('ReviewsService', () => {
       expect(prisma.review.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            status: ReviewStatus.PENDING,
+            status: ReviewStatus.PUBLISHED,
             moderationNote: null,
             moderatedAt: null,
             moderatedById: null,

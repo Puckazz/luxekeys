@@ -55,7 +55,6 @@ export function AdminReviewDetailDialog({
                 label="Date"
                 value={formatReviewDateTime(review.createdAt)}
               />
-              <InfoRow label="Helpful votes" value={`${review.helpfulCount}`} />
               <div>
                 <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                   Status

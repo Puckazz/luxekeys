@@ -187,7 +187,7 @@ export function AdminReviewsPage() {
         selectedCount={moderatingReview ? 1 : 0}
         defaultStatus={moderatingReview?.status ?? 'published'}
         title="Moderate Review"
-        description="Change this review status to publish, keep pending, hide, or reject."
+        description="Change this review status to publish, hold pending, hide, or reject."
         isSubmitting={updateMutation.isPending}
         onOpenChange={(open) => {
           if (!open) {

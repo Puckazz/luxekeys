@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -212,11 +212,20 @@ export class AdminProductVariantInputDto {
   @IsUUID()
   thumbnailImageId?: string;
 
-  @ApiProperty({ example: 'Q1P-BLK-BROWN' })
+  @ApiPropertyOptional({ example: 'Q1P-BLK-BROWN' })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') {
+      return value;
+    }
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(120)
-  sku!: string;
+  sku?: string;
 
   @ApiPropertyOptional({ example: 'Black' })
   @IsOptional()

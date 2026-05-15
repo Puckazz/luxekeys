@@ -6,6 +6,10 @@ import {
 import { Prisma, ProductType } from '../../generated/prisma/index.js';
 import { PrismaService } from '../database/prisma.service.js';
 import { UpsertAdminProductDto } from './dto/admin-product.dto.js';
+import {
+  generateProductVariantSku,
+  normalizeSkuValue,
+} from './utils/product-sku.util.js';
 
 const KEYBOARD_PRODUCT_TYPE = ProductType.KEYBOARD;
 
@@ -111,12 +115,60 @@ export class ProductUpsertService {
   private getAdminVariantName(
     type: UpsertAdminProductDto['type'],
     variant: UpsertAdminProductDto['variants'][number],
+    fallbackSku: string,
   ) {
     if (type !== KEYBOARD_PRODUCT_TYPE) {
       return variant.switchType?.trim() ?? '';
     }
 
-    return variant.color?.trim() || variant.sku;
+    return variant.color?.trim() || fallbackSku;
+  }
+
+  private async getAdminBrandSkuToken(
+    tx: Prisma.TransactionClient,
+    brandId?: string,
+  ): Promise<string | null> {
+    if (!brandId) {
+      return null;
+    }
+
+    const brand = await tx.brand.findFirst({
+      where: { id: brandId },
+      select: { slug: true, name: true },
+    });
+
+    return brand?.slug ?? brand?.name ?? null;
+  }
+
+  private async resolveAdminVariantSku(
+    tx: Prisma.TransactionClient,
+    dto: UpsertAdminProductDto,
+    variant: UpsertAdminProductDto['variants'][number],
+    variantIndex: number,
+  ): Promise<string> {
+    const normalizedProvidedSku = normalizeSkuValue(variant.sku);
+
+    if (normalizedProvidedSku) {
+      return normalizedProvidedSku;
+    }
+
+    const brandToken = await this.getAdminBrandSkuToken(tx, dto.brandId);
+    const generatedSku = generateProductVariantSku({
+      productName: dto.name,
+      brandToken,
+      productType: dto.type,
+      color: variant.color,
+      layout: variant.layout,
+      switchType: variant.switchType,
+    });
+
+    if (!generatedSku) {
+      throw new BadRequestException(
+        `Variant ${variantIndex + 1} cannot generate a SKU; product name or identifying attributes are missing`,
+      );
+    }
+
+    return generatedSku;
   }
 
   private async ensureVariantThumbnailBelongsToProduct(
@@ -383,7 +435,13 @@ export class ProductUpsertService {
     for (const [index, variant] of dto.variants.entries()) {
       const isActive = variant.isActive ?? true;
       const isDefault = variant.isDefault ?? index === 0;
-      const name = this.getAdminVariantName(dto.type, variant);
+      const resolvedSku = await this.resolveAdminVariantSku(
+        tx,
+        dto,
+        variant,
+        index,
+      );
+      const name = this.getAdminVariantName(dto.type, variant, resolvedSku);
       const stock = this.getAdminVariantStock(dto.type, variant);
       const priceFields = this.getAdminVariantPriceFields(dto.type, variant);
       const thumbnailImageId =
@@ -393,13 +451,13 @@ export class ProductUpsertService {
           variant.thumbnailImageId,
         );
 
-      await this.ensureAdminSkuAvailable(variant.sku, variant.id, tx);
+      await this.ensureAdminSkuAvailable(resolvedSku, variant.id, tx);
 
       if (variant.id && existingIds.has(variant.id)) {
         await tx.productVariant.update({
           where: { id: variant.id },
           data: {
-            sku: variant.sku,
+            sku: resolvedSku,
             name,
             price: priceFields.price,
             compareAtPrice: priceFields.compareAtPrice,
@@ -427,7 +485,7 @@ export class ProductUpsertService {
       const createdVariant = await tx.productVariant.create({
         data: {
           productId,
-          sku: variant.sku,
+          sku: resolvedSku,
           name,
           price: priceFields.price,
           compareAtPrice: priceFields.compareAtPrice,

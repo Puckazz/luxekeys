@@ -4,6 +4,7 @@ import Image from 'next/image';
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
@@ -12,7 +13,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ImageUp, LoaderCircle, Star, Trash2, X } from 'lucide-react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 import { adminProductsApi } from '@/features/admin/api/admin-products.api';
 import { ADMIN_PRODUCTS_QUERY_KEYS } from '@/features/admin/hooks/products.key';
@@ -27,6 +28,7 @@ import {
   adminProductStatusLabelByValue,
   buildDefaultProductSpec,
   buildDefaultVariant,
+  generateAdminVariantSku,
   normalizeAdminProductSpec,
 } from '@/features/admin/utils/admin-products.utils';
 import { Button } from '@/shared/components/ui/button';
@@ -107,6 +109,7 @@ const toFormValues = (product: AdminProduct | null): AdminProductFormValues => {
       layout: variant.layout,
       switchType: variant.switchType,
       sku: variant.sku,
+      skuMode: 'manual',
       originalPrice: variant.originalPrice ?? '',
       price: variant.price,
       stock: variant.stock,
@@ -157,6 +160,18 @@ export function AdminProductFormDialog({
     formState,
   } = form;
   const productType = form.watch('productType');
+  const watchedProductName = useWatch({
+    control,
+    name: 'name',
+  });
+  const watchedBrandId = useWatch({
+    control,
+    name: 'brandId',
+  });
+  const watchedVariants = useWatch({
+    control,
+    name: 'variants',
+  });
   const brandOptionsQuery = useQuery({
     queryKey: ['admin-product-brand-options'],
     queryFn: () => adminProductsApi.getBrandOptions(),
@@ -174,6 +189,13 @@ export function AdminProductFormDialog({
     staleTime: 15_000,
   });
   const productImages = productImagesQuery.data ?? product?.images ?? [];
+  const selectedBrandToken = useMemo(() => {
+    const brand = (brandOptionsQuery.data ?? []).find(
+      (option) => option.id === watchedBrandId
+    );
+
+    return brand?.slug ?? brand?.name ?? '';
+  }, [brandOptionsQuery.data, watchedBrandId]);
   const uploadProductImageMutation = useMutation({
     mutationFn: ({ productId, file }: { productId: string; file: File }) => {
       return adminProductsApi.uploadProductImage(productId, file);
@@ -312,6 +334,62 @@ export function AdminProductFormDialog({
     });
   }, [getValues, productType, setValue]);
 
+  useEffect(() => {
+    (watchedVariants ?? []).forEach((variant, index) => {
+      if (variant.skuMode !== 'auto') {
+        return;
+      }
+
+      const generatedSku = generateAdminVariantSku({
+        productName: watchedProductName ?? '',
+        brandToken: selectedBrandToken,
+        productType,
+        color: variant.color,
+        layout: variant.layout,
+        switchType: variant.switchType,
+      });
+
+      if (generatedSku === variant.sku) {
+        return;
+      }
+
+      setValue(`variants.${index}.sku`, generatedSku, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    });
+  }, [
+    productType,
+    selectedBrandToken,
+    setValue,
+    watchedProductName,
+    watchedVariants,
+  ]);
+
+  const regenerateVariantSku = useCallback(
+    (variantIndex: number) => {
+      const variant = getValues(`variants.${variantIndex}`);
+      const generatedSku = generateAdminVariantSku({
+        productName: getValues('name'),
+        brandToken: selectedBrandToken,
+        productType: getValues('productType'),
+        color: variant.color,
+        layout: variant.layout,
+        switchType: variant.switchType,
+      });
+
+      setValue(`variants.${variantIndex}.skuMode`, 'auto', {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      setValue(`variants.${variantIndex}.sku`, generatedSku, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [getValues, selectedBrandToken, setValue]
+  );
+
   const submitHandler = (values: AdminProductFormValues) => {
     onSubmit({
       id: product?.id,
@@ -339,9 +417,23 @@ export function AdminProductFormDialog({
         const defaultSwitchOption =
           variant.switchOptions.find((option) => option.isDefault) ??
           variant.switchOptions[0];
+        const variantPayload = {
+          id: variant.id,
+          thumbnailImageId: variant.thumbnailImageId,
+          color: variant.color,
+          layout: variant.layout,
+          switchType: variant.switchType,
+          sku: variant.sku,
+          originalPrice: variant.originalPrice,
+          price: variant.price,
+          stock: variant.stock,
+          isDefault: variant.isDefault,
+          status: variant.status,
+          switchOptions: variant.switchOptions,
+        };
 
         return {
-          ...variant,
+          ...variantPayload,
           switchType:
             values.productType === 'keyboards'
               ? defaultSwitchOption?.switchType || ''
@@ -357,11 +449,11 @@ export function AdminProductFormDialog({
                 : variant.originalPrice,
           price:
             values.productType === 'keyboards'
-              ? (defaultSwitchOption?.price ?? variant.price)
-              : variant.price,
+              ? (defaultSwitchOption?.price ?? variantPayload.price)
+              : variantPayload.price,
           switchOptions:
             values.productType === 'keyboards'
-              ? variant.switchOptions.map((option) => ({
+              ? variantPayload.switchOptions.map((option) => ({
                   ...option,
                   originalPrice:
                     option.originalPrice === '' ? null : option.originalPrice,
@@ -815,6 +907,7 @@ export function AdminProductFormDialog({
               errors={formState.errors}
               appendVariant={variantsFieldArray.append}
               removeVariant={variantsFieldArray.remove}
+              onRegenerateSku={regenerateVariantSku}
               buildEmptyVariant={() => ({
                 ...buildDefaultVariant(),
                 switchOptions:

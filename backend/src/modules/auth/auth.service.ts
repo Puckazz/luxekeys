@@ -3,7 +3,6 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -19,6 +18,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthUser, JwtPayload } from './interfaces/auth-user.interface';
+import { MailService } from './mail.service';
 
 type TokenPair = {
   accessToken: string;
@@ -38,7 +38,7 @@ type RefreshTokenContext = {
 
 const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 const REFRESH_TOKEN_TTL_DAYS = 7;
-const RESET_TOKEN_TTL_SECONDS = 15 * 60;
+const RESET_CODE_TTL_MINUTES = 15;
 const BCRYPT_SALT_ROUNDS = 10;
 
 @Injectable()
@@ -46,7 +46,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   async register(
@@ -158,39 +158,69 @@ export class AuthService {
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
+    const message = 'If the email exists, a password reset code has been sent';
+    const email = dto.email.toLowerCase().trim();
     const user = await this.prisma.user.findFirst({
-      where: { email: dto.email.toLowerCase().trim(), deletedAt: null },
+      where: { email, deletedAt: null, status: UserStatus.ACTIVE },
     });
 
     if (!user) {
-      return { message: 'If the email exists, a reset link has been sent' };
+      return { message };
     }
 
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      type: 'reset-password',
-      passwordHash: user.passwordHash,
-    };
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setMinutes(expiresAt.getMinutes() + RESET_CODE_TTL_MINUTES);
+    const code = this.generateResetCode();
 
-    const resetToken = this.jwtService.sign(payload, {
-      secret: this.resetSecret,
-      expiresIn: RESET_TOKEN_TTL_SECONDS,
+    await this.prisma.passwordResetCode.updateMany({
+      where: { userId: user.id, consumedAt: null },
+      data: { consumedAt: now },
     });
 
-    return {
-      message: 'If the email exists, a reset link has been sent',
-      resetToken,
-    };
+    await this.prisma.passwordResetCode.create({
+      data: {
+        userId: user.id,
+        codeHash: await this.hashPassword(code),
+        passwordHash: user.passwordHash,
+        expiresAt,
+      },
+    });
+
+    await this.mailService.sendPasswordResetCode(
+      user.email,
+      user.fullName,
+      code,
+    );
+
+    return { message };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const payload = this.verifyResetToken(dto.token);
-    const user = await this.findActiveUser(payload.sub);
+    const email = dto.email.toLowerCase().trim();
+    const user = await this.prisma.user.findFirst({
+      where: { email, deletedAt: null, status: UserStatus.ACTIVE },
+    });
 
-    if (payload.passwordHash !== user.passwordHash) {
-      throw new UnauthorizedException('Reset token is no longer valid');
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired reset code');
+    }
+
+    const resetCode = await this.prisma.passwordResetCode.findFirst({
+      where: {
+        userId: user.id,
+        consumedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (
+      !resetCode ||
+      resetCode.passwordHash !== user.passwordHash ||
+      !(await bcrypt.compare(dto.code, resetCode.codeHash))
+    ) {
+      throw new UnauthorizedException('Invalid or expired reset code');
     }
 
     await this.prisma.user.update({
@@ -201,6 +231,11 @@ export class AuthService {
     await this.prisma.refreshToken.updateMany({
       where: { userId: user.id, revokedAt: null },
       data: { revokedAt: new Date() },
+    });
+
+    await this.prisma.passwordResetCode.update({
+      where: { id: resetCode.id },
+      data: { consumedAt: new Date() },
     });
 
     return { passwordReset: true };
@@ -344,26 +379,7 @@ export class AuthService {
     return hash.startsWith('$2a$') || hash.startsWith('$2b$');
   }
 
-  private verifyResetToken(token: string): JwtPayload {
-    try {
-      const payload = this.jwtService.verify<JwtPayload>(token, {
-        secret: this.resetSecret,
-      });
-
-      if (payload.type !== 'reset-password') {
-        throw new UnauthorizedException('Invalid token type');
-      }
-
-      return payload;
-    } catch {
-      throw new UnauthorizedException('Invalid or expired reset token');
-    }
-  }
-
-  private get resetSecret(): string {
-    return (
-      this.configService.get<string>('JWT_RESET_SECRET') ??
-      'luxekeys-reset-development-secret'
-    );
+  private generateResetCode(): string {
+    return crypto.randomInt(100000, 1000000).toString();
   }
 }

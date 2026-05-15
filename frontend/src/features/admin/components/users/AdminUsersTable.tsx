@@ -30,6 +30,7 @@ import {
 type AdminUsersTableProps = {
   users: AdminUser[];
   actorRole: UserRole;
+  actorUserId?: string;
   isUpdatingRole: boolean;
   onRoleChange: (userId: string, nextRole: UserRole) => void;
   onEdit: (user: AdminUser) => void;
@@ -50,6 +51,7 @@ const statusBadgeVariantByValue: Record<
 export function AdminUsersTable({
   users,
   actorRole,
+  actorUserId,
   isUpdatingRole,
   onRoleChange,
   onEdit,
@@ -65,7 +67,7 @@ export function AdminUsersTable({
           <TableHead>Role</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Last login</TableHead>
-          <TableHead>Access action</TableHead>
+          <TableHead>Quick role</TableHead>
           <TableHead className="pr-5 text-right">Action</TableHead>
         </TableRow>
       </TableHeader>
@@ -73,7 +75,11 @@ export function AdminUsersTable({
       <TableBody>
         {users.map((user) => {
           const assignableRoles = getAssignableUserRoles(actorRole);
-          const canEditRole = assignableRoles.length > 0;
+          const isSelf = user.id === actorUserId;
+          const isAdminAccount = user.role === 'admin';
+          const canManageRow =
+            canManageUsersCrud(actorRole) && !isSelf && !isAdminAccount;
+          const canEditRole = assignableRoles.length > 0 && canManageRow;
           const roleOptions = canEditRole ? assignableRoles : [user.role];
 
           return (
@@ -135,7 +141,11 @@ export function AdminUsersTable({
                   {!canEditRole ? (
                     <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
                       <ShieldAlert className="size-3.5" />
-                      Restricted
+                      {isSelf
+                        ? 'Use Admin Profile'
+                        : isAdminAccount
+                          ? 'Managed separately'
+                          : 'Restricted'}
                     </span>
                   ) : null}
                 </div>
@@ -147,7 +157,7 @@ export function AdminUsersTable({
                     icon={Edit2}
                     label="Edit user"
                     onClick={() => onEdit(user)}
-                    disabled={!canManageUsersCrud(actorRole)}
+                    disabled={!canManageRow}
                   />
 
                   {user.status === 'archived' ? (
@@ -155,14 +165,14 @@ export function AdminUsersTable({
                       icon={RotateCcw}
                       label="Restore user"
                       onClick={() => onRestore(user)}
-                      disabled={!canManageUsersCrud(actorRole)}
+                      disabled={!canManageRow}
                     />
                   ) : (
                     <AdminTableIconActionButton
                       icon={Trash2}
                       label="Archive user"
                       onClick={() => onDelete(user)}
-                      disabled={!canManageUsersCrud(actorRole)}
+                      disabled={!canManageRow}
                     />
                   )}
                 </div>

@@ -110,7 +110,7 @@ export function AdminInventoryTable({
               <TableCell className="font-medium">{item.variantSku}</TableCell>
 
               <TableCell className="text-muted-foreground">
-                {item.variantColor} / {item.variantSwitchType}
+                {item.variantColor} / {item.variantOptionName}
               </TableCell>
 
               <TableCell className="text-right font-semibold">

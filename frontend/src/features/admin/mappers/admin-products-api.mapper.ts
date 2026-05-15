@@ -192,7 +192,7 @@ export const mapApiProductToAdminProduct = (
           ? (variant.layout ?? '')
           : '') as AdminProduct['variants'][number]['layout'],
         switchType: isKeyboardProduct
-          ? (switchOption?.switchType ?? variant.name)
+          ? (switchOption?.name ?? variant.name)
           : variant.name,
         sku: variant.sku,
         originalPrice:
@@ -262,7 +262,7 @@ export const mapUpsertInputToPayload = (input: UpsertAdminProductInput) => {
       return {
         id: variant.id,
         thumbnailImageId: variant.thumbnailImageId,
-        sku: variant.sku,
+        sku: variant.sku.trim() || undefined,
         color: variant.color,
         layout: input.productType === 'keyboards' ? variant.layout || undefined : undefined,
         switchType: variant.switchType,
