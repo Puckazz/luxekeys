@@ -46,6 +46,12 @@ export class AddressesController {
     return this.addressesService.getStates(country);
   }
 
+  @Get('cities')
+  @ApiOperation({ summary: 'Get cities or districts by country and state' })
+  getCities(@Query('country') country: string, @Query('state') state: string) {
+    return this.addressesService.getCities(country, state);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

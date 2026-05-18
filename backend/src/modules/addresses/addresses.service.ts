@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -109,20 +110,46 @@ export class AddressesService {
   }
 
   async getProvinces(): Promise<{ name: string; code: number }[]> {
-    const response = await fetch('https://provinces.open-api.vn/api/p/');
-    return response.json() as Promise<{ name: string; code: number }[]>;
+    try {
+      const response = await fetch('https://provinces.open-api.vn/api/p/');
+
+      if (!response.ok) {
+        throw new BadGatewayException('Unable to fetch provinces');
+      }
+
+      return response.json() as Promise<{ name: string; code: number }[]>;
+    } catch (error) {
+      if (error instanceof BadGatewayException) {
+        throw error;
+      }
+
+      throw new BadGatewayException('Unable to fetch provinces');
+    }
   }
 
   async getDistricts(
     provinceCode: string,
   ): Promise<{ name: string; code: number }[]> {
-    const response = await fetch(
-      `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`,
-    );
-    const data = (await response.json()) as {
-      districts?: { name: string; code: number }[];
-    };
-    return data.districts || [];
+    try {
+      const response = await fetch(
+        `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`,
+      );
+
+      if (!response.ok) {
+        throw new BadGatewayException('Unable to fetch districts');
+      }
+
+      const data = (await response.json()) as {
+        districts?: { name: string; code: number }[];
+      };
+      return data.districts || [];
+    } catch (error) {
+      if (error instanceof BadGatewayException) {
+        throw error;
+      }
+
+      throw new BadGatewayException('Unable to fetch districts');
+    }
   }
 
   async getStates(country: string): Promise<{ name: string; code: string }[]> {
@@ -143,6 +170,11 @@ export class AddressesService {
           body: JSON.stringify({ country }),
         },
       );
+
+      if (!response.ok) {
+        return [];
+      }
+
       const data = (await response.json()) as {
         data?: { states?: { name: string }[] };
       };
@@ -152,6 +184,21 @@ export class AddressesService {
     } catch {
       return [];
     }
+  }
+
+  async getCities(
+    country: string,
+    state: string,
+  ): Promise<{ name: string; code: string }[]> {
+    if (country === 'Vietnam') {
+      const districts = await this.getDistricts(state);
+      return districts.map((district) => ({
+        name: district.name,
+        code: String(district.code),
+      }));
+    }
+
+    return [];
   }
 
   private assertOwnership(ownerId: string, requesterId: string): void {
