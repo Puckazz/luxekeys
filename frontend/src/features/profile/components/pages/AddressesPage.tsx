@@ -269,18 +269,22 @@ export default function AddressesPage() {
                   },
                   triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
                 }}
-                provinceSelect={{
-                  value: selectedProvince,
-                  options: provinceOptions,
-                  onValueChange: (nextProvince) => {
-                    setValue('province', nextProvince, {
-                      shouldValidate: true,
-                    });
-                    setValue('city', '', { shouldValidate: true });
-                  },
-                  triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
-                  disabled: !selectedCountry || isFetchingStates,
-                }}
+                provinceSelect={
+                  provinceOptions.length > 0
+                    ? {
+                        value: selectedProvince,
+                        options: provinceOptions,
+                        onValueChange: (nextProvince) => {
+                          setValue('province', nextProvince, {
+                            shouldValidate: true,
+                          });
+                          setValue('city', '', { shouldValidate: true });
+                        },
+                        triggerClassName: 'bg-input/30 h-12 w-full rounded-md',
+                        disabled: !selectedCountry || isFetchingStates,
+                      }
+                    : undefined
+                }
                 messages={{
                   fullName: errors.fullName?.message,
                   phone: errors.phone?.message,

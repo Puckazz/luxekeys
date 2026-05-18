@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -109,58 +108,7 @@ export class AddressesService {
     });
   }
 
-  async getProvinces(): Promise<{ name: string; code: number }[]> {
-    try {
-      const response = await fetch('https://provinces.open-api.vn/api/p/');
-
-      if (!response.ok) {
-        throw new BadGatewayException('Unable to fetch provinces');
-      }
-
-      return response.json() as Promise<{ name: string; code: number }[]>;
-    } catch (error) {
-      if (error instanceof BadGatewayException) {
-        throw error;
-      }
-
-      throw new BadGatewayException('Unable to fetch provinces');
-    }
-  }
-
-  async getDistricts(
-    provinceCode: string,
-  ): Promise<{ name: string; code: number }[]> {
-    try {
-      const response = await fetch(
-        `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`,
-      );
-
-      if (!response.ok) {
-        throw new BadGatewayException('Unable to fetch districts');
-      }
-
-      const data = (await response.json()) as {
-        districts?: { name: string; code: number }[];
-      };
-      return data.districts || [];
-    } catch (error) {
-      if (error instanceof BadGatewayException) {
-        throw error;
-      }
-
-      throw new BadGatewayException('Unable to fetch districts');
-    }
-  }
-
   async getStates(country: string): Promise<{ name: string; code: string }[]> {
-    if (country === 'Vietnam') {
-      const provinces = await this.getProvinces();
-      return provinces.map((p) => ({
-        name: p.name,
-        code: String(p.code),
-      }));
-    }
-
     try {
       const response = await fetch(
         'https://countriesnow.space/api/v0.1/countries/states',
@@ -186,18 +134,9 @@ export class AddressesService {
     }
   }
 
-  async getCities(
-    country: string,
-    state: string,
-  ): Promise<{ name: string; code: string }[]> {
-    if (country === 'Vietnam') {
-      const districts = await this.getDistricts(state);
-      return districts.map((district) => ({
-        name: district.name,
-        code: String(district.code),
-      }));
-    }
-
+  getCities(country: string, state: string): { name: string; code: string }[] {
+    void country;
+    void state;
     return [];
   }
 
