@@ -152,6 +152,11 @@ export class AuthController {
   }
 
   private get useSecureCookie(): boolean {
+    const nodeEnv = this.configService.get<string>('NODE_ENV');
+    if (nodeEnv === 'production') {
+      return true;
+    }
+
     return this.configService.get<string>('AUTH_COOKIE_SECURE') === 'true';
   }
 }
