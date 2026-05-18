@@ -159,12 +159,44 @@ export class CartService {
       });
     }
 
+    const syncItems = new Map<
+      string,
+      { variantId: string; switchOptionId: string | null; quantity: number }
+    >();
+
+    for (const itemDto of dto.items) {
+      const switchOptionId = itemDto.switchOptionId ?? null;
+      const key = `${itemDto.variantId}:${switchOptionId ?? 'default'}`;
+      const existingItem = syncItems.get(key);
+
+      if (existingItem) {
+        syncItems.set(key, {
+          ...existingItem,
+          quantity: existingItem.quantity + itemDto.quantity,
+        });
+        continue;
+      }
+
+      syncItems.set(key, {
+        variantId: itemDto.variantId,
+        switchOptionId,
+        quantity: itemDto.quantity,
+      });
+    }
+
     // Delete existing cart items to ensure we are fully in sync with the frontend ground truth
     await this.prisma.cartItem.deleteMany({
       where: { cartId: cart.id },
     });
 
-    for (const itemDto of dto.items) {
+    const cartItemsToCreate: {
+      cartId: string;
+      variantId: string;
+      switchOptionId: string | null;
+      quantity: number;
+    }[] = [];
+
+    for (const itemDto of syncItems.values()) {
       const variant = await this.prisma.productVariant.findUnique({
         where: { id: itemDto.variantId },
       });
@@ -189,15 +221,20 @@ export class CartService {
 
       const finalQuantity = Math.min(itemDto.quantity, availableStock);
       if (finalQuantity > 0) {
-        await this.prisma.cartItem.create({
-          data: {
-            cartId: cart.id,
-            variantId: itemDto.variantId,
-            switchOptionId: itemDto.switchOptionId ?? null,
-            quantity: finalQuantity,
-          },
+        cartItemsToCreate.push({
+          cartId: cart.id,
+          variantId: itemDto.variantId,
+          switchOptionId: itemDto.switchOptionId,
+          quantity: finalQuantity,
         });
       }
+    }
+
+    if (cartItemsToCreate.length > 0) {
+      await this.prisma.cartItem.createMany({
+        data: cartItemsToCreate,
+        skipDuplicates: true,
+      });
     }
 
     return this.getCart(userId);
