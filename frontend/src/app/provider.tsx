@@ -15,6 +15,7 @@ import { useAuthStore } from '@/stores/auth/auth.store';
 
 const HEALTH_RETRY_DELAY_MS = 2_000;
 const HEALTH_REQUEST_TIMEOUT_MS = 8_000;
+const SHOULD_CHECK_SERVER_READINESS = process.env.NODE_ENV === 'production';
 
 type ServerReadinessStatus = 'checking' | 'ready' | 'waiting';
 
@@ -124,16 +125,28 @@ function ServerReadinessGate({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AppBridges({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <AuthBootstrapBridge />
+      <ProfileBootstrapBridge />
+      <CartSyncBridge />
+      <WishlistSyncBridge />
+      {children}
+    </>
+  );
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
+  const app = <AppBridges>{children}</AppBridges>;
+
   return (
     <QueryClientProvider client={queryClient}>
-      <ServerReadinessGate>
-        <AuthBootstrapBridge />
-        <ProfileBootstrapBridge />
-        <CartSyncBridge />
-        <WishlistSyncBridge />
-        {children}
-      </ServerReadinessGate>
+      {SHOULD_CHECK_SERVER_READINESS ? (
+        <ServerReadinessGate>{app}</ServerReadinessGate>
+      ) : (
+        app
+      )}
     </QueryClientProvider>
   );
 }

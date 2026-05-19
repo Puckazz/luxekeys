@@ -39,7 +39,7 @@ export default function ShopProductCard({
   return (
     <Card
       className={cn(
-        'group hover:border-primary/40 hover:shadow-primary/10 relative overflow-hidden transition-all duration-200 hover:shadow-lg',
+        'group hover:border-primary/40 hover:shadow-primary/10 relative flex h-full flex-col overflow-hidden transition-all duration-200 hover:shadow-lg',
         isList && 'flex flex-col md:flex-row'
       )}
     >
@@ -121,7 +121,7 @@ export default function ShopProductCard({
           </div>
         ) : null}
 
-        <div className="mt-5 flex items-center justify-between gap-3">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-5">
           <Button
             variant={primaryAction.variant ?? 'secondary'}
             size={primaryAction.size ?? 'lg'}
