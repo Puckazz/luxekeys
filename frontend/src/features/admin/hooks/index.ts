@@ -15,7 +15,6 @@ export * from '@/features/admin/hooks/queries/useOrdersQuery';
 export * from '@/features/admin/hooks/queries/useOrderDetailQuery';
 export * from '@/features/admin/hooks/mutations/useOrderMutations';
 export * from '@/features/admin/hooks/queries/useDashboardQuery';
-export * from '@/features/admin/hooks/queries/useHealthQuery';
 export * from '@/features/admin/hooks/queries/useUsersQueryState';
 export * from '@/features/admin/hooks/queries/useUsersQuery';
 export * from '@/features/admin/hooks/mutations/useUserMutations';

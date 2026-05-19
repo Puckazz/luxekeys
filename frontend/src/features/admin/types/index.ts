@@ -160,11 +160,6 @@ export type {
 } from '@/features/admin/types/admin-dashboard.types';
 
 export type {
-  AdminHealthCheck,
-  AdminHealthStatus,
-} from '@/features/admin/types/admin-health.types';
-
-export type {
   AdminUserFormValues,
   AdminUser,
   AdminUserListApiResponse,

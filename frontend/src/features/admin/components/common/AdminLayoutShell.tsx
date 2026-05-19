@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   Boxes,
-  Activity,
   ChevronUp,
   ClipboardList,
   LayoutGrid,
@@ -101,12 +100,6 @@ const navItems = [
     label: 'Reviews',
     icon: MessageSquare,
     activeIncludes: ['/admin/reviews'],
-  },
-  {
-    href: '/admin/health',
-    label: 'Health',
-    icon: Activity,
-    activeIncludes: ['/admin/health'],
   },
 ] as const;
 
