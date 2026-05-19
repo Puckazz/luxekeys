@@ -72,15 +72,10 @@ export function AdminProductsToolbar({
         title="Products"
         description="Manage catalog products and their variant combinations."
         actions={
-          <>
-            <Button type="button" variant="outline" size="lg">
-              Import
-            </Button>
-            <Button type="button" size="lg" onClick={onCreateClick}>
-              <Plus className="size-4" />
-              Add Product
-            </Button>
-          </>
+          <Button type="button" size="lg" onClick={onCreateClick}>
+            <Plus className="size-4" />
+            Add Product
+          </Button>
         }
       />
 

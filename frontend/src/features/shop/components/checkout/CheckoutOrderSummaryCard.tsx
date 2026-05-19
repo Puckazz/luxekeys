@@ -135,6 +135,7 @@ export default function CheckoutOrderSummaryCard({
                 onChange={(event) => onPromoInputChange(event.target.value)}
                 placeholder="Enter discount code"
                 className="h-10"
+                disabled={true}
               />
               <Button
                 type="button"

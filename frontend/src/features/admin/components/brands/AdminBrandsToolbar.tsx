@@ -62,7 +62,7 @@ export function AdminBrandsToolbar({
         title="Brands"
         description="Manage vendor visibility and catalog brand metadata."
         actions={
-          <Button type="button" size="sm" onClick={onCreateClick}>
+          <Button type="button" size="lg" onClick={onCreateClick}>
             <Plus className="size-4" />
             Add Brand
           </Button>

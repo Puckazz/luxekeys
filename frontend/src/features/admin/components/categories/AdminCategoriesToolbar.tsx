@@ -62,7 +62,7 @@ export function AdminCategoriesToolbar({
         title="Categories"
         description="Organize catalog groups and control category visibility."
         actions={
-          <Button type="button" size="sm" onClick={onCreateClick}>
+          <Button type="button" size="lg" onClick={onCreateClick}>
             <Plus className="size-4" />
             Add Category
           </Button>

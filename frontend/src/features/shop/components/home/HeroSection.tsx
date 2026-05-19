@@ -26,7 +26,7 @@ export default function HeroSection() {
             acoustic and tactile perfection.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <PrimaryButtonLink href="/">Explore Collection</PrimaryButtonLink>
+            <PrimaryButtonLink href="/products">Explore Collection</PrimaryButtonLink>
             <OutlineButtonLink href="/">Configure Custom</OutlineButtonLink>
           </div>
         </div>

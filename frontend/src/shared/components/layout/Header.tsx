@@ -373,7 +373,7 @@ export default function Header() {
                   <Button
                     key={keyword}
                     type="button"
-                    variant="secondary"
+                    variant="outline"
                     className="rounded-full"
                     onClick={() => handleQuickSearch(keyword)}
                   >
@@ -440,14 +440,14 @@ export default function Header() {
                     <div className="pt-2">
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         className="text-primary w-full text-sm"
                         onClick={() => {
                           setIsSearchSheetOpen(false);
                           navigateToSearch(searchKeyword);
                         }}
                       >
-                        See all results for &ldquo;{debouncedQuery}&rdquo; →
+                        See all results for &ldquo;{debouncedQuery}&rdquo;
                       </Button>
                     </div>
                   </>

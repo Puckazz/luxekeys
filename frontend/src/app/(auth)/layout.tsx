@@ -1,12 +1,27 @@
 import { ReactNode } from 'react';
 import Image from 'next/image';
-import { Keyboard } from 'lucide-react';
+import Link from 'next/link';
+import { Home, Keyboard } from 'lucide-react';
+
+import { Button } from '@/shared/components/ui/button';
 
 export default function AuthLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <main className="bg-background dark:bg-background flex min-h-screen">
+    <main className="bg-background dark:bg-background relative flex min-h-screen">
+      <Button
+        variant="outline"
+        size="lg"
+        asChild
+        className="bg-background/80 absolute top-4 right-4 z-20 backdrop-blur-sm sm:top-6 sm:right-6"
+      >
+        <Link href="/" aria-label="Back to home">
+          <Home className="size-4" />
+          Home
+        </Link>
+      </Button>
+
       {/* Left Section - Image & Branding */}
       <div className="relative hidden flex-col justify-end overflow-hidden bg-black/40 p-12 lg:flex lg:w-1/2">
         {/* Background Image */}
@@ -21,12 +36,16 @@ export default function AuthLayout({
         </div>
 
         {/* Logo */}
-        <div className="relative z-10 mb-4 flex items-center gap-2">
+        <Link
+          href="/"
+          aria-label="Back to home"
+          className="relative z-10 mb-4 flex w-fit items-center gap-2 transition-opacity hover:opacity-85"
+        >
           <Keyboard className="text-primary h-7 w-7" />
           <span className="text-primary text-3xl leading-0 font-bold tracking-tight">
             LUXEKEYS
           </span>
-        </div>
+        </Link>
 
         {/* Text Content */}
         <div className="relative z-10 w-2/3 text-white">
