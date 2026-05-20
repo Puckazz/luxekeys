@@ -8,6 +8,8 @@ import {
   ProductCollectionSection,
 } from '@/features/shop/components/home';
 
+export const revalidate = 300;
+
 export default async function HomePage() {
   const homepageContent = await homepageApi.getHomepageContent();
 

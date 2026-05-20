@@ -4,6 +4,8 @@ type KeycapsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+export const revalidate = 60;
+
 export default async function KeycapsPage({ searchParams }: KeycapsPageProps) {
   return renderCategoryProductsPage('keycaps', searchParams);
 }

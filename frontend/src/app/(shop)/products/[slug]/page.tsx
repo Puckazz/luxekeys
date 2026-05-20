@@ -10,6 +10,8 @@ type ProductDetailRoutePageProps = {
   }>;
 };
 
+export const revalidate = 300;
+
 const getProductBySlug = async (slug: string) => {
   try {
     return await productsApi.getProductDetailBySlug(slug);

@@ -4,6 +4,8 @@ type KeyboardsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+export const revalidate = 60;
+
 export default async function KeyboardsPage({
   searchParams,
 }: KeyboardsPageProps) {

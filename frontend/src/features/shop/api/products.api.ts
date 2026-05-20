@@ -14,6 +14,10 @@ import type {
   ProductReviewItem,
 } from '@/features/shop/types';
 import type { ProductBrandOptionItem } from '@/features/shop/types/product-list.types';
+import {
+  SHOP_CACHE_REVALIDATE,
+  SHOP_CACHE_TAGS,
+} from '@/features/shop/api/shop-cache.config';
 import type {
   CustomerProductApiPaginationMeta,
   CustomerProductDetailApiItem,
@@ -25,6 +29,7 @@ import {
   apiRequest,
   apiRequestWithMeta,
   authFetch,
+  type ApiRequestOptions,
 } from '@/shared/api/http-client';
 
 export const PRODUCT_LIST_PAGE_SIZE = 6;
@@ -84,6 +89,23 @@ export interface ReviewEligibility {
   reviewableItemCount: number;
 }
 
+type ProductApiRequestOptions = {
+  fetchOptions?: Pick<ApiRequestOptions, 'cache' | 'next'>;
+};
+
+const isServerRuntime = () => typeof window === 'undefined';
+
+const getServerFetchOptions = (
+  options: ProductApiRequestOptions | undefined,
+  fallback: Pick<ApiRequestOptions, 'cache' | 'next'>
+) => {
+  if (options?.fetchOptions) {
+    return options.fetchOptions;
+  }
+
+  return isServerRuntime() ? fallback : undefined;
+};
+
 export const productsApi = {
   searchProducts: async (query: string): Promise<ProductListItem[]> => {
     const qs = toQueryString({
@@ -101,17 +123,28 @@ export const productsApi = {
 
     return response.data.items.map(mapApiProductToListItem);
   },
-  getFeaturedProducts: async (): Promise<FeaturedProduct[]> => {
+  getFeaturedProducts: async (
+    options?: ProductApiRequestOptions
+  ): Promise<FeaturedProduct[]> => {
     const data = await apiRequest<CustomerProductSummaryApiItem[]>(
       '/products/featured',
-      {
-        cache: 'no-store',
-      }
+      getServerFetchOptions(options, {
+        cache: 'force-cache',
+        next: {
+          revalidate: SHOP_CACHE_REVALIDATE.featuredProducts,
+          tags: [
+            SHOP_CACHE_TAGS.products,
+            SHOP_CACHE_TAGS.featuredProducts,
+          ],
+        },
+      })
     );
 
     return data.map(mapApiProductToFeaturedProduct);
   },
-  getBrandOptions: async (): Promise<ProductBrandOptionItem[]> => {
+  getBrandOptions: async (
+    options?: ProductApiRequestOptions
+  ): Promise<ProductBrandOptionItem[]> => {
     const query = toQueryString({
       isActive: 'true',
       page: 1,
@@ -120,7 +153,14 @@ export const productsApi = {
       sortOrder: 'asc',
     });
     const response = await apiRequestWithMeta<CustomerBrandApiItem[]>(
-      `/brands?${query}`
+      `/brands?${query}`,
+      getServerFetchOptions(options, {
+        cache: 'force-cache',
+        next: {
+          revalidate: SHOP_CACHE_REVALIDATE.brandOptions,
+          tags: [SHOP_CACHE_TAGS.brandOptions],
+        },
+      })
     );
 
     return response.data.map((brand) => ({
@@ -131,7 +171,8 @@ export const productsApi = {
   },
 
   getProducts: async (
-    queryState: ProductListQueryState
+    queryState: ProductListQueryState,
+    options?: ProductApiRequestOptions
   ): Promise<ProductListApiResponse> => {
     const brandOptions =
       queryState.brands.length > 0 ? await productsApi.getBrandOptions() : [];
@@ -144,7 +185,16 @@ export const productsApi = {
     const response = await apiRequestWithMeta<
       CustomerProductListApiData,
       CustomerProductApiPaginationMeta
-    >(`/products?${query}`);
+    >(
+      `/products?${query}`,
+      getServerFetchOptions(options, {
+        cache: 'force-cache',
+        next: {
+          revalidate: SHOP_CACHE_REVALIDATE.productList,
+          tags: [SHOP_CACHE_TAGS.products, SHOP_CACHE_TAGS.productLists],
+        },
+      })
+    );
     const items = response.data.items.map(mapApiProductToListItem);
 
     return {
@@ -157,9 +207,23 @@ export const productsApi = {
     };
   },
 
-  getProductDetailBySlug: async (slug: string): Promise<ProductDetail> => {
+  getProductDetailBySlug: async (
+    slug: string,
+    options?: ProductApiRequestOptions
+  ): Promise<ProductDetail> => {
     const product = await apiRequest<CustomerProductDetailApiItem>(
-      `/products/slug/${slug}`
+      `/products/slug/${slug}`,
+      getServerFetchOptions(options, {
+        cache: 'force-cache',
+        next: {
+          revalidate: SHOP_CACHE_REVALIDATE.productDetail,
+          tags: [
+            SHOP_CACHE_TAGS.products,
+            SHOP_CACHE_TAGS.productDetails,
+            SHOP_CACHE_TAGS.productDetail(slug),
+          ],
+        },
+      })
     );
 
     return mapApiProductToDetail(product);

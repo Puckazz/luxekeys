@@ -27,8 +27,14 @@ type BackendErrorResponse = {
   error?: string;
 };
 
-type ApiRequestOptions = RequestInit & {
+type NextFetchOptions = {
+  revalidate?: false | 0 | number;
+  tags?: string[];
+};
+
+export type ApiRequestOptions = RequestInit & {
   authToken?: string;
+  next?: NextFetchOptions;
 };
 
 type RefreshAuthSession = () => Promise<AuthResponse>;

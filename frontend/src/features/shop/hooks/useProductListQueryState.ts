@@ -91,7 +91,7 @@ export const useProductListQueryState = ({
   }, [queryState.categories]);
   const brandOptionsQuery = useQuery({
     queryKey: ['product-brand-options'],
-    queryFn: productsApi.getBrandOptions,
+    queryFn: () => productsApi.getBrandOptions(),
     staleTime: 60_000,
     enabled: capabilities.showBrandFilter,
   });
