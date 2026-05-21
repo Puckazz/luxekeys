@@ -1,7 +1,7 @@
 import { apiRequest } from './http-client';
 
 export type LocationItem = {
-  code: number;
+  code: string;
   name: string;
 };
 

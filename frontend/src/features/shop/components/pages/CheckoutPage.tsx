@@ -22,6 +22,7 @@ import { useProfileStore } from '@/stores/profile/profile.store';
 import { useAddressesStore } from '@/stores/profile/addresses.store';
 import { useCartSync } from '@/features/shop/hooks/useCartSync';
 import type { CheckoutFormValues } from '@/features/shop/types/checkout.types';
+import type { CartLineItem } from '@/features/shop/types/cart-page.types';
 import {
   buildOrderPricing,
   calculateSubtotal,
@@ -154,6 +155,13 @@ export default function CheckoutPage() {
     getDefaultValues(draft, profile, addresses).promoCode
   );
   const [addressError, setAddressError] = useState<string | null>(null);
+  const [isCompletingCheckout, setIsCompletingCheckout] = useState(false);
+  const [submittedCartItems, setSubmittedCartItems] = useState<
+    CartLineItem[] | null
+  >(null);
+  const visibleCartItems = isCompletingCheckout
+    ? (submittedCartItems ?? cartItems)
+    : cartItems;
 
   useEffect(() => {
     if (!checkoutHydrated || !profileHydrated || !addressesHydrated) {
@@ -187,7 +195,7 @@ export default function CheckoutPage() {
   const provinceOptions = states?.map((p) => p.name) || [];
 
   const previewPricing = useMemo(() => {
-    const subtotal = calculateSubtotal(cartItems);
+    const subtotal = calculateSubtotal(visibleCartItems);
     const shippingFee =
       shippingOptions.find((option) => option.id === selectedShippingMethod)
         ?.fee ?? 0;
@@ -198,7 +206,12 @@ export default function CheckoutPage() {
       shippingFee,
       discountRate: resolveDiscountRate(normalizedPromo),
     });
-  }, [cartItems, selectedPromoCode, selectedShippingMethod, shippingOptions]);
+  }, [
+    visibleCartItems,
+    selectedPromoCode,
+    selectedShippingMethod,
+    shippingOptions,
+  ]);
 
   const hasValidatedAddress =
     streetAddress.trim().length > 5 && !errors.streetAddress;
@@ -226,15 +239,23 @@ export default function CheckoutPage() {
       return;
     }
 
-    await submitCheckout(values, defaultAddressId);
-    router.push('/checkout/confirmation');
+    setIsCompletingCheckout(true);
+    setSubmittedCartItems(cartItems);
+
+    try {
+      await submitCheckout(values, defaultAddressId);
+      router.push('/checkout/confirmation');
+    } catch {
+      setIsCompletingCheckout(false);
+      setSubmittedCartItems(null);
+    }
   };
 
   if (!cartHydrated || !checkoutHydrated) {
     return null;
   }
 
-  if (cartItems.length === 0) {
+  if (visibleCartItems.length === 0 && !isCompletingCheckout) {
     return (
       <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
         <div className="border-border/70 bg-card/40 mt-8 rounded-2xl border p-10 text-center">
@@ -533,7 +554,7 @@ export default function CheckoutPage() {
           </form>
 
           <CheckoutOrderSummaryCard
-            items={cartItems}
+            items={visibleCartItems}
             pricing={previewPricing}
             actionType="submit"
             actionForm="checkout-form"
